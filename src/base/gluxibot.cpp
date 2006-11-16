@@ -1,5 +1,6 @@
 #include "gluxibot.h"
 #include "datastorage.h"
+#include "pluginloader.h"
 
 #include <gloox/client.h>
 #include <gloox/disco.h>
@@ -31,6 +32,7 @@ GluxiBot::GluxiBot()
 	myClient->registerIqHandler(this,"http://jabber.org/protocol/muc#admin");
 
 	myOwners.append("dion@jabber.inhex.net");
+	PluginLoader::loadPlugins(&myPlugins,this);
 }
 
 GluxiBot::~GluxiBot()
