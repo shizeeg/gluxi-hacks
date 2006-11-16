@@ -93,7 +93,7 @@ void AList::append(const QString&s, const QDateTime& expire)
 void AList::removeItems()
 {
 	QSqlQuery query;
-	query.prepare("DELETE FROM conference_alists WHERE conference_id=? list=?");
+	query.prepare("DELETE FROM conference_alists WHERE conference_id=? AND list=?");
 	query.addBindValue(myType);
 	query.exec();
 	QStringList::clear();
