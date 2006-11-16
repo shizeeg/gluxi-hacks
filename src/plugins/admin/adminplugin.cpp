@@ -1,9 +1,9 @@
 #include "adminplugin.h"
-#include "base/glooxbot.h"
+#include "base/gluxibot.h"
 
 #include <gloox/client.h>
 
-AdminPlugin::AdminPlugin(GlooxBot *parent)
+AdminPlugin::AdminPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
 	commands << "QUIT";

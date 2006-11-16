@@ -7,7 +7,7 @@ class AdminPlugin : public BasePlugin
 {
 	Q_OBJECT
 public:
-	AdminPlugin(GlooxBot *parent = 0);
+	AdminPlugin(GluxiBot *parent = 0);
 	~AdminPlugin();
 	virtual QString name() const { return "Admin"; };
 	virtual QString prefix() const { return "ADMIN"; };

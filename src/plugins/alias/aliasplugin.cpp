@@ -1,12 +1,12 @@
 #include "aliasplugin.h"
-#include "base/glooxbot.h"
+#include "base/gluxibot.h"
 
 #include <QList>
 #include <QtDebug>
 
 #include <assert.h>
 
-AliasPlugin::AliasPlugin(GlooxBot *parent)
+AliasPlugin::AliasPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
 	commands << "SHOW"  << "CLEAR" << "COUNT" << "ADD" << "DEL";

@@ -6,7 +6,7 @@
 
 #include <gloox/client.h>
 
-class GlooxBot;
+class GluxiBot;
 
 /**
 	@author Dmitry Nezhevenko <dion@inhex.net>
@@ -15,7 +15,7 @@ class BasePlugin : public QObject
 {
 	Q_OBJECT
 public:
-	BasePlugin(GlooxBot *parent);
+	BasePlugin(GluxiBot *parent);
 	~BasePlugin();
 	int id() const {return pluginId;};
 	virtual QString name() const { return "BasePlugin"; };
@@ -39,7 +39,7 @@ protected:
 	bool myShouldIgnoreError;
 	QStringList commands;
 	QString lprefix() const { return prefix().toLower(); };
-	GlooxBot* bot();
+	GluxiBot* bot();
 	bool isGroupChat(gloox::Stanza* );
  	bool isOfflineMessage(gloox::Stanza*);
 	QString getBody(gloox::Stanza*, bool usePrefix=true );

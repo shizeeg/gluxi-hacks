@@ -2,12 +2,12 @@
 #define PLUGINLOADER_H
 
 class PluginList;
-class GlooxBot;
+class GluxiBot;
 
 class PluginLoader
 {
 public:
-	static void loadPlugins(PluginList* lst, GlooxBot* bot);
+	static void loadPlugins(PluginList* lst, GluxiBot* bot);
 };
 
 #endif

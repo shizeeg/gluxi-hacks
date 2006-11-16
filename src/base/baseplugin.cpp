@@ -1,12 +1,12 @@
 #include "baseplugin.h"
-#include "glooxbot.h"
+#include "gluxibot.h"
 
 #include <QString>
 
 #include <string>
 #include <iostream>
 
-BasePlugin::BasePlugin(GlooxBot* parent)
+BasePlugin::BasePlugin(GluxiBot* parent)
 		: QObject(parent)
 {
 	commands << "HELP" << "LIST";
@@ -18,9 +18,9 @@ BasePlugin::BasePlugin(GlooxBot* parent)
 BasePlugin::~BasePlugin()
 {}
 
-GlooxBot* BasePlugin::bot()
+GluxiBot* BasePlugin::bot()
 {
-	return qobject_cast<GlooxBot*>(parent());
+	return qobject_cast<GluxiBot*>(parent());
 }
 
 void BasePlugin::onConnect()

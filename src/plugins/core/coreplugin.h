@@ -7,7 +7,7 @@ class CorePlugin : public BasePlugin
 {
 	Q_OBJECT
 public:
-	CorePlugin(GlooxBot *parent = 0);
+	CorePlugin(GluxiBot *parent = 0);
 	~CorePlugin();
 	virtual QString name() const { return QString::null; };
 	virtual QString prefix() const { return QString::null; };

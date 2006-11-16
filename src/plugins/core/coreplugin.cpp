@@ -1,8 +1,8 @@
 #include "coreplugin.h"
-#include "base/glooxbot.h"
+#include "base/gluxibot.h"
 #include "base/pluginlist.h"
 
-CorePlugin::CorePlugin(GlooxBot *parent)
+CorePlugin::CorePlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {}
 

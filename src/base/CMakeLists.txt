@@ -4,13 +4,12 @@ INCLUDE(plugins)
 
 set (base_HDR_MOC
 	baseplugin.h
-	glooxbot.h
+	gluxibot.h
 )
 
 set (base_HDR
 	common.h
-	datastorage.h
-	glooxbot.h
+	datastorage.h	
 	pluginlist.h
 )
 
@@ -18,7 +17,7 @@ set (base_SRC
 	baseplugin.cpp
 	common.cpp
 	datastorage.cpp
-	glooxbot.cpp
+	gluxibot.cpp
 	main.cpp
 	pluginlist.cpp
 )

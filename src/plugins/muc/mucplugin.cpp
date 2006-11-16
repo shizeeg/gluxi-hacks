@@ -3,7 +3,7 @@
 #include "nicklist.h"
 #include "alist.h"
 
-#include "base/glooxbot.h"
+#include "base/gluxibot.h"
 #include "base/datastorage.h"
 
 #include <QtDebug>
@@ -14,7 +14,7 @@
 #include <gloox/stanza.h>
 #include <assert.h>
 
-MucPlugin::MucPlugin(GlooxBot *parent)
+MucPlugin::MucPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
 	commands << "WHEREAMI" << "NICK" << "IDLE" << "JOIN" << "LEAVE" << "KICK" << "VISITOR" << "PARTICIPANT" << "MODERATOR";

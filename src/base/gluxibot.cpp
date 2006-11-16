@@ -1,4 +1,4 @@
-#include "glooxbot.h"
+#include "gluxibot.h"
 #include "datastorage.h"
 
 #include <gloox/client.h>
@@ -9,7 +9,7 @@
 #include <string>
 #include <iostream>
 
-GlooxBot::GlooxBot()
+GluxiBot::GluxiBot()
 {
 	DataStorage *storage=DataStorage::instance();
 	storage->connect();
@@ -21,7 +21,7 @@ GlooxBot::GlooxBot()
 		storage->getStdString("account/resource"));
 
 
-	myClient->disco()->setVersion("GlooxBot","0.1","libGLOOX based bot");
+	myClient->disco()->setVersion("GluxiBot","0.1","libGLOOX based bot");
 	myClient->disco()->setIdentity( "client", "bot" );
 	myClient->setAutoPresence( true );
 	myClient->setInitialPriority(storage->getInt("account/priority"));
@@ -33,25 +33,17 @@ GlooxBot::GlooxBot()
 	myOwners.append("dion@jabber.inhex.net");
 }
 
-GlooxBot::~GlooxBot()
+GluxiBot::~GluxiBot()
 {
 	delete myClient;
 }
 
-void GlooxBot::run()
+void GluxiBot::run()
 {
 	myClient->connect();
 }
 
-// void GlooxBot::join(Conference *c)
-// {
-// 	connect(c, SIGNAL(needJoin( const QString&, const QString& )),
-// 		SLOT(needJoin( const QString&, const QString& )));
-// 	gloox::Stanza *st=gloox::Stanza::createPresenceStanza(gloox::JID(c->jid()));
-// 	myClient->send(st);
-// }
-
-void GlooxBot::onConnect()
+void GluxiBot::onConnect()
 {
 	std::cout << "Connected" << std::endl;
 
@@ -64,26 +56,18 @@ void GlooxBot::onConnect()
 		plugin->onConnect();
 	}
 	std::cout << "onConnect() sent" << std::endl;
-// 	std::cout << "Joining..." << std::endl;
-//
-// 	for (std::list<Conference*>::iterator it=confList.begin(); it!=confList.end(); it++)
-// 	{
-// 		join(*it);
-// 	}
-// 	std::cout << "Joined" << std::endl;
 }
 
-void GlooxBot::onDisconnect(gloox::ConnectionError /* e */)
+void GluxiBot::onDisconnect(gloox::ConnectionError /* e */)
 {}
 
-bool GlooxBot::onTLSConnect( const gloox::CertInfo& )
+bool GluxiBot::onTLSConnect( const gloox::CertInfo& )
 {
 	return true;
 }
 
-void GlooxBot::handleMessage(gloox::Stanza* s)
+void GluxiBot::handleMessage(gloox::Stanza* s)
 {
-// 	std::cout <<"[MESSAGE] "<< s->from().full() << " to " << s->to().full() << " " << s->body() << std::endl << std::endl;
 	std::cout << s->xml() << std::endl << std::endl;
 
 	QListIterator<BasePlugin*> it(myPlugins);
@@ -101,7 +85,7 @@ void GlooxBot::handleMessage(gloox::Stanza* s)
 	}
 }
 
-bool GlooxBot::isMyMessage(gloox::Stanza *s)
+bool GluxiBot::isMyMessage(gloox::Stanza *s)
 {
 	QListIterator<BasePlugin*> it(myPlugins);
 	BasePlugin *plugin;
@@ -115,13 +99,8 @@ bool GlooxBot::isMyMessage(gloox::Stanza *s)
 	return false;
 }
 
-void GlooxBot::handlePresence( gloox::Stanza *s	)
+void GluxiBot::handlePresence( gloox::Stanza *s	)
 {
-// 	std::cout <<"[PRESENCE] " << s->from().full() << " to " << s->to().full() << " XMLNS=" << s->xmlns()
-// 	 << " ID=" << s->id()
-// 	 << " STATUS=" << s->status()
-// 	 << " PR=" << s->priority()
-// 	 << std::endl;
 	std::cout << s->xml() << std::endl << std::endl;
 
 	QListIterator<BasePlugin*> it(myPlugins);
@@ -135,7 +114,7 @@ void GlooxBot::handlePresence( gloox::Stanza *s	)
 	}
 }
 
-bool GlooxBot::handleIq(gloox::Stanza* s)
+bool GluxiBot::handleIq(gloox::Stanza* s)
 {
 	std::cout << s->xml() << std::endl << std::endl;
 
@@ -151,19 +130,12 @@ bool GlooxBot::handleIq(gloox::Stanza* s)
 	return true;
 }
 
-bool GlooxBot::handleIqID(gloox::Stanza*, int)
+bool GluxiBot::handleIqID(gloox::Stanza*, int)
 {
 	return true;
 }
 
-// void GlooxBot::needJoin(const QString& conf, const QString& nick)
-// {
-// 	Conference *c=new Conference(this, myClient, conf.toStdString(), nick.toStdString());
-// 	confList.push_back(c);
-// 	join(c);
-// }
-
-QList<int> GlooxBot::getStorage(gloox::Stanza*s)
+QList<int> GluxiBot::getStorage(gloox::Stanza*s)
 {
 	QList<int> res;
 	QListIterator<BasePlugin*> it(myPlugins);
@@ -182,3 +154,4 @@ QList<int> GlooxBot::getStorage(gloox::Stanza*s)
 	}
 	return res;
 }
+

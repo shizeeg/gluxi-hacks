@@ -12,7 +12,7 @@ class MiscPlugin : public BasePlugin
 {
 	Q_OBJECT
 public:
-	MiscPlugin(GlooxBot *parent = 0);
+	MiscPlugin(GluxiBot *parent = 0);
 	~MiscPlugin();
 	virtual QString name() const { return "Misc"; };
 	virtual QString prefix() const { return "MISC"; };

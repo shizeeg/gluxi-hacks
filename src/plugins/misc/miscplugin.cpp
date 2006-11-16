@@ -3,7 +3,7 @@
 #include <QtDebug>
 #include <QTime>
 
-MiscPlugin::MiscPlugin(GlooxBot *parent)
+MiscPlugin::MiscPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
 	commands << "TEST" << "DATE" << "TIME";

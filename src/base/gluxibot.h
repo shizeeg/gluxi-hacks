@@ -14,12 +14,12 @@
 class gloox::Client;
 class gloox::Stanza;
 
-class GlooxBot: public QObject, gloox::ConnectionListener, gloox::PresenceHandler, gloox::MessageHandler, gloox::IqHandler
+class GluxiBot: public QObject, gloox::ConnectionListener, gloox::PresenceHandler, gloox::MessageHandler, gloox::IqHandler
 {
 	Q_OBJECT
 public:
-	GlooxBot();
-	~GlooxBot();
+	GluxiBot();
+	~GluxiBot();
 	void run();
 	gloox::Client* client() {return myClient; };
 	QStringList* owners() { return &myOwners; };

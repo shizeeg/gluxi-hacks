@@ -8,7 +8,7 @@ class MucPlugin : public BasePlugin
 {
 	Q_OBJECT
 public:
-	MucPlugin(GlooxBot *parent = 0);
+	MucPlugin(GluxiBot *parent = 0);
 	~MucPlugin();
 	virtual QString name() const { return "Muc"; };
 	virtual QString prefix() const { return "MUC"; };

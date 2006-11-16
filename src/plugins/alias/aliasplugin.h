@@ -10,7 +10,7 @@ class AliasPlugin : public BasePlugin
 {
 	Q_OBJECT
 public:
-	AliasPlugin(GlooxBot *parent = 0);
+	AliasPlugin(GluxiBot *parent = 0);
 	~AliasPlugin();
 	virtual QString name() const { return "Alias"; };
 	virtual QString prefix() const { return "ALIAS"; };
