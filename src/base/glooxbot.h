@@ -41,13 +41,7 @@ private:
 	virtual void onConnect();
 	virtual void onDisconnect( gloox::ConnectionError e);
 	virtual bool onTLSConnect( const gloox::CertInfo& );
-
-// 	void join(Conference* c);
-// private slots:
-// 	void needJoin(const QString& conf, const QString& nick);
-
-	//TagParser
-// 	std::string getItem(gloox::Stanza*, const std::string&);
 };
 
 #endif
+

@@ -1,12 +1,6 @@
 #include "glooxbot.h"
 #include "datastorage.h"
 
-/*#include "plugins/coreplugin.h"
-#include "plugins/miscplugin.h"
-#include "plugins/adminplugin.h"
-#include "plugins/mucplugin.h"
-#include "plugins/aliasplugin.h"*/
-
 #include <gloox/client.h>
 #include <gloox/disco.h>
 #include <gloox/jid.h>
@@ -37,16 +31,6 @@ GlooxBot::GlooxBot()
 	myClient->registerIqHandler(this,"http://jabber.org/protocol/muc#admin");
 
 	myOwners.append("dion@jabber.inhex.net");
-
-// 	confList.push_back(new Conference(this, myClient, "motofan@conference.jabber.inhex.net","gloox"));
-//	confList.push_back(new Conference(this, myClient, "botzone@conference.jabber.ru","gloox"));
-// 	confList.push_back(new Conference(this, myClient, "bombus@conference.jabber.ru","gloox"));
-
-/*	myPlugins.append(new CorePlugin(this));
-	myPlugins.append(new MiscPlugin(this));
-	myPlugins.append(new AdminPlugin(this));
-	myPlugins.append(new MucPlugin(this));
-	myPlugins.append(new AliasPlugin(this));*/
 }
 
 GlooxBot::~GlooxBot()

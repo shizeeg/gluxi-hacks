@@ -15,17 +15,17 @@ class BasePlugin : public QObject
 {
 	Q_OBJECT
 public:
-    BasePlugin(GlooxBot *parent);
-    ~BasePlugin();
-    int id() const {return pluginId;};
-    virtual QString name() const { return "BasePlugin"; };
-    virtual QString prefix() const { return "base"; };
-    virtual QString help() const { return QString::null; };
-    virtual QString description() const { return "base plugin"; };
-    virtual void onConnect();
+	BasePlugin(GlooxBot *parent);
+	~BasePlugin();
+	int id() const {return pluginId;};
+	virtual QString name() const { return "BasePlugin"; };
+	virtual QString prefix() const { return "base"; };
+	virtual QString help() const { return QString::null; };
+	virtual QString description() const { return "base plugin"; };
+	virtual void onConnect();
 	virtual bool allMessages() const { return false; };
-    virtual bool onMessage(gloox::Stanza* );
-    virtual bool parseMessage(gloox::Stanza*);
+	virtual bool onMessage(gloox::Stanza* );
+	virtual bool parseMessage(gloox::Stanza*);
  	virtual void onPresence(gloox::Stanza* );
  	virtual bool canHandleMessage(gloox::Stanza* );
  	virtual bool canHandlePresence(gloox::Stanza* );
@@ -48,3 +48,4 @@ protected:
 };
 
 #endif
+
