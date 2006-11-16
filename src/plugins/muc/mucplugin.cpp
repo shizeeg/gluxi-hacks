@@ -3,6 +3,7 @@
 #include "nicklist.h"
 #include "alist.h"
 
+#include "base/common.h"
 #include "base/gluxibot.h"
 #include "base/datastorage.h"
 
@@ -253,12 +254,12 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	{
 		Nick *n=getNickVerbose(s, arg);
 		if (!n) return true;
-		reply(s, QString("Nick \"%1\": Affiliation: %2; Role: %3; Joined: %4; Idle: %5 sec; Status: %6 (%7)")
+		reply(s, QString("Nick \"%1\": Affiliation: %2; Role: %3; Joined: %4; Idle: %5; Status: %6 (%7)")
 		      .arg(n->nick())
 		      .arg(n->affiliation())
 		      .arg(n->role())
 		      .arg(n->joined().toString(Qt::LocaleDate))
-		      .arg(n->lastActivity().secsTo(QDateTime::currentDateTime()))
+		      .arg(secsToString(n->lastActivity().secsTo(QDateTime::currentDateTime())))
 		      .arg(n->show())
 		      .arg(n->status())
 		     );
@@ -269,7 +270,8 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	{
 		Nick *n=getNickVerbose(s, arg);
 		if (!n) return true;
-		reply(s, QString("Idle for \"%1\" is %2 seconds").arg(n->nick()).arg(n->lastActivity().secsTo(QDateTime::currentDateTime())));
+		reply(s, QString("Idle for \"%1\" is %2").arg(n->nick()).arg(
+			secsToString(n->lastActivity().secsTo(QDateTime::currentDateTime()))));
 		return true;
 	}
 
