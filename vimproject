@@ -1,0 +1,59 @@
+gluxi=$VIMPROJECT/src CD=../release filter="*.h *.cpp *.txt" in=../in.vim out=../out.vim {
+ CMakeLists.txt
+ base=base {
+  baseplugin.h
+  common.h
+  datastorage.h
+  gluxibot.h
+  pluginlist.h
+  pluginloader.h
+  baseplugin.cpp
+  common.cpp
+  datastorage.cpp
+  gluxibot.cpp
+  main.cpp
+  pluginlist.cpp
+  CMakeLists.txt
+ }
+ plugins=plugins {
+  CMakeLists.txt
+  admin=admin {
+   adminplugin.h
+   adminplugin.cpp
+   CMakeLists.txt
+  }
+  alias=alias {
+   aliaslist.h
+   aliasplugin.h
+   aliaslist.cpp
+   aliasplugin.cpp
+   CMakeLists.txt
+  }
+  core=core {
+   coreplugin.h
+   coreplugin.cpp
+   CMakeLists.txt
+  }
+  misc=misc {
+   miscplugin.h
+   miscplugin.cpp
+   CMakeLists.txt
+  }
+  muc=muc {
+   alist.h
+   conference.h
+   conferencelist.h
+   jid.h
+   mucplugin.h
+   nick.h
+   nicklist.h
+   conference.cpp
+   conferencelist.cpp
+   jid.cpp
+   mucplugin.cpp
+   nick.cpp
+   nicklist.cpp
+   CMakeLists.txt
+  }
+ }
+}
