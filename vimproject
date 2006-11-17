@@ -47,12 +47,20 @@ gluxi=$VIMPROJECT/src CD=../release filter="*.h *.cpp *.txt" in=../in.vim out=..
    mucplugin.h
    nick.h
    nicklist.h
+   alist.cpp
    conference.cpp
    conferencelist.cpp
    jid.cpp
    mucplugin.cpp
    nick.cpp
    nicklist.cpp
+   CMakeLists.txt
+  }
+  word=word {
+   wordlist.h
+   wordplugin.h
+   wordlist.cpp
+   wordplugin.cpp
    CMakeLists.txt
   }
  }

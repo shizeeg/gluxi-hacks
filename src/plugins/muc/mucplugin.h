@@ -23,6 +23,7 @@ public:
 	virtual bool onIq(gloox::Stanza* );
 	virtual bool isMyMessage(gloox::Stanza*);
 	virtual int getStorage(gloox::Stanza*s );
+	virtual QString getJID(gloox::Stanza*s, const QString&nick);
 private:
 	ConferenceList conferences;
 	QStringList confInProgress;

@@ -36,13 +36,13 @@ private:
 	Conference *myParent;
 	Jid *myJid;
 	QString myJidS;
-    QString myNick;
-    QString myAffiliation;
-    QString myRole;
-    QDateTime myJoined;
-    QDateTime myLastActivity;
-    QString myShow;
-    QString myStatus;
+	QString myNick;
+	QString myAffiliation;
+	QString myRole;
+	QDateTime myJoined;
+	QDateTime myLastActivity;
+	QString myShow;
+	QString myStatus;
 };
 
 #endif

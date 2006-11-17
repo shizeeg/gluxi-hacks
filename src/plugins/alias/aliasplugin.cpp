@@ -99,7 +99,7 @@ bool AliasPlugin::parseCommands(gloox::Stanza* s)
 	}
 	if (cmd=="COUNT")
 	{
-		reply(s,QString("Currntly i have %1 aliases").arg(aliases.count(bot()->getStorage(s))));
+		reply(s,QString("Currntly I have %1 aliases").arg(aliases.count(bot()->getStorage(s))));
 		return true;
 	}
 	//arg=arg.toUpper();

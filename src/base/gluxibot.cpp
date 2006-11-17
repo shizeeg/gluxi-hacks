@@ -157,3 +157,20 @@ QList<int> GluxiBot::getStorage(gloox::Stanza*s)
 	return res;
 }
 
+QString GluxiBot::getJID(gloox::Stanza* s, const QString& nick)
+{
+	QListIterator<BasePlugin*> it(myPlugins);
+	BasePlugin *plugin;
+	while (it.hasNext())
+	{
+		plugin=it.next();
+		assert(plugin);
+		QString jid=plugin->getJID(s,nick);
+		if (!jid.isEmpty())
+		{
+			return jid;
+		}
+	}
+	return QString::null;
+}
+

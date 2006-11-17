@@ -162,11 +162,11 @@ bool BasePlugin::isGroupChat(gloox::Stanza* s)
 	return QString::fromStdString(s->findAttribute("type"))=="groupchat";
 }
 
-void BasePlugin::reply(gloox::Stanza* to, const QString& body)
+void BasePlugin::reply(gloox::Stanza* to, const QString& body, bool forcePrivate)
 {
 	QString msg;
 	std::string dest;
-	if (isGroupChat(to))
+	if (isGroupChat(to) && !forcePrivate)
 	{
 		dest=to->from().bare();
 		msg=QString::fromStdString(to->from().resource())+": "+body;
@@ -180,7 +180,7 @@ void BasePlugin::reply(gloox::Stanza* to, const QString& body)
 
 	gloox::Stanza *st=gloox::Stanza::createMessageStanza(gloox::JID(dest), msg.toStdString());
 
-	st->addAttribute("type",isGroupChat(to) ? "groupchat" : "chat");
+	st->addAttribute("type",isGroupChat(to) && !forcePrivate ? "groupchat" : "chat");
 
 	std::cout << "-----------------" << std::endl << st->xml() << std::endl << std::endl;
 	bot()->client()->send(st);
@@ -206,3 +206,21 @@ int BasePlugin::getStorage(gloox::Stanza*s)
 {
 	return 0;
 }
+
+QString BasePlugin::getNick(gloox::Stanza*s)
+{
+	if (isGroupChat(s))
+	{
+		return QString::fromStdString(s->from().resource());
+	}
+	else
+	{
+		return QString::fromStdString(s->from().bare()).section('@',0,0)+"@";
+	}
+}
+
+QString BasePlugin::getJID(gloox::Stanza*s, const QString& nick)
+{
+	return QString::null;	
+}
+

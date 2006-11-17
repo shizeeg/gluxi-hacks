@@ -34,6 +34,7 @@ public:
  	virtual bool shouldIgnoreError(); // Should we ignore can't handle error;
  	virtual bool isMyMessage(gloox::Stanza*s); // TODO: Fix it
  	virtual int getStorage(gloox::Stanza*s);
+	virtual QString getJID(gloox::Stanza*s, const QString&nick);
 protected:
 	int pluginId;
 	bool myShouldIgnoreError;
@@ -43,7 +44,8 @@ protected:
 	bool isGroupChat(gloox::Stanza* );
  	bool isOfflineMessage(gloox::Stanza*);
 	QString getBody(gloox::Stanza*, bool usePrefix=true );
-	void reply(gloox::Stanza*, const QString&);
+	void reply(gloox::Stanza*, const QString&, bool forcePrivate=false);
+	QString getNick(gloox::Stanza*);
 	virtual bool isFromOwner(gloox::Stanza*, bool message=false);
 };
 

@@ -863,3 +863,17 @@ int MucPlugin::getStorage( gloox::Stanza *s)
 		return 0;
 	return conf->id();
 }
+
+QString MucPlugin::getJID(gloox::Stanza*s, const QString& n)
+{
+	qDebug() << "[MUC] getJID() " << n;
+	Nick* nick=getNick(s,n);
+	if (!nick)
+	        return QString::null;
+	Conference *conf=nick->conference();
+	if (!conf)
+		return QString::null;
+	
+	return QString("%1/%2").arg(conf->name()).arg(nick->nick());
+}
+
