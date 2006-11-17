@@ -174,3 +174,20 @@ QString GluxiBot::getJID(gloox::Stanza* s, const QString& nick)
 	return QString::null;
 }
 
+QString GluxiBot::JIDtoNick(const QString& jid)
+{
+	QListIterator<BasePlugin*> it(myPlugins);
+	BasePlugin *plugin;
+	while (it.hasNext())
+	{
+		plugin=it.next();
+		assert(plugin);
+		QString nick=plugin->JIDtoNick(jid);
+		if (!nick.isEmpty())
+		{
+			return nick;
+		}
+	}
+	return QString::null;
+}
+

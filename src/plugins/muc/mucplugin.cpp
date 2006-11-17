@@ -877,3 +877,13 @@ QString MucPlugin::getJID(gloox::Stanza*s, const QString& n)
 	return QString("%1/%2").arg(conf->name()).arg(nick->nick());
 }
 
+QString MucPlugin::JIDtoNick(const QString& jid)
+{
+	QString c=jid.section('/',0,0);
+	QString n=jid.section('/',1);
+	Conference *conf=conferences.byName(c);
+	if (conf)
+		return n;
+	return QString::null;
+}
+

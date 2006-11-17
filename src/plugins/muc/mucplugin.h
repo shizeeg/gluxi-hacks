@@ -24,6 +24,7 @@ public:
 	virtual bool isMyMessage(gloox::Stanza*);
 	virtual int getStorage(gloox::Stanza*s );
 	virtual QString getJID(gloox::Stanza*s, const QString&nick);
+	virtual QString JIDtoNick(const QString& jid);
 private:
 	ConferenceList conferences;
 	QStringList confInProgress;

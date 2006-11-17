@@ -29,7 +29,8 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 			reply(s, "Definition should be like name=value");
 			return true;
 		}
-		int res=words.append(bot()->getStorage(s),name,getNick(s),value);
+		QString nick=bot()->JIDtoNick(QString::fromStdString(s->from().full()));
+		int res=words.append(bot()->getStorage(s),name,nick,value);
 		if (res==1)
 			reply(s,"Saved");
 		else

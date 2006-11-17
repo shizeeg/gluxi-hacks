@@ -30,6 +30,7 @@ public:
 	bool isMyMessage(gloox::Stanza *);
 	virtual void handleMessage(gloox::Stanza*);
 	QString getJID(gloox::Stanza*s, const QString&);
+	QString JIDtoNick(const QString& jid);
 private:
 	gloox::Client* myClient;
 	QStringList myOwners;
