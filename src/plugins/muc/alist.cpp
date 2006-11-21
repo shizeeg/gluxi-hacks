@@ -76,7 +76,9 @@ void AList::append(const QString&s)
 	query.addBindValue(s);
 	query.addBindValue(myType);
 	query.exec();
-	QStringList::append(s);
+//TODO: Use some more optimezed way to update QStringList
+//	QStringList::append(s);
+	load();	
 }
 
 void AList::append(const QString&s, const QDateTime& expire)
@@ -88,7 +90,9 @@ void AList::append(const QString&s, const QDateTime& expire)
 	query.addBindValue(myType);
 	query.addBindValue(expire);
 	query.exec();
-	QStringList::append(s);
+//TODO: Use some more optimized way to update QStringList
+//	QStringList::append(s);
+	load();
 }
 void AList::removeItems()
 {
