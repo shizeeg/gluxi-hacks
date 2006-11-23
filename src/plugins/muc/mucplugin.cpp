@@ -887,3 +887,24 @@ QString MucPlugin::JIDtoNick(const QString& jid)
 	return QString::null;
 }
 
+void MucPlugin::sendMessage(Conference *conf, const QString& msg)
+{
+	if (!conf) return;
+	QString jid=conf->name();
+	
+	gloox::Stanza *st=gloox::Stanza::createMessageStanza(
+		gloox::JID(jid.toStdString()), msg.toStdString());
+	st->addAttribute("type","groupchat");
+	bot()->client()->send(st);
+}
+
+void MucPlugin::onQuit(const QString& reason)
+{
+	int cnt=conferences.count();
+	for (int i=0; i<cnt; i++)
+	{
+		Conference *conf=conferences[i];
+		sendMessage(conf,QString("Shutting down (%1)").arg(reason));		
+	}
+}
+

@@ -193,3 +193,16 @@ QString GluxiBot::JIDtoNick(const QString& jid)
 	return QString::null;
 }
 
+void GluxiBot::onQuit(const QString& reason)
+{
+	QListIterator<BasePlugin*> it(myPlugins);
+	BasePlugin *plugin;
+	while (it.hasNext())
+	{
+		plugin=it.next();
+		assert(plugin);
+		plugin->onQuit(reason);
+	}
+	myClient->disconnect();
+}
+

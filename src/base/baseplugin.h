@@ -36,6 +36,7 @@ public:
  	virtual int getStorage(gloox::Stanza*s);
 	virtual QString getJID(gloox::Stanza*s, const QString&nick);
 	virtual QString JIDtoNick(const QString& jid);
+	virtual void onQuit(const QString& reason);			// OnQuit
 protected:
 	int pluginId;
 	bool myShouldIgnoreError;

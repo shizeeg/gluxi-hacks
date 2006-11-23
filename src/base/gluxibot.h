@@ -31,6 +31,8 @@ public:
 	virtual void handleMessage(gloox::Stanza*);
 	QString getJID(gloox::Stanza*s, const QString&);
 	QString JIDtoNick(const QString& jid);
+
+	void onQuit(const QString&reason);
 private:
 	gloox::Client* myClient;
 	QStringList myOwners;

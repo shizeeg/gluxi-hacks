@@ -25,6 +25,7 @@ public:
 	virtual int getStorage(gloox::Stanza*s );
 	virtual QString getJID(gloox::Stanza*s, const QString&nick);
 	virtual QString JIDtoNick(const QString& jid);
+	virtual void onQuit(const QString& reason);
 private:
 	ConferenceList conferences;
 	QStringList confInProgress;
@@ -47,6 +48,7 @@ private:
 	void checkNick(Conference*c , Nick*n, const QString&, bool nickOnly=false);
 	void checkJID(Conference* c, Nick*);
 	void recheckJIDs(Conference* c);
+	void sendMessage(Conference* conf, const QString&msg);
 };
 
 #endif

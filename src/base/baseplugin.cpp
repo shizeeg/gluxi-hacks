@@ -229,3 +229,7 @@ QString BasePlugin::JIDtoNick(const QString& /* jid*/)
 	return QString::null;	
 }
 
+void BasePlugin::onQuit(const QString&)
+{
+}
+
