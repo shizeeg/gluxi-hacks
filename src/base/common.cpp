@@ -43,7 +43,7 @@ QString version()
 	struct utsname ver;
 	if (uname(&ver)!=0)
 		return "Unknown";
-	QString release=QString(ver.release).section('-',0);
+	QString release=QString(ver.release).section('-',0,0);
 	QString res=QString("%1 %2 %3 %4").arg(ver.sysname).arg(release)
 		.arg(ver.version).arg(ver.machine);
 	return res;
