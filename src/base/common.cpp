@@ -3,6 +3,10 @@
 #include <QStringList>
 #include <QList>
 
+#ifndef Q_WS_WIN
+#include <sys/utsname.h>
+#endif
+
 QString secsToString(int secs)
 {
 	QStringList labels;
@@ -27,3 +31,21 @@ QString secsToString(int secs)
 	}
 	return res;
 }
+
+QString version()
+{
+#ifdef Q_WS_WIN
+	return "M$ Windows";
+#endif
+#ifdef Q_WS_MAC
+	return "Mac OS X";
+#endif
+	struct utsname ver;
+	if (uname(&ver)!=0)
+		return "Unknown";
+	QString release=QString(ver.release).section('-',0);
+	QString res=QString("%1 %2 %3 %4").arg(ver.sysname).arg(release)
+		.arg(ver.version).arg(ver.machine);
+	return res;
+}
+

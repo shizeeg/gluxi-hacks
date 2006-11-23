@@ -1,6 +1,7 @@
 #include "gluxibot.h"
 #include "datastorage.h"
 #include "pluginloader.h"
+#include "common.h"
 
 #include <gloox/client.h>
 #include <gloox/disco.h>
@@ -22,7 +23,8 @@ GluxiBot::GluxiBot()
 		storage->getStdString("account/resource"));
 
 
-	myClient->disco()->setVersion("GluxiBot","0.1","libGLOOX based bot");
+	myClient->disco()->setVersion("GluxiBot (libGLOOX based bot)","0.1",
+		version().toStdString());
 	myClient->disco()->setIdentity( "client", "bot" );
 	myClient->setAutoPresence( true );
 	myClient->setInitialPriority(storage->getInt("account/priority"));
