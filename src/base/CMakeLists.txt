@@ -5,12 +5,14 @@ INCLUDE(plugins)
 set (base_HDR_MOC
 	baseplugin.h
 	gluxibot.h
+	asyncrequest.h
 )
 
 set (base_HDR
 	common.h
 	datastorage.h	
 	pluginlist.h
+	asyncrequestlist.h
 )
 
 set (base_SRC
@@ -20,6 +22,8 @@ set (base_SRC
 	gluxibot.cpp
 	main.cpp
 	pluginlist.cpp
+	asyncrequest.cpp
+	asyncrequestlist.cpp
 )
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
