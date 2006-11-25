@@ -2,6 +2,7 @@
 #define GLOOXBOT_H
 
 #include "pluginlist.h"
+#include "asyncrequestlist.h"
 
 #include <QStringList>
 
@@ -25,6 +26,7 @@ public:
 	QStringList* owners() { return &myOwners; };
 	QStringList* tmpOwners() { return &myTmpOwners; };
 	PluginList* plugins() { return &myPlugins; };
+	AsyncRequestList* asyncRequests() { return &myAsyncRequests; };
 	QList<int> getStorage(gloox::Stanza*s);
 
 	bool isMyMessage(gloox::Stanza *);
@@ -38,6 +40,7 @@ private:
 	QStringList myOwners;
 	QStringList myTmpOwners;
 	PluginList myPlugins;
+	AsyncRequestList myAsyncRequests;
 
 	virtual void handlePresence( gloox::Stanza *stanza );
 	virtual bool handleIq(gloox::Stanza*);
@@ -45,6 +48,8 @@ private:
 	virtual void onConnect();
 	virtual void onDisconnect( gloox::ConnectionError e);
 	virtual bool onTLSConnect( const gloox::CertInfo& );
+
+	BasePlugin* pluginById(gloox::Stanza*);
 };
 
 #endif

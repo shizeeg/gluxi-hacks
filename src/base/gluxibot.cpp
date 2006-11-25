@@ -74,6 +74,7 @@ void GluxiBot::handleMessage(gloox::Stanza* s)
 {
 	std::cout << s->xml() << std::endl << std::endl;
 
+// TODO: Implement Async message handler by ID if required
 	QListIterator<BasePlugin*> it(myPlugins);
 	BasePlugin *plugin;
 	bool parsed=false;
@@ -106,9 +107,15 @@ bool GluxiBot::isMyMessage(gloox::Stanza *s)
 void GluxiBot::handlePresence( gloox::Stanza *s	)
 {
 	std::cout << s->xml() << std::endl << std::endl;
+	BasePlugin *plugin;
+	plugin=pluginById(s);
+	if (plugin)
+	{
+		plugin->onPresence(s);
+		return;
+	}
 
 	QListIterator<BasePlugin*> it(myPlugins);
-	BasePlugin *plugin;
 	while (it.hasNext())
 	{
 		plugin=it.next();
@@ -122,8 +129,15 @@ bool GluxiBot::handleIq(gloox::Stanza* s)
 {
 	std::cout << s->xml() << std::endl << std::endl;
 
-	QListIterator<BasePlugin*> it(myPlugins);
 	BasePlugin *plugin;
+	plugin=pluginById(s);
+	if (plugin)
+	{
+		plugin->onIq(s);
+		return;
+	}
+
+	QListIterator<BasePlugin*> it(myPlugins);
 	while (it.hasNext())
 	{
 		plugin=it.next();
@@ -204,5 +218,13 @@ void GluxiBot::onQuit(const QString& reason)
 		plugin->onQuit(reason);
 	}
 	myClient->disconnect();
+}
+
+BasePlugin* GluxiBot::pluginById(gloox::Stanza* s)
+{
+	QString id=QString::fromStdString(s->findAttribute("id"));
+	AsyncRequest* req=myAsyncRequests.byId(id);
+	if (!req) return 0;
+	return req->plugin();
 }
 
