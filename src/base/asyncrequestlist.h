@@ -11,6 +11,7 @@ public:
 	void clear();
 	void removeAt(int);
 	AsyncRequest* byId(const QString&);
+	AsyncRequest* byStanza(const gloox::Stanza* st);
 };
 
 #endif

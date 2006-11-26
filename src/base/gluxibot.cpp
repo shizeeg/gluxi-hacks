@@ -31,6 +31,7 @@ GluxiBot::GluxiBot()
 	myClient->registerConnectionListener( this );
 	myClient->registerMessageHandler(this);
 	myClient->registerPresenceHandler(this);
+	// Move this 
 	myClient->registerIqHandler(this,"http://jabber.org/protocol/muc#admin");
 
 	myOwners.append("dion@jabber.inhex.net");
@@ -134,7 +135,7 @@ bool GluxiBot::handleIq(gloox::Stanza* s)
 	if (plugin)
 	{
 		plugin->onIq(s);
-		return;
+		return true;
 	}
 
 	QListIterator<BasePlugin*> it(myPlugins);

@@ -18,10 +18,12 @@ public:
 	~AsyncRequest();
 	BasePlugin* plugin() const { return myPlugin; };
 	gloox::Stanza *stanza() const { return myStanza; };
+	gloox::Stanza *source() const { return mySource; };
 	int timeout() const { return myTimeout; };
 
 	void setPlugin(BasePlugin *p) { myPlugin=p; };
 	void setStanza(gloox::Stanza *s) { myStanza=s; };
+	void setSource(gloox::Stanza *s) { mySource=s; };
 	void setTimeout(int t) { myTimeout=t; };
 	void update();
 	bool expired();
@@ -29,6 +31,7 @@ public:
 private:
 	BasePlugin* myPlugin;
 	gloox::Stanza *myStanza;
+	gloox::Stanza *mySource;
 	int myTimeout;
 	QDateTime myTime;
 	bool notified;

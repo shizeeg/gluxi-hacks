@@ -67,5 +67,11 @@ gluxi=$VIMPROJECT/src CD=../release filter="*.h *.cpp *.txt" in=../in.vim out=..
    wordplugin.cpp
    CMakeLists.txt
   }
+
+  user=user {
+   userplugin.h
+   userplugin.cpp
+   CMakeLists.txt
+  }
  }
 }

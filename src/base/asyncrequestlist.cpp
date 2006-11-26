@@ -28,3 +28,9 @@ AsyncRequest* AsyncRequestList::byId(const QString& id)
 	return 0L;
 }
 
+AsyncRequest* AsyncRequestList::byStanza(const gloox::Stanza* s)
+{
+	QString id=QString::fromStdString(s->findAttribute("id"));
+	return byId(id);
+}
+

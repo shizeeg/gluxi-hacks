@@ -6,6 +6,7 @@ AsyncRequest::AsyncRequest(int timeout)
 {
 	myPlugin=0L;
 	myStanza=0L;
+	mySource=0L;
 	myTimeout=timeout;
 	update();
 }
@@ -21,7 +22,10 @@ AsyncRequest::AsyncRequest(BasePlugin *plugin, gloox::Stanza *stanza, int timeou
 AsyncRequest::~AsyncRequest()
 {
 	// Delete stanza..
-	delete myStanza;
+	if (myStanza)
+		delete myStanza;
+	if (mySource)
+		delete mySource;
 }
 
 void AsyncRequest::update()

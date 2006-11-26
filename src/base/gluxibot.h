@@ -15,7 +15,8 @@
 class gloox::Client;
 class gloox::Stanza;
 
-class GluxiBot: public QObject, gloox::ConnectionListener, gloox::PresenceHandler, gloox::MessageHandler, gloox::IqHandler
+class GluxiBot: public QObject, gloox::ConnectionListener, gloox::PresenceHandler, gloox::MessageHandler, 
+	public gloox::IqHandler
 {
 	Q_OBJECT
 public:
