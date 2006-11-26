@@ -18,6 +18,7 @@ public:
 	virtual QString prefix() const { return "USER"; };
 	virtual QString description() const { return "Various user info commands";};
 	virtual bool parseMessage(gloox::Stanza* );
+	virtual bool canHandleIq(gloox::Stanza*);
 	virtual bool onIq(gloox::Stanza*);
 private:
 	void sendVersion(gloox::Stanza *s);

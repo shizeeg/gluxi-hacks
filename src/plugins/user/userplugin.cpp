@@ -20,6 +20,14 @@ UserPlugin::UserPlugin(GluxiBot *parent)
 UserPlugin::~UserPlugin()
 {}
 
+bool UserPlugin::canHandleIq(gloox::Stanza* s)
+{
+	QString xmlns=QString::fromStdString(s->xmlns());
+	if (xmlns=="jabber:iq:version")
+		return true;
+	return false;
+}
+
 bool UserPlugin::parseMessage(gloox::Stanza* s)
 {
 	QString body=getBody(s);
