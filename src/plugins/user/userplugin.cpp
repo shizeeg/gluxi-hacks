@@ -43,6 +43,8 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 			jid=arg;
 		if (jid.isEmpty())
 			jid=QString::fromStdString(s->from().full());
+		// libgloox bug workaround
+		jid.replace("'","&apos;");
 	
 		gloox::Stanza *st=gloox::Stanza::createIqStanza(
 			gloox::JID(jid.toStdString()),
