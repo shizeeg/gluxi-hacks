@@ -66,6 +66,7 @@ void UserPlugin::sendVersion(gloox:: Stanza* s)
 	tag->addChild(new gloox::Tag("name","GluxiBot"));
 	tag->addChild(new gloox::Tag("version","SVN"));
 	tag->addChild(new gloox::Tag("os",version().toStdString()));
+	qDebug() << QString::fromStdString(st->xml());
 	bot()->client()->send(st);
 }
 
