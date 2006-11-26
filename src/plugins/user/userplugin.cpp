@@ -71,12 +71,20 @@ void UserPlugin::sendVersion(gloox:: Stanza* s)
 
 bool UserPlugin::onIq(gloox::Stanza* s)
 {
+	QString xmlns=QString::fromStdString(s->xmlns());
+	if (xmlns=="jabber:iq:version" &&
+		s->subtype()==gloox::StanzaIqGet)
+	{
+		//We should send our version
+		sendVersion(s);
+		return true;
+	}
+
 	AsyncRequest* req=bot()->asyncRequests()->byStanza(s);
 	if (!req)
 		return false;
 	if (req->plugin()!=this)
 		return false;
-	QString xmlns=QString::fromStdString(s->xmlns());
 
 	gloox::Tag* query=s->findChild("query","xmlns",xmlns.toStdString());
 	if (!query)
@@ -88,13 +96,6 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 	}
 	if (xmlns=="jabber:iq:version")
 	{
-		if (s->subtype()==gloox::StanzaIqGet)
-		{
-			// We should say our version
-			sendVersion(s);
-			return true;
-		}
-
 		if (s->subtype()==gloox::StanzaIqResult)
 		{
 			QString name;
