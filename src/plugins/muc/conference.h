@@ -26,6 +26,7 @@ public:
 	AList* akick() { return myKick; };
 	AList* avisitor() { return myVisitor; };
 	AList* amoderator() { return myModerator; };
+	QString seen(const QString& nick);
 private:
 	int myId;
 	QString myNick;

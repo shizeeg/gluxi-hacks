@@ -1,5 +1,6 @@
 #include "conference.h"
 #include "alist.h"
+#include "base/common.h"
 
 #include <QtDebug>
 #include <QSqlQuery>
@@ -122,3 +123,49 @@ void Conference::removeExpired()
 	myVisitor->removeExpired();
 	myModerator->removeExpired();
 }
+
+QString Conference::seen(const QString&n)
+{
+	Nick* nick=myNicks.byName(n);
+//	int cnt=0;
+	if (nick)
+	{
+/*		QSqlQuery query;
+		query.prepare("SELECT COUNT(jid) FROM conference_nicks, conference_jids WHERE "
+			"conference_nicks.conference_id=? conference_jids.conference_id=? AND "
+			"conference_jids.name=? AND conference_nicks.jid=conference_jids.id");
+		query.addBindValue(myId);
+		query.addBindValue(myId);
+		query.addBindValue(nick->jid());
+		if (query.exec() && query.next())
+			cnt=query.value(0).toInt();
+*/
+		return QString("\"%1\" is already in room").arg(n);
+	}
+	QSqlQuery query;
+	query.prepare("SELECT jid FROM conference_nicks WHERE conference_id=? AND nick=?");
+	query.addBindValue(myId);
+	query.addBindValue(n);
+	if (query.exec() && query.next())
+	{
+		int jid=query.value(0).toInt();
+		query.prepare("SELECT online, nick, lastaction FROM conference_nicks WHERE "
+			"conference_id=? AND jid=? ORDER BY lastaction DESC LIMIT 1");
+		query.addBindValue(myId);
+		query.addBindValue(jid);
+		if (query.exec() && query.next())
+		{
+			bool online=query.value(0).toBool();
+			QString newNick=query.value(1).toString();
+			QDateTime lastAction=query.value(2).toDateTime();
+			if (online)
+				return QString("%1 is here with nick \"%2\"").arg(n).arg(newNick);
+			QString secs=secsToString(lastAction.secsTo(QDateTime::currentDateTime()));
+			if (newNick==n)
+				return QString("%1 was here %2 ago").arg(n).arg(secs);
+			return QString("%1 was here %2 ago with nick \"%3\"").arg(n).arg(secs).arg(newNick);
+		}
+	}
+	return QString("I never see \"%1\" here").arg(n);
+}
+

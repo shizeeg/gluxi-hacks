@@ -12,14 +12,14 @@ class Conference;
 
 class Jid{
 public:
-    Jid(Nick *parent, const QString& fullJid=QString::null);
-    ~Jid();
+	Jid(Nick *parent, const QString& fullJid=QString::null);
+    	~Jid();
 	int id() const { return myId; };
-    QString jid() const { return myJid; };
-    void setFullJid(const QString& );
-    void commit();
-    void remove();
-    static void removeTemporary(Conference *conf=0);
+	QString jid() const { return myJid; };
+	void setFullJid(const QString& );
+	void commit();
+	void remove();
+	static void removeTemporary(Conference *conf=0);
 private:
 	Nick* myParent;
 	bool myTemporary;

@@ -19,7 +19,7 @@ MucPlugin::MucPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
 	commands << "WHEREAMI" << "NICK" << "IDLE" << "JOIN" << "LEAVE" << "KICK" << "VISITOR" << "PARTICIPANT" << "MODERATOR";
-	commands << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND";
+	commands << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND" << "SEEN";
 	pluginId=1;
 }
 
@@ -272,6 +272,12 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		if (!n) return true;
 		reply(s, QString("Idle for \"%1\" is %2").arg(n->nick()).arg(
 			secsToString(n->lastActivity().secsTo(QDateTime::currentDateTime()))));
+		return true;
+	}
+
+	if (cmd=="SEEN")
+	{
+		reply(s,conf->seen(arg));
 		return true;
 	}
 
