@@ -1,6 +1,7 @@
 #include "gluxibot.h"
 #include "datastorage.h"
 #include "pluginloader.h"
+#include "asyncrequestlist.h"
 #include "common.h"
 
 #include <gloox/client.h>
@@ -35,12 +36,14 @@ GluxiBot::GluxiBot()
 	myClient->registerIqHandler(this,"http://jabber.org/protocol/muc#admin");
 
 	myOwners.append("dion@jabber.inhex.net");
+	myAsyncRequests=new AsyncRequestList();
 	PluginLoader::loadPlugins(&myPlugins,this);
 }
 
 GluxiBot::~GluxiBot()
 {
 	delete myClient;
+	delete myAsyncRequests;
 }
 
 void GluxiBot::run()
@@ -224,7 +227,7 @@ void GluxiBot::onQuit(const QString& reason)
 BasePlugin* GluxiBot::pluginById(gloox::Stanza* s)
 {
 	QString id=QString::fromStdString(s->findAttribute("id"));
-	AsyncRequest* req=myAsyncRequests.byId(id);
+	AsyncRequest* req=myAsyncRequests->byId(id);
 	if (!req) return 0;
 	return req->plugin();
 }

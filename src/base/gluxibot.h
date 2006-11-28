@@ -2,7 +2,6 @@
 #define GLOOXBOT_H
 
 #include "pluginlist.h"
-#include "asyncrequestlist.h"
 
 #include <QStringList>
 
@@ -11,6 +10,8 @@
 #include <gloox/connectionlistener.h>
 #include <gloox/messagehandler.h>
 #include <gloox/iqhandler.h>
+
+class AsyncRequestList;
 
 class gloox::Client;
 class gloox::Stanza;
@@ -27,7 +28,7 @@ public:
 	QStringList* owners() { return &myOwners; };
 	QStringList* tmpOwners() { return &myTmpOwners; };
 	PluginList* plugins() { return &myPlugins; };
-	AsyncRequestList* asyncRequests() { return &myAsyncRequests; };
+	AsyncRequestList* asyncRequests() { return myAsyncRequests; };
 	QList<int> getStorage(gloox::Stanza*s);
 
 	bool isMyMessage(gloox::Stanza *);
@@ -41,7 +42,7 @@ private:
 	QStringList myOwners;
 	QStringList myTmpOwners;
 	PluginList myPlugins;
-	AsyncRequestList myAsyncRequests;
+	AsyncRequestList *myAsyncRequests;
 
 	virtual void handlePresence( gloox::Stanza *stanza );
 	virtual bool handleIq(gloox::Stanza*);
