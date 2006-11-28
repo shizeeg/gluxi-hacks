@@ -12,7 +12,7 @@
 UserPlugin::UserPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
-	commands << "VERSION";
+	commands << "VERSION" << "PING";
 	bot()->client()->registerIqHandler(bot(),"jabber:iq:version");
 }
 
@@ -34,11 +34,10 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 	QString cmd=body.section(' ',0,0).toUpper();
 	QString arg=body.section(' ',1).toUpper();
 
-	if (cmd=="VERSION")
+	if (cmd=="VERSION" || cmd=="PING")
 	{
 		std::string id=bot()->client()->getID();
 		QString jid=bot()->getJID(s,arg);
-		qDebug() << "!!!!!!!!! JID=" << jid;
 		if (jid.isEmpty())
 			jid=arg;
 		if (jid.isEmpty())
@@ -48,14 +47,13 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 	
 		gloox::Stanza *st=gloox::Stanza::createIqStanza(
 			gloox::JID(jid.toStdString()),
-//			bot()->client()->getID(),
 			id,
 			gloox::StanzaIqGet,
 			"jabber:iq:version");
 
 		qDebug() << QString::fromStdString(st->xml());
 
-		AsyncRequest *req=new AsyncRequest(this, st->clone());
+		AsyncRequest *req=new AsyncRequest(this, cmd, st->clone(),3600);
 		req->setSource(s->clone());
 		bot()->asyncRequests()->append(req);
 		bot()->client()->send(st);
@@ -107,6 +105,21 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 	}
 	if (xmlns=="jabber:iq:version")
 	{
+		if (req->name()=="PING")
+		{
+			QString msg;
+			QString src=bot()->JIDtoNick(QString::fromStdString(
+				s->from().full()));
+			double delay=(double)req->time().time().msecsTo(QTime::currentTime());
+			delay/=1000.0;
+
+			if (s->subtype()==gloox::StanzaIqResult)
+				msg=QString("Pong from %1 after %2 secs.").arg(src).arg(delay);
+			else
+				msg=QString("Pong from %1's server after %2 secs.").arg(src).arg(delay);
+			reply(req->source(),msg);
+			return true;
+		}
 		if (s->subtype()==gloox::StanzaIqResult)
 		{
 			QString name;

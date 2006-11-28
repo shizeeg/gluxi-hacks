@@ -7,13 +7,15 @@ AsyncRequest::AsyncRequest(int timeout)
 	myPlugin=0L;
 	myStanza=0L;
 	mySource=0L;
+	myName="";
 	myTimeout=timeout;
 	update();
 }
 
-AsyncRequest::AsyncRequest(BasePlugin *plugin, gloox::Stanza *stanza, int timeout)
+AsyncRequest::AsyncRequest(BasePlugin *plugin, const QString& name, gloox::Stanza *stanza, int timeout)
 {
 	myPlugin=plugin;
+	myName=name;
 	myStanza=stanza;
 	myTimeout=timeout;
 	update();
