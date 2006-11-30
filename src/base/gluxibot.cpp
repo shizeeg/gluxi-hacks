@@ -36,7 +36,7 @@ GluxiBot::GluxiBot()
 	// Move this 
 	myClient->registerIqHandler(this,"http://jabber.org/protocol/muc#admin");
 
-	myOwners.append("dion@jabber.inhex.net");
+	myOwners.append(storage->getString("access/owner"));
 	myAsyncRequests=new AsyncRequestList();
 	PluginLoader::loadPlugins(&myPlugins,this);
 }
