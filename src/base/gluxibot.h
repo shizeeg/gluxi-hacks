@@ -51,7 +51,7 @@ private:
 	virtual void onDisconnect( gloox::ConnectionError e);
 	virtual bool onTLSConnect( const gloox::CertInfo& );
 
-	BasePlugin* pluginById(gloox::Stanza*);
+	BasePlugin* pluginByStanzaId(gloox::Stanza*);
 };
 
 #endif

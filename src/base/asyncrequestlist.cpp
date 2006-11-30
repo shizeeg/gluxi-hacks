@@ -15,14 +15,13 @@ void AsyncRequestList::removeAt(int i)
 	delete r;
 }
 
-AsyncRequest* AsyncRequestList::byId(const QString& id)
+AsyncRequest* AsyncRequestList::byStanzaId(const QString& id)
 {
-	int cnt;
 	QListIterator<AsyncRequest*> it(*this);
 	while (it.hasNext())
 	{
 		AsyncRequest* r=it.next();
-		if (r->id()==id)
+		if (r->stanzaId()==id)
 			return r;
 	}
 	return 0L;
@@ -31,6 +30,18 @@ AsyncRequest* AsyncRequestList::byId(const QString& id)
 AsyncRequest* AsyncRequestList::byStanza(const gloox::Stanza* s)
 {
 	QString id=QString::fromStdString(s->findAttribute("id"));
-	return byId(id);
+	return byStanzaId(id);
+}
+
+AsyncRequest* AsyncRequestList::byId(int id)
+{
+	QListIterator<AsyncRequest*> it(*this);
+	while (it.hasNext())
+	{
+		AsyncRequest* r=it.next();
+		if (r->id()==id)
+			return r;
+	}
+	return 0L;
 }
 

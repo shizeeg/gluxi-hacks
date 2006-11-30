@@ -10,8 +10,9 @@ class AsyncRequestList: public QList<AsyncRequest*>
 public:
 	void clear();
 	void removeAt(int);
-	AsyncRequest* byId(const QString&);
+	AsyncRequest* byStanzaId(const QString&);
 	AsyncRequest* byStanza(const gloox::Stanza* st);
+	AsyncRequest* byId(int id);
 };
 
 #endif

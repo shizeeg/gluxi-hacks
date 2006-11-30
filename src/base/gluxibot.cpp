@@ -112,7 +112,7 @@ void GluxiBot::handlePresence( gloox::Stanza *s	)
 {
 	std::cout << s->xml() << std::endl << std::endl;
 	BasePlugin *plugin;
-	plugin=pluginById(s);
+	plugin=pluginByStanzaId(s);
 	if (plugin)
 	{
 		plugin->onPresence(s);
@@ -134,7 +134,7 @@ bool GluxiBot::handleIq(gloox::Stanza* s)
 	std::cout << s->xml() << std::endl << std::endl;
 
 	BasePlugin *plugin;
-	plugin=pluginById(s);
+	plugin=pluginByStanzaId(s);
 	if (plugin)
 	{
 		plugin->onIq(s);
@@ -224,10 +224,10 @@ void GluxiBot::onQuit(const QString& reason)
 	myClient->disconnect();
 }
 
-BasePlugin* GluxiBot::pluginById(gloox::Stanza* s)
+BasePlugin* GluxiBot::pluginByStanzaId(gloox::Stanza* s)
 {
 	QString id=QString::fromStdString(s->findAttribute("id"));
-	AsyncRequest* req=myAsyncRequests->byId(id);
+	AsyncRequest* req=myAsyncRequests->byStanzaId(id);
 	if (!req) return 0;
 	return req->plugin();
 }

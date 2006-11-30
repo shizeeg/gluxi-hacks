@@ -53,7 +53,7 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 
 		qDebug() << QString::fromStdString(st->xml());
 
-		AsyncRequest *req=new AsyncRequest(this, cmd, st->clone(),3600);
+		AsyncRequest *req=new AsyncRequest(-1, this, cmd, st->clone(),3600);
 		req->setSource(s->clone());
 		bot()->asyncRequests()->append(req);
 		bot()->client()->send(st);

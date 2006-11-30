@@ -2,8 +2,9 @@
 
 #include <gloox/stanza.h>
 
-AsyncRequest::AsyncRequest(int timeout)
+AsyncRequest::AsyncRequest(int id, int timeout)
 {
+	myId=id;
 	myPlugin=0L;
 	myStanza=0L;
 	mySource=0L;
@@ -12,8 +13,9 @@ AsyncRequest::AsyncRequest(int timeout)
 	update();
 }
 
-AsyncRequest::AsyncRequest(BasePlugin *plugin, const QString& name, gloox::Stanza *stanza, int timeout)
+AsyncRequest::AsyncRequest(int id, BasePlugin *plugin, const QString& name, gloox::Stanza *stanza, int timeout)
 {
+	myId=id;
 	myPlugin=plugin;
 	myName=name;
 	myStanza=stanza;
@@ -47,7 +49,7 @@ bool AsyncRequest::expired()
 	return res;
 }
 
-QString AsyncRequest::id() const
+QString AsyncRequest::stanzaId() const
 {
 	if (!myStanza)
 		return QString::null;
