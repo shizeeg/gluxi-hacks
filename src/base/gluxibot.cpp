@@ -1,3 +1,4 @@
+#include "baseplugin.h"
 #include "gluxibot.h"
 #include "datastorage.h"
 #include "pluginloader.h"

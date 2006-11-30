@@ -1,9 +1,9 @@
 #ifndef PLUGINLIST_H
 #define PLUGINLIST_H
 
-#include "baseplugin.h"
-
 #include <QList>
+
+class BasePlugin;
 
 /**
 	@author Dmitry Nezhevenko <dion@inhex.net>
