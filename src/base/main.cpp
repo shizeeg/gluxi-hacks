@@ -1,5 +1,6 @@
 #include "gluxibot.h"
 
+#include <QCoreApplication>
 #include <QLocale>
 #include <QTextCodec>
 
@@ -32,8 +33,9 @@ void installSigHandlers()
 }
 #endif
 
-int main(/* int argc, char*argv[] */ )
+int main(int argc, char*argv[])
 {
+	QCoreApplication app(argc, argv);
 	QLocale::setDefault(QLocale("en_US"));
 	QTextCodec::setCodecForCStrings (QTextCodec::codecForName("UTF-8"));
 	installSigHandlers();
