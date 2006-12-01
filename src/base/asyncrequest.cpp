@@ -2,34 +2,19 @@
 
 #include <gloox/stanza.h>
 
-AsyncRequest::AsyncRequest(int id, int timeout)
-{
-	myId=id;
-	myPlugin=0L;
-	myStanza=0L;
-	mySource=0L;
-	myName="";
-	myTimeout=timeout;
-	update();
-}
-
-AsyncRequest::AsyncRequest(int id, BasePlugin *plugin, const QString& name, gloox::Stanza *stanza, int timeout)
+AsyncRequest::AsyncRequest(int id, BasePlugin *plugin, gloox::Stanza *from, int timeout)
 {
 	myId=id;
 	myPlugin=plugin;
-	myName=name;
-	myStanza=stanza;
+	myStanza=from;
 	myTimeout=timeout;
 	update();
 }
 
 AsyncRequest::~AsyncRequest()
 {
-	// Delete stanza..
 	if (myStanza)
 		delete myStanza;
-	if (mySource)
-		delete mySource;
 }
 
 void AsyncRequest::update()
@@ -51,8 +36,8 @@ bool AsyncRequest::expired()
 
 QString AsyncRequest::stanzaId() const
 {
-	if (!myStanza)
-		return QString::null;
-	return QString::fromStdString(myStanza->findAttribute("id"));
+        if (!myStanza)
+                return QString::null;
+        return QString::fromStdString(myStanza->findAttribute("id"));
 }
 

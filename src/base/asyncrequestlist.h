@@ -3,16 +3,25 @@
 
 #include "asyncrequest.h"
 
+#include <QObject>
 #include <QList>
 
-class AsyncRequestList: public QList<AsyncRequest*>
+namespace gloox
+{
+	class Stanza;
+}
+
+class AsyncRequestList: public QList<AsyncRequest*>, public QObject
 {
 public:
 	void clear();
 	void removeAt(int);
-	AsyncRequest* byStanzaId(const QString&);
-	AsyncRequest* byStanza(const gloox::Stanza* st);
+	void append(AsyncRequest* );
 	AsyncRequest* byId(int id);
+	AsyncRequest* byStanza(const gloox::Stanza *s);
+	AsyncRequest* byStanzaId(const QString& req);
+private slots:
+	void onDelete(AsyncRequest*);
 };
 
 #endif

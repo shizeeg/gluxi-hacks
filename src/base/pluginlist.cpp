@@ -1,4 +1,5 @@
 #include "pluginlist.h"
+#include "baseplugin.h"
 
 PluginList::PluginList()
 {

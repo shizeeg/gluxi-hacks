@@ -1,5 +1,9 @@
 #include "asyncrequestlist.h"
 
+#include <gloox/stanza.h>
+
+#include <QtDebug>
+
 void AsyncRequestList::clear()
 {
 	int cnt=count();
@@ -43,5 +47,19 @@ AsyncRequest* AsyncRequestList::byId(int id)
 			return r;
 	}
 	return 0L;
+}
+
+void AsyncRequestList::append(AsyncRequest* itm)
+{
+	qDebug() << "New AsyncRequest";
+	QList<AsyncRequest*>::append(itm);
+	connect(itm, SIGNAL(wantDelete(AsyncRequest*)), SLOT(onDelete(AsyncRequest*)));
+}
+
+void AsyncRequestList::onDelete(AsyncRequest* s)
+{
+	s->disconnect();
+	removeAll(s);
+	delete s;
 }
 

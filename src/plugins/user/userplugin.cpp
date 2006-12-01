@@ -52,9 +52,12 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 			"jabber:iq:version");
 
 		qDebug() << QString::fromStdString(st->xml());
+		
+		gloox::Stanza *sf=s->clone();
+		sf->addAttribute("id",id);
 
-		AsyncRequest *req=new AsyncRequest(-1, this, cmd, st->clone(),3600);
-		req->setSource(s->clone());
+		AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
+		req->setName(cmd);
 		bot()->asyncRequests()->append(req);
 		bot()->client()->send(st);
 		return true;
@@ -98,7 +101,7 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 	gloox::Tag* query=s->findChild("query","xmlns",xmlns.toStdString());
 	if (!query)
 	{
-		reply(req->source(),"Error");
+		reply(req->stanza(),"Error");
 		bot()->asyncRequests()->removeAll(req);
 		delete req;
 		return true;
@@ -117,7 +120,7 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 				msg=QString("Pong from %1 after %2 secs.").arg(src).arg(delay);
 			else
 				msg=QString("Pong from %1's server after %2 secs.").arg(src).arg(delay);
-			reply(req->source(),msg);
+			reply(req->stanza(),msg);
 			return true;
 		}
 		if (s->subtype()==gloox::StanzaIqResult)
@@ -143,12 +146,12 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 				src+=" use ";
 			src+=res;
 
-			reply(req->source(),src);
+			reply(req->stanza(),src);
 		}
 		else
 		{
 			//TODO: Error handling
-			reply(req->source(),"Unable to get version");
+			reply(req->stanza(),"Unable to get version");
 		}
 	}
 	bot()->asyncRequests()->removeAll(req);
