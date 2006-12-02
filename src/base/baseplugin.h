@@ -37,6 +37,7 @@ public:
 	virtual QString getJID(gloox::Stanza*s, const QString&nick);
 	virtual QString JIDtoNick(const QString& jid);
 	virtual void onQuit(const QString& reason);			// OnQuit
+	void reply(gloox::Stanza*, const QString&, bool forcePrivate=false);
 protected:
 	int pluginId;
 	bool myShouldIgnoreError;
@@ -46,7 +47,6 @@ protected:
 	bool isGroupChat(gloox::Stanza* );
  	bool isOfflineMessage(gloox::Stanza*);
 	QString getBody(gloox::Stanza*, bool usePrefix=true );
-	void reply(gloox::Stanza*, const QString&, bool forcePrivate=false);
 	QString getNick(gloox::Stanza*);
 	virtual bool isFromOwner(gloox::Stanza*, bool message=false);
 };

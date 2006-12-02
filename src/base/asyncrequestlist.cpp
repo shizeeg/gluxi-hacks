@@ -58,6 +58,7 @@ void AsyncRequestList::append(AsyncRequest* itm)
 
 void AsyncRequestList::onDelete(AsyncRequest* s)
 {
+	qDebug() << "AsyncRequestList::onDelete()";
 	s->disconnect();
 	removeAll(s);
 	delete s;

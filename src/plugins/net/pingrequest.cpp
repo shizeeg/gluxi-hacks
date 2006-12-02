@@ -1,4 +1,5 @@
 #include "pingrequest.h"
+#include "base/baseplugin.h"
 
 #include <QProcess>
 #include <QtDebug>
@@ -23,7 +24,7 @@ void PingRequest::exec()
 	connect(proc, SIGNAL(stateChanged(QProcess::ProcessState)), SLOT(onStateChanged(QProcess::ProcessState)));
 	QString cmd="ping";
 	QStringList args;
-	args << "-c" << "5" << myDest;
+	args << "-c" << "3" << myDest;
 	proc->start(cmd,args);
 	if (!proc->waitForStarted())
 		qDebug() << "Can't start";
@@ -32,9 +33,14 @@ void PingRequest::exec()
 void PingRequest::onProcessFinished()
 {
 	qDebug() << "Process finished";
+	QByteArray arr=proc->readAll();
+	QString st(arr);
+	plugin()->reply(stanza(),st.section("\n\n",0,0));
+	emit wantDelete(this);
 }
 
 void PingRequest::onStateChanged ( QProcess::ProcessState newState )
 {
 	qDebug() << "STCH: " << newState;	
 }
+
