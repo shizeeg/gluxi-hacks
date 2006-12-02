@@ -11,8 +11,9 @@ namespace gloox
 	class Stanza;
 }
 
-class AsyncRequestList: public QList<AsyncRequest*>, public QObject
+class AsyncRequestList: public QObject, public QList<AsyncRequest*>
 {
+	Q_OBJECT
 public:
 	void clear();
 	void removeAt(int);

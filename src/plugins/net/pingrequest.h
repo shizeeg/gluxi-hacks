@@ -4,8 +4,7 @@
 #include "base/asyncrequest.h"
 
 #include <QString>
-
-class QProcess;
+#include <QProcess>
 
 class PingRequest: public AsyncRequest
 {
@@ -17,6 +16,9 @@ public:
 private:
 	QString myDest;
 	QProcess *proc;
+private slots:
+	void onProcessFinished();
+	void onStateChanged( QProcess::ProcessState newState );
 };
 
 #endif

@@ -30,6 +30,12 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 			reply(s,"Usage: net ping [host]");
 			return true;
 		}
+		QRegExp exp("^[0-9A-Za-z_-\\.]*$");
+		exp.setMinimal(false);
+		if (!exp.exactMatch(arg))
+		{
+			reply(s,"Incorrect character in domain name");
+		}
 		PingRequest *req=new PingRequest(this, s->clone(), arg);
 		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
 		req->exec();

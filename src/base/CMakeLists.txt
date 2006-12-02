@@ -6,13 +6,13 @@ set (base_HDR_MOC
 	baseplugin.h
 	gluxibot.h
 	asyncrequest.h
+	asyncrequestlist.h
 )
 
 set (base_HDR
 	common.h
 	datastorage.h	
 	pluginlist.h
-	asyncrequestlist.h
 )
 
 set (base_SRC
