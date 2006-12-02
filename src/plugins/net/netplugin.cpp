@@ -30,7 +30,7 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 			reply(s,"Usage: net ping [host]");
 			return true;
 		}
-		QRegExp exp("^[0-9A-Za-z_-\\.]*$");
+		QRegExp exp("^[0-9A-Za-z_\\-\\.]*$");
 		exp.setMinimal(false);
 		if (!exp.exactMatch(arg))
 		{
