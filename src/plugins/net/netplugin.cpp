@@ -1,7 +1,9 @@
 #include "netplugin.h"
 #include "base/gluxibot.h"
 #include "base/asyncrequestlist.h"
+#include "base/common.h"
 #include "pingrequest.h"
+#include "tracerouterequest.h"
 
 #include <QtDebug>
 #include <QRegExp>
@@ -9,7 +11,7 @@
 NetPlugin::NetPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
-	commands << "PING";
+	commands << "PING" << "TRACEROUTE";
 }
 
 
@@ -30,9 +32,7 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 			reply(s,"Usage: net ping [host]");
 			return true;
 		}
-		QRegExp exp("^[0-9A-Za-z_\\-\\.]*$");
-		exp.setMinimal(false);
-		if (!exp.exactMatch(arg))
+		if (!isSafeArg(arg))
 		{
 			reply(s,"Incorrect character in domain name");
 			return true;
@@ -42,6 +42,24 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 		req->exec();
 		return true;
 	}
+
+	if (cmd=="TRACEROUTE")
+        {
+                if (arg.isEmpty())
+                {
+                        reply(s,"Usage: net traceroute [host]");
+                        return true;
+                }
+                if (!isSafeArg(arg))
+                {
+                        reply(s,"Incorrect character in domain name");
+                        return true;
+                }
+                TraceRouteRequest *req=new TraceRouteRequest(this, s->clone(), arg);
+                bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
+                req->exec();
+                return true;
+        }
 	return false;
 }
 

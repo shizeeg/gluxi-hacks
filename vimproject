@@ -79,8 +79,10 @@ gluxi=$VIMPROJECT/src CD=../release filter="*.h *.cpp *.txt" in=../in.vim out=..
   net=net {
    netplugin.h
    pingrequest.h
+   tracerouterequest.h
    netplugin.cpp
    pingrequest.cpp
+   tracerouterequest.cpp
    CMakeLists.txt
   }
  }

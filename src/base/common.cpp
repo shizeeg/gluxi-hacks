@@ -2,6 +2,7 @@
 
 #include <QStringList>
 #include <QList>
+#include <QRegExp>
 
 #ifndef Q_WS_WIN
 #include <sys/utsname.h>
@@ -47,5 +48,12 @@ QString version()
 	QString res=QString("%1 %2 %3 %4").arg(ver.sysname).arg(release)
 		.arg(ver.version).arg(ver.machine);
 	return res;
+}
+
+bool isSafeArg(const QString& arg)
+{
+	QRegExp exp("^[0-9A-Za-z_\\-\\.]*$");
+	exp.setMinimal(false);
+	return exp.exactMatch(arg);
 }
 

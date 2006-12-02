@@ -5,5 +5,6 @@
 
 QString secsToString(int secs);
 QString version();
+bool isSafeArg(const QString&);
 
 #endif
