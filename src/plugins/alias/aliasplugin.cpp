@@ -1,5 +1,6 @@
 #include "aliasplugin.h"
 #include "base/gluxibot.h"
+#include "base/glooxwrapper.h"
 
 #include <QList>
 #include <QtDebug>
@@ -53,7 +54,7 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 		s->finalize();
 		
 		// TODO: Fix alias plugin
-		//bot()->handleMessage(s);
+		bot()->gloox()->handleMessage(s);
 		return true;
 	}
 	myShouldIgnoreError=true;

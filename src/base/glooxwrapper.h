@@ -21,12 +21,12 @@ public:
 	GlooxWrapper();
 	~GlooxWrapper();
 	gloox::Client* client() {return myClient; };
+        virtual void handleMessage(gloox::Stanza*);
 protected:
 	void run();
 private:
 	gloox::Client* myClient;
 	
-	virtual void handleMessage(gloox::Stanza*);
 	virtual void handlePresence( gloox::Stanza *stanza );
 	virtual bool handleIq(gloox::Stanza*);
 	virtual bool handleIqID(gloox::Stanza*, int);
