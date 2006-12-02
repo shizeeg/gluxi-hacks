@@ -35,6 +35,7 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 		if (!exp.exactMatch(arg))
 		{
 			reply(s,"Incorrect character in domain name");
+			return true;
 		}
 		PingRequest *req=new PingRequest(this, s->clone(), arg);
 		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
