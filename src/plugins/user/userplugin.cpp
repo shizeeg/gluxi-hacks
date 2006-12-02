@@ -1,11 +1,13 @@
 #include "userplugin.h"
 #include "base/common.h"
+#include "base/glooxwrapper.h"
 #include "base/gluxibot.h"
 #include "base/asyncrequestlist.h"
 
-
 #include <QtDebug>
 #include <QTime>
+
+//#include <gloox/client.h>
 
 #include <assert.h>
 
@@ -13,7 +15,7 @@ UserPlugin::UserPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
 	commands << "VERSION" << "PING";
-	bot()->client()->registerIqHandler(bot(),"jabber:iq:version");
+	bot()->client()->registerIqHandler(bot()->gloox(),"jabber:iq:version");
 }
 
 

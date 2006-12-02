@@ -40,8 +40,8 @@ int main(int argc, char*argv[])
 	QTextCodec::setCodecForCStrings (QTextCodec::codecForName("UTF-8"));
 	installSigHandlers();
 	bot=new GluxiBot();
-	bot->run();
+	int res=app.exec();
 	delete bot;
-	return 0;
+	return res;
 }
 

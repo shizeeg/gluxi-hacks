@@ -5,21 +5,25 @@ INCLUDE(plugins)
 set (base_HDR_MOC
 	baseplugin.h
 	gluxibot.h
+	glooxwrapper.h
 	asyncrequest.h
 	asyncrequestlist.h
 )
 
 set (base_HDR
 	common.h
+	mystanza.h
 	datastorage.h	
 	pluginlist.h
 )
 
 set (base_SRC
+	mystanza.cpp
 	baseplugin.cpp
 	common.cpp
 	datastorage.cpp
 	gluxibot.cpp
+	glooxwrapper.cpp
 	main.cpp
 	pluginlist.cpp
 	asyncrequest.cpp

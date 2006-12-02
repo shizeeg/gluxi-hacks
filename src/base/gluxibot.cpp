@@ -1,9 +1,15 @@
-#include "baseplugin.h"
 #include "gluxibot.h"
+#include "mystanza.h"
+#include "glooxwrapper.h"
 #include "datastorage.h"
 #include "pluginloader.h"
 #include "asyncrequestlist.h"
 #include "common.h"
+#include "baseplugin.h"
+
+#include <QtDebug>
+#include <QMetaType>
+#include <QCoreApplication>
 
 #include <gloox/client.h>
 #include <gloox/disco.h>
@@ -14,42 +20,38 @@
 #include <iostream>
 
 GluxiBot::GluxiBot()
+	:QObject()
 {
 	DataStorage *storage=DataStorage::instance();
 	storage->connect();
-
-	myClient=new gloox::Client(
-		storage->getStdString("account/user"),
-		storage->getStdString("account/password"),
-		storage->getStdString("account/server"),
-		storage->getStdString("account/resource"));
-
-
-	myClient->disco()->setVersion("GluxiBot (libGLOOX based bot)","0.1",
-		version().toStdString());
-	myClient->disco()->setIdentity( "client", "bot" );
-	myClient->setAutoPresence( true );
-	myClient->setInitialPriority(storage->getInt("account/priority"));
-	myClient->registerConnectionListener( this );
-	myClient->registerMessageHandler(this);
-	myClient->registerPresenceHandler(this);
-	// Move this 
-	myClient->registerIqHandler(this,"http://jabber.org/protocol/muc#admin");
+	qRegisterMetaType<MyStanza>("MyStanza");
+	myGloox=new GlooxWrapper();
+	connect(myGloox, SIGNAL(sigConnect()), 
+		this, SLOT(onConnect()),Qt::QueuedConnection);
+	connect(myGloox, SIGNAL(sigMessage(const MyStanza&)),
+		this, SLOT(handleMessage(const MyStanza&)));
+	connect(myGloox, SIGNAL(sigPresence(const MyStanza&)),
+		this, SLOT(handlePresence(const MyStanza&)));
+	connect(myGloox, SIGNAL(sigIq(const MyStanza&)),
+		this, SLOT(handleIq(const MyStanza&)));
+	
 
 	myOwners.append(storage->getString("access/owner"));
 	myAsyncRequests=new AsyncRequestList();
 	PluginLoader::loadPlugins(&myPlugins,this);
+
+	// Launch Gloox thread
+	myGloox->start();
 }
 
 GluxiBot::~GluxiBot()
 {
-	delete myClient;
-	delete myAsyncRequests;
+	delete myGloox;
 }
 
-void GluxiBot::run()
+gloox::Client* GluxiBot::client()
 {
-	myClient->connect();
+	return myGloox->client();
 }
 
 void GluxiBot::onConnect()
@@ -67,16 +69,10 @@ void GluxiBot::onConnect()
 	std::cout << "onConnect() sent" << std::endl;
 }
 
-void GluxiBot::onDisconnect(gloox::ConnectionError /* e */)
-{}
-
-bool GluxiBot::onTLSConnect( const gloox::CertInfo& )
+void GluxiBot::handleMessage(const MyStanza& st)
 {
-	return true;
-}
+	gloox::Stanza *s=st.stanza();
 
-void GluxiBot::handleMessage(gloox::Stanza* s)
-{
 	std::cout << s->xml() << std::endl << std::endl;
 
 // TODO: Implement Async message handler by ID if required
@@ -109,8 +105,10 @@ bool GluxiBot::isMyMessage(gloox::Stanza *s)
 	return false;
 }
 
-void GluxiBot::handlePresence( gloox::Stanza *s	)
+void GluxiBot::handlePresence(const MyStanza& st)
 {
+	gloox::Stanza *s=st.stanza();
+
 	std::cout << s->xml() << std::endl << std::endl;
 	BasePlugin *plugin;
 	plugin=pluginByStanzaId(s);
@@ -130,8 +128,10 @@ void GluxiBot::handlePresence( gloox::Stanza *s	)
 	}
 }
 
-bool GluxiBot::handleIq(gloox::Stanza* s)
+void GluxiBot::handleIq(const MyStanza& st)
 {
+	gloox::Stanza *s=st.stanza();
+
 	std::cout << s->xml() << std::endl << std::endl;
 
 	BasePlugin *plugin;
@@ -139,7 +139,7 @@ bool GluxiBot::handleIq(gloox::Stanza* s)
 	if (plugin)
 	{
 		plugin->onIq(s);
-		return true;
+		return;
 	}
 
 	QListIterator<BasePlugin*> it(myPlugins);
@@ -150,12 +150,6 @@ bool GluxiBot::handleIq(gloox::Stanza* s)
 		if (plugin->canHandleIq(s))
 			plugin->onIq(s);
 	}
-	return true;
-}
-
-bool GluxiBot::handleIqID(gloox::Stanza*, int)
-{
-	return true;
 }
 
 QList<int> GluxiBot::getStorage(gloox::Stanza*s)
@@ -222,7 +216,7 @@ void GluxiBot::onQuit(const QString& reason)
 		assert(plugin);
 		plugin->onQuit(reason);
 	}
-	myClient->disconnect();
+	myGloox->client()->disconnect();
 }
 
 BasePlugin* GluxiBot::pluginByStanzaId(gloox::Stanza* s)

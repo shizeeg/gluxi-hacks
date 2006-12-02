@@ -3,6 +3,7 @@
 
 #include "pluginlist.h"
 
+#include <QObject>
 #include <QStringList>
 
 #include <gloox/client.h>
@@ -11,20 +12,21 @@
 #include <gloox/messagehandler.h>
 #include <gloox/iqhandler.h>
 
+class GlooxWrapper;
 class AsyncRequestList;
+class MyStanza;
 
 class gloox::Client;
 class gloox::Stanza;
 
-class GluxiBot: public QObject, gloox::ConnectionListener, gloox::PresenceHandler, gloox::MessageHandler, 
-	public gloox::IqHandler
+class GluxiBot: public QObject
 {
 	Q_OBJECT
 public:
 	GluxiBot();
 	~GluxiBot();
-	void run();
-	gloox::Client* client() {return myClient; };
+	gloox::Client* client();
+	GlooxWrapper *gloox() { return myGloox; };
 	QStringList* owners() { return &myOwners; };
 	QStringList* tmpOwners() { return &myTmpOwners; };
 	PluginList* plugins() { return &myPlugins; };
@@ -32,26 +34,25 @@ public:
 	QList<int> getStorage(gloox::Stanza*s);
 
 	bool isMyMessage(gloox::Stanza *);
-	virtual void handleMessage(gloox::Stanza*);
 	QString getJID(gloox::Stanza*s, const QString&);
 	QString JIDtoNick(const QString& jid);
 
 	void onQuit(const QString&reason);
 private:
-	gloox::Client* myClient;
+	GlooxWrapper *myGloox;
 	QStringList myOwners;
 	QStringList myTmpOwners;
 	PluginList myPlugins;
 	AsyncRequestList *myAsyncRequests;
-
-	virtual void handlePresence( gloox::Stanza *stanza );
-	virtual bool handleIq(gloox::Stanza*);
-	virtual bool handleIqID(gloox::Stanza*, int);
-	virtual void onConnect();
-	virtual void onDisconnect( gloox::ConnectionError e);
-	virtual bool onTLSConnect( const gloox::CertInfo& );
-
 	BasePlugin* pluginByStanzaId(gloox::Stanza*);
+
+private slots:
+	void handleMessage(const MyStanza&);
+	void handlePresence(const MyStanza&);
+	void handleIq(const MyStanza&);
+	void onConnect();
+
+private slots:
 };
 
 #endif

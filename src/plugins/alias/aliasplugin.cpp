@@ -51,7 +51,9 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 		tg->setCData(expanded.toStdString());
 		s->addAttribute("glooxbot_alias","true");
 		s->finalize();
-		bot()->handleMessage(s);
+		
+		// TODO: Fix alias plugin
+		//bot()->handleMessage(s);
 		return true;
 	}
 	myShouldIgnoreError=true;
