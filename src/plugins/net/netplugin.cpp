@@ -4,6 +4,7 @@
 #include "base/common.h"
 #include "pingrequest.h"
 #include "tracerouterequest.h"
+#include "wwwrequest.h"
 
 #include <QtDebug>
 #include <QRegExp>
@@ -11,7 +12,7 @@
 NetPlugin::NetPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
-	commands << "PING" << "TRACEROUTE";
+	commands << "PING" << "TRACEROUTE" << "WWW";
 }
 
 
@@ -60,6 +61,19 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
                 req->exec();
                 return true;
         }
+
+	if (cmd=="WWW")
+	{
+		if (arg.isEmpty())
+		{
+			reply(s, "Usage: net www [URL]");
+			return true;
+		}
+		WWWRequest *req=new WWWRequest(this, s->clone(), arg);
+		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
+		req->exec();
+		return true;
+	}
 	return false;
 }
 
