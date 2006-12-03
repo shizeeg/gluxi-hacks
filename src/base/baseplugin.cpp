@@ -1,5 +1,6 @@
 #include "baseplugin.h"
 #include "gluxibot.h"
+#include "datastorage.h"
 
 #include <QString>
 
@@ -168,8 +169,20 @@ void BasePlugin::reply(gloox::Stanza* to, const QString& body, bool forcePrivate
 	std::string dest;
 	if (isGroupChat(to) && !forcePrivate)
 	{
+		QString bodyToSend=body;
+		int maxlength=DataStorage::instance()->getInt("muc/maxmsglength");
+		if (bodyToSend.length()>maxlength)
+		{
+			bodyToSend=bodyToSend.left(maxlength)+"[...]";
+		}
+		int maxmsglines=DataStorage::instance()->getInt("muc/maxmsglines");
+		if (bodyToSend.count('\n')>maxmsglines)
+		{
+			bodyToSend=bodyToSend.section('\n',0,maxmsglines-1)+"[...]";	
+		}
+
 		dest=to->from().bare();
-		msg=QString::fromStdString(to->from().resource())+": "+body;
+		msg=QString::fromStdString(to->from().resource())+": "+bodyToSend;
 	}
 	else
 	{
