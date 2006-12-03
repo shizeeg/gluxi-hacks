@@ -24,7 +24,7 @@ void TraceRouteRequest::exec()
 	connect(proc, SIGNAL(stateChanged(QProcess::ProcessState)), SLOT(onStateChanged(QProcess::ProcessState)));
 	QString cmd="traceroute";
 	QStringList args;
-	args << myDest;
+	args << "-r" << "-c" << "1" << myDest;
 	proc->start(cmd,args);
 	if (!proc->waitForStarted())
 		qDebug() << "Can't start";
