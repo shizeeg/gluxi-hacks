@@ -22,7 +22,7 @@ void TraceRouteRequest::exec()
 	proc=new QProcess(this);
 	connect(proc, SIGNAL(finished(int, QProcess::ExitStatus)), SLOT(onProcessFinished()));
 	connect(proc, SIGNAL(stateChanged(QProcess::ProcessState)), SLOT(onStateChanged(QProcess::ProcessState)));
-	QString cmd="traceroute";
+	QString cmd="mtr";
 	QStringList args;
 	args << "-r" << "-c" << "1" << myDest;
 	proc->start(cmd,args);
