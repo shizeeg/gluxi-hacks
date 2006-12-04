@@ -39,8 +39,8 @@ bool MucPlugin::canHandlePresence(gloox::Stanza* s)
 {
 	QString from=QString::fromStdString(s->from().bare());
 	QString fromFull=QString::fromStdString(s->from().full());
-	qDebug() << "!!!!!!" << from;
-	return (conferences.byName(from) || (confInProgress.indexOf(fromFull.toUpper())>=0));
+	return (conferences.byName(from) || 
+		(confInProgress.indexOf(getConfExp(from))>=0));
 }
 
 bool MucPlugin::isMyMessage(gloox::Stanza*s)
@@ -88,7 +88,9 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 	if (type=="error")
 	{
 		qDebug() << "[MUC] Got type='error' in onPresence. Looks like we can't join conference";
-		confInProgress.removeAll(confFull.toUpper());
+		int idx=confInProgress.indexOf(getConfExp(confFull));
+		if (idx>=0)
+			confInProgress.removeAt(idx);
 		return;
 	}
 
@@ -97,6 +99,16 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 	//FIXME: Detect, what we shoud do if conf don't exists
 	if (!conf)
 	{
+		// TODO: Use XEP-0045 for this about <status/>. Currently ejabberd
+		// don't send <status code='110'/> for our nick
+		int ps=confInProgress.indexOf(getConfExp(confFull));
+		if (ps<0)
+		{
+			qDebug() << "[!!!!!] Probably bug. Can't find conf in confInProgress.";
+			return;
+		}
+		confFull=confInProgress[ps];;
+
 		conf=new Conference(confFull.section('/',0,0),confFull.section('/',1,1));
 		qDebug() << conf->name();
 		conferences.append(conf);
@@ -459,13 +471,13 @@ void MucPlugin::join(const QString& name)
 		cnick=confName.section('/',1,1);
 	}
 
-	if (confInProgress.indexOf(confName.toUpper())>=0)
+	if (confInProgress.indexOf(getConfExp(confName))>=0)
 	{
 		qWarning() << "Joining already in progress";
 		return;
 	}
 
-	confInProgress.append(confName.toUpper());
+	confInProgress.append(confName);
 
 	// Don't create "Conference" object, because it's possible that we can't join it
 	// 	Conference *conf=new Conference(cname,cnick);
@@ -912,5 +924,15 @@ void MucPlugin::onQuit(const QString& reason)
 		Conference *conf=conferences[i];
 		sendMessage(conf,QString("Shutting down (%1)").arg(reason));		
 	}
+}
+
+QRegExp MucPlugin::getConfExp(const QString& from)
+{
+	QString expStr=from.section('/',0,0);
+        expStr.replace(".","\\.");
+        expStr.replace("@","\\@");
+        QRegExp exp(QString("^%1/.*").arg(expStr));
+        exp.setCaseSensitivity(Qt::CaseInsensitive);
+	return exp;
 }
 

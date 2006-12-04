@@ -49,6 +49,7 @@ private:
 	void checkJID(Conference* c, Nick*);
 	void recheckJIDs(Conference* c);
 	void sendMessage(Conference* conf, const QString&msg);
+	QRegExp getConfExp(const QString&);
 };
 
 #endif
