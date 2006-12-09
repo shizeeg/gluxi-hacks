@@ -24,7 +24,7 @@ QString secsToString(int secs)
 	int cnt=labels.count();
 	for (int i=cnt-1; i>=0; i--)
 	{
-		if (canSkip && vals[i]==0)
+		if (canSkip && vals[i]==0 && i!=0)
 			continue;
 		canSkip=false;
 		if (!res.isEmpty()) res+=" ";
