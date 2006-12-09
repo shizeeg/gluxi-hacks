@@ -38,7 +38,7 @@ void TraceRouteRequest::onProcessFinished()
 	arr.append(proc->readAllStandardOutput());
 	QString st(arr);
 	plugin()->reply(stanza(),st);
-	emit wantDelete(this);
+	deleteLater();
 }
 
 void TraceRouteRequest::onStateChanged ( QProcess::ProcessState newState )

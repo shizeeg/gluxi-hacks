@@ -36,7 +36,7 @@ void PingRequest::onProcessFinished()
 	QByteArray arr=proc->readAll();
 	QString st(arr);
 	plugin()->reply(stanza(),st.section("\n\n",0,0));
-	emit wantDelete(this);
+	deleteLater();
 }
 
 void PingRequest::onStateChanged ( QProcess::ProcessState newState )

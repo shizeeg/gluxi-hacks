@@ -2,6 +2,8 @@
 
 #include <gloox/stanza.h>
 
+#include <QtDebug>
+
 AsyncRequest::AsyncRequest(int id, BasePlugin *plugin, gloox::Stanza *from, int timeout)
 {
 	myId=id;
@@ -13,8 +15,10 @@ AsyncRequest::AsyncRequest(int id, BasePlugin *plugin, gloox::Stanza *from, int 
 
 AsyncRequest::~AsyncRequest()
 {
+	qDebug() << "~AsyncRequest";
 	if (myStanza)
 		delete myStanza;
+	emit onDelete(this);
 }
 
 void AsyncRequest::update()

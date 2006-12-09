@@ -5,6 +5,7 @@ set (plugin_HDR_MOC
 	pingrequest.h
 	tracerouterequest.h
 	wwwrequest.h
+	xeprequest.h
 )
 
 set (plugin_HDR
@@ -15,6 +16,7 @@ set (plugin_SRC
 	pingrequest.cpp
 	tracerouterequest.cpp
 	wwwrequest.cpp
+	xeprequest.cpp
 )
 
 GLUXI_PLUGIN()

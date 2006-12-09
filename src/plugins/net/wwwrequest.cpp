@@ -36,7 +36,7 @@ void WWWRequest::onProcessFinished()
 	QByteArray arr=proc->readAll();
 	QString st(arr);
 	plugin()->reply(stanza(),st);
-	emit wantDelete(this);
+	deleteLater();
 }
 
 void WWWRequest::onStateChanged ( QProcess::ProcessState newState )

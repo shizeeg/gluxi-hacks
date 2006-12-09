@@ -40,7 +40,8 @@ private:
 	QDateTime myTime;
 	bool notified;
 signals:
-	void wantDelete(AsyncRequest*);
+//	void wantDelete(AsyncRequest*);
+	void onDelete(AsyncRequest*);
 	void onExpire();
 };
 

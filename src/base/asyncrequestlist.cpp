@@ -53,7 +53,7 @@ void AsyncRequestList::append(AsyncRequest* itm)
 {
 	qDebug() << "New AsyncRequest";
 	QList<AsyncRequest*>::append(itm);
-	connect(itm, SIGNAL(wantDelete(AsyncRequest*)), SLOT(onDelete(AsyncRequest*)));
+	connect(itm, SIGNAL(onDelete(AsyncRequest*)), SLOT(onDelete(AsyncRequest*)));
 }
 
 void AsyncRequestList::onDelete(AsyncRequest* s)
@@ -61,6 +61,6 @@ void AsyncRequestList::onDelete(AsyncRequest* s)
 	qDebug() << "AsyncRequestList::onDelete()";
 	s->disconnect();
 	removeAll(s);
-	delete s;
+//	delete s;
 }
 
