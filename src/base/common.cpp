@@ -57,3 +57,40 @@ bool isSafeArg(const QString& arg)
 	return exp.exactMatch(arg);
 }
 
+QString getValue(const QString&s,const QString&exp, bool last)
+{
+        QRegExp expr(exp);
+        expr.setMinimal(TRUE);
+        if (!last)
+        {
+                if (expr.indexIn(s)<0)
+                        return QString::null;
+        }
+        else
+        {
+                if (expr.lastIndexIn(s)<0)
+                        return QString::null;
+        }
+        QStringList list=expr.capturedTexts();
+        if (list.count()!=2)
+                return QString::null;
+        return list.value(1);
+}
+
+QString removeHtml(const QString& s)
+{
+	QString res=s;
+	QRegExp exp("<[^>]*>");
+	while (1)
+	{
+		int ps=exp.indexIn(res);
+		if (ps<0) break;
+		res.remove(ps,exp.matchedLength());
+	}
+	res.replace("&lt;","<");
+	res.replace("&amp;","&");
+	res.replace("&gt;",">");
+	res.replace("&quot;","\"");
+	return res;
+}
+

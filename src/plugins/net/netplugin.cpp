@@ -6,6 +6,7 @@
 #include "tracerouterequest.h"
 #include "wwwrequest.h"
 #include "xeprequest.h"
+#include "googlerequest.h"
 
 #include <QtDebug>
 #include <QRegExp>
@@ -13,7 +14,7 @@
 NetPlugin::NetPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
-	commands << "PING" << "TRACEROUTE" << "WWW" << "XEP";
+	commands << "PING" << "TRACEROUTE" << "WWW" << "XEP" << "GOOGLE";
 }
 
 
@@ -82,6 +83,14 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 		req->exec();
 		return true;
 	}
+	if (cmd=="GOOGLE")
+	{
+		GoogleRequest *req=new GoogleRequest(this, s->clone(), arg);
+		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
+		req->exec();
+		return true;
+	}
+
 	return false;
 }
 
