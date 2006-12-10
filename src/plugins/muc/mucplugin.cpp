@@ -19,7 +19,7 @@ MucPlugin::MucPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
 	commands << "WHEREAMI" << "NICK" << "IDLE" << "JOIN" << "LEAVE" << "KICK" << "VISITOR" << "PARTICIPANT" << "MODERATOR";
-	commands << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND" << "SEEN";
+	commands << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND" << "SEEN" << "CLIENTS";
 	pluginId=1;
 }
 
@@ -330,6 +330,15 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		if (!isFromConfAdmin(s))
 			return true;
 		return autoLists(s);
+	}
+	if (cmd=="CLIENTS")
+	{
+		QString res=conf->clientStat();
+		if (res.isEmpty())
+			reply(s,"Unable to get client stats");
+		else
+			reply(s,res);
+		return true;
 	}
 
 	return false;
