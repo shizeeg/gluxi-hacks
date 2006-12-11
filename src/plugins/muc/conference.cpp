@@ -173,13 +173,14 @@ QString Conference::clientStat()
 {
 	QSqlQuery query;
 	query.prepare("SELECT resource, COUNT(id) AS count FROM conference_jids WHERE conference_id=? "
-		"GROUP BY resource ORDER BY count DESC");
+		"GROUP BY resource ORDER BY count DESC LIMIT 20");
 	query.addBindValue(myId);
+	int idx=0;
 	if (query.exec())
 	{
 		QString res;
 		while (query.next())
-			res+=QString("\n%1: %2").arg(query.value(0).toString())
+			res+=QString("\n%1) %2: %3").arg(++idx).arg(query.value(0).toString())
 				.arg(query.value(1).toInt());
 		return QString("Client stats: %1").arg(res);
 	}
