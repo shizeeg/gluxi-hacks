@@ -7,6 +7,7 @@ set (plugin_HDR_MOC
 	wwwrequest.h
 	xeprequest.h
 	googlerequest.h
+	svnrequest.h
 )
 
 set (plugin_HDR
@@ -19,6 +20,7 @@ set (plugin_SRC
 	wwwrequest.cpp
 	xeprequest.cpp
 	googlerequest.cpp
+	svnrequest.cpp
 )
 
 GLUXI_PLUGIN()

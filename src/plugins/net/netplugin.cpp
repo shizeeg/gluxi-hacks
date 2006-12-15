@@ -7,6 +7,7 @@
 #include "wwwrequest.h"
 #include "xeprequest.h"
 #include "googlerequest.h"
+#include "svnrequest.h"
 
 #include <QtDebug>
 #include <QRegExp>
@@ -14,7 +15,7 @@
 NetPlugin::NetPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
-	commands << "PING" << "TRACEROUTE" << "WWW" << "XEP" << "GOOGLE";
+	commands << "PING" << "TRACEROUTE" << "WWW" << "XEP" << "GOOGLE" << "SVN";
 }
 
 
@@ -76,6 +77,20 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 		req->exec();
 		return true;
 	}
+	
+	if (cmd=="SVN")
+	{
+		if (arg.isEmpty() || !isSafeArg(arg))
+		{
+			reply(s, "Usage: net svn [repository URL] "+arg);
+			return true;
+		}
+		SVNRequest *req=new SVNRequest(this, s->clone(), arg);
+		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
+		req->exec();
+		return true;
+	}
+
 	if (cmd=="XEP")
 	{
 		XepRequest *req=new XepRequest(this, s->clone(), arg);

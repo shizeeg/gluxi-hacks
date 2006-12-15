@@ -70,12 +70,21 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 		//TODO: Implement nick handler
 		QString dest=arg.section(' ',0,0);
 		QString word=arg.section(' ',1);
+		bool allowUser=false;
+
+		if (word.isEmpty() && !dest.isEmpty())
+		{
+			allowUser=true;
+			word=dest;
+			dest=getNick(s);
+		}
+
 		if (dest.isEmpty() || word.isEmpty())
 		{
 			reply(s,"Syntax: SHOWPRIV <NICK> <WORD>");
 			return true;
 		}
-		if (bot()->tmpOwners()->indexOf(QString::fromStdString(s->from().full()))<0)
+		if (!allowUser && bot()->tmpOwners()->indexOf(QString::fromStdString(s->from().full()))<0)
 		{
 			reply(s,"You should be at least admin to do this");
 			return true;

@@ -52,7 +52,7 @@ QString version()
 
 bool isSafeArg(const QString& arg)
 {
-	QRegExp exp("^[0-9A-Za-z_\\-\\.]*$");
+	QRegExp exp("^[0-9A-Za-z_\\-\\.\\:\\/]*$");
 	exp.setMinimal(false);
 	return exp.exactMatch(arg);
 }
