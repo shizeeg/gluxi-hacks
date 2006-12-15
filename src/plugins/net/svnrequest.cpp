@@ -54,7 +54,7 @@ void SVNRequest::onProcessFinished()
 	QString date=getValue(lines,"\\nLast Changed Date: (.+)\\n");
 	if (rev.isEmpty())
 	{
-		plugin()->reply(stanza(),"Can't parse svn output:\n"+lines);
+		plugin()->reply(stanza(),"Can't parse svn output:\n");
 		deleteLater();
 		return;
 	}
