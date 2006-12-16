@@ -222,6 +222,8 @@ void GluxiBot::onQuit(const QString& reason)
 BasePlugin* GluxiBot::pluginByStanzaId(gloox::Stanza* s)
 {
 	QString id=QString::fromStdString(s->findAttribute("id"));
+	if (id.isEmpty())
+		return 0;
 	AsyncRequest* req=myAsyncRequests->byStanzaId(id);
 	if (!req) return 0;
 	return req->plugin();
