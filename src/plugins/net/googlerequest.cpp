@@ -88,5 +88,6 @@ void GoogleRequest::httpRequestFinished(int, bool err)
 	QString body=removeHtml(getValue(res,"<tr><td class=j><font size=-1>(.*)<br><span class=a>"));
 	
 	plugin()->reply(stanza(),QString("%1\n%2\n%3").arg(subj).arg(body).arg(url));
+	deleteLater();
 }
 
