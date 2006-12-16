@@ -15,6 +15,7 @@ set (base_HDR
 	mystanza.h
 	datastorage.h	
 	pluginlist.h
+	rolelist.h
 )
 
 set (base_SRC
@@ -28,6 +29,7 @@ set (base_SRC
 	pluginlist.cpp
 	asyncrequest.cpp
 	asyncrequestlist.cpp
+	rolelist.cpp
 )
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
