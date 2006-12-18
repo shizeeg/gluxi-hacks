@@ -2,6 +2,7 @@
 #include "base/gluxibot.h"
 #include "base/asyncrequestlist.h"
 #include "base/asyncrequest.h"
+#include "base/rolelist.h"
 
 #include <gloox/client.h>
 #include <gloox/stanza.h>
@@ -9,7 +10,7 @@
 AdminPlugin::AdminPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
-	commands << "QUIT" << "TMPOWNERS" << "ASYNCCOUNT" << "ASYNCLIST";
+	commands << "QUIT" << "ROLES" << "ASYNCCOUNT" << "ASYNCLIST";
 }
 
 
@@ -23,7 +24,7 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 
 	if (cmd=="QUIT")
 	{
-		if (isFromOwner(s))
+		if (isFromBotOwner(s))
 		{
 			reply(s,"Ok");
 			bot()->onQuit("QUIT command from bot owner");
@@ -34,11 +35,18 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 		}
 		return true;
 	}
-	if (cmd=="TMPOWNERS")
+	if (cmd=="ROLES")
 	{
-		if (isFromOwner(s))
+		if (isFromBotOwner(s))
 		{
-			reply(s,QString("Temporary bot owners: \n%1").arg(bot()->tmpOwners()->join("\n")));
+			QString res;
+			RoleList *list=bot()->roles();
+			int cnt=list->keys().count();
+			for (int i=0; i<cnt; i++)
+			{
+				res+=QString("\n%1: %2").arg(list->keys()[i]).arg(list->get(list->keys()[i]));
+			}
+			reply(s,QString("Roles: %1").arg(res));
 		}
 		else
 		{
@@ -55,7 +63,7 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 
 	if (cmd=="ASYNCLIST")
 	{
-		if (isFromOwner(s))
+		if (isFromBotOwner(s))
 		{
 			int cnt=bot()->asyncRequests()->count();
 			if (cnt==0)

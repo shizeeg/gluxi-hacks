@@ -11,6 +11,7 @@ gluxi=$VIMPROJECT/src CD=../release filter="*.h *.cpp *.txt" in=../in.vim out=..
   mystanza.h
   pluginlist.h
   pluginloader.h
+  rolelist.h
   asyncrequest.cpp
   asyncrequestlist.cpp
   baseplugin.cpp
@@ -21,6 +22,7 @@ gluxi=$VIMPROJECT/src CD=../release filter="*.h *.cpp *.txt" in=../in.vim out=..
   main.cpp
   mystanza.cpp
   pluginlist.cpp
+  rolelist.cpp
   CMakeLists.txt
  }
  plugins=plugins {

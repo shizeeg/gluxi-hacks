@@ -1,6 +1,7 @@
 #include "aliasplugin.h"
 #include "base/gluxibot.h"
 #include "base/glooxwrapper.h"
+#include "base/rolelist.h"
 
 #include <QList>
 #include <QtDebug>
@@ -72,10 +73,11 @@ bool AliasPlugin::parseCommands(gloox::Stanza* s)
 	if (cmd.isEmpty() || cmd=="LIST" || cmd=="HELP")
 		return BasePlugin::onMessage(s);
 
-	if (!isFromOwner(s) &&
-	        bot()->tmpOwners()->indexOf(QString::fromStdString(s->from().full()))<0)
+/*	if (!isFromOwner(s) &&
+	        bot()->tmpOwners()->indexOf(QString::fromStdString(s->from().full()))<0)*/
+	if (getRole(s) < ROLE_ADMIN)
 	{
-		reply(s,"You should be bot owner to edit aliases");
+		reply(s,"You should be admin to edit aliases");
 		return true;
 	}
 

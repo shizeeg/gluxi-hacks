@@ -15,6 +15,7 @@
 class GlooxWrapper;
 class AsyncRequestList;
 class MyStanza;
+class RoleList;
 
 class gloox::Client;
 class gloox::Stanza;
@@ -27,8 +28,12 @@ public:
 	~GluxiBot();
 	gloox::Client* client();
 	GlooxWrapper *gloox() { return myGloox; };
-	QStringList* owners() { return &myOwners; };
-	QStringList* tmpOwners() { return &myTmpOwners; };
+
+	RoleList *roles() { return myRoles; };
+	// Depreacted members
+//	QStringList* owners() { return &myOwners; };
+//	QStringList* tmpOwners() { return &myTmpOwners; };
+	
 	PluginList* plugins() { return &myPlugins; };
 	AsyncRequestList* asyncRequests() { return myAsyncRequests; };
 	QList<int> getStorage(gloox::Stanza*s);
@@ -40,8 +45,15 @@ public:
 	void onQuit(const QString&reason);
 private:
 	GlooxWrapper *myGloox;
-	QStringList myOwners;
-	QStringList myTmpOwners;
+
+	RoleList *myRoles;
+
+	// Deprecated
+	// Bot owners (Real jids)
+//	QStringList myOwners;
+	// Bot temporary owners: owners conference jids
+//	QStringList myTmpOwners;
+	
 	PluginList myPlugins;
 	AsyncRequestList *myAsyncRequests;
 	BasePlugin* pluginByStanzaId(gloox::Stanza*);

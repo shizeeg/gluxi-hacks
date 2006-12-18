@@ -6,6 +6,7 @@
 #include "base/common.h"
 #include "base/gluxibot.h"
 #include "base/datastorage.h"
+#include "base/rolelist.h"
 
 #include <QtDebug>
 #include <QRegExp>
@@ -39,16 +40,22 @@ bool MucPlugin::canHandlePresence(gloox::Stanza* s)
 {
 	QString from=QString::fromStdString(s->from().bare());
 	QString fromFull=QString::fromStdString(s->from().full());
-	return (conferences.byName(from) || 
+	int ret=
+	(conferences.byName(from) || 
 		(confInProgress.indexOf(getConfExp(from))>=0));
+	qDebug() << "MucPlugin::canHandlePresence() " << fromFull << " = " << ret;
+	return ret;
 }
 
 bool MucPlugin::isMyMessage(gloox::Stanza*s)
 {
 	QString jid=QString::fromStdString(s->from().bare());
+	qDebug() << "MucPlugin::isMyMessage() " << jid;
 	Conference* conf=conferences.byName(jid);
 	if (!conf) return false;
+	qDebug() << "| conf found";
 	QString res=QString::fromStdString(s->from().resource());
+	qDebug() << "| res=" << res <<" && mynick=" << conf->nick();
 	if (res.isEmpty() || conf->nick()==res)
 		return true;
 	return false;
@@ -58,7 +65,10 @@ bool MucPlugin::canHandleMessage(gloox::Stanza* s)
 {
 	// 	std::cout << s->xml() << std::endl;
 	if (isOfflineMessage(s))
+	{
+		qDebug() << "MUC: offline message ignored";
 		return false;
+	}
 	if (allMessages())
 		return true;
 	Conference *conf=getConf(s);
@@ -72,8 +82,16 @@ bool MucPlugin::canHandleMessage(gloox::Stanza* s)
 		return false;
 	}
 	Nick *n=getNick(s);
-	if (!n) return false;
-	if (n->nick()==conf->nick()) return false;
+	if (!n)
+	{
+		qDebug() << "MUC: getNick() returns 0L";
+		return false;
+	}
+	if (n->nick()==conf->nick())
+	{
+		qDebug() << "MUC: Self message ignored";
+		return false;
+	}
 	return true;
 }
 
@@ -113,7 +131,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		qDebug() << conf->name();
 		conferences.append(conf);
 		qDebug() << confInProgress;
-		confInProgress.removeAll(confFull.toUpper());
+		confInProgress.removeAt(ps);
 		// 		return;
 	}
 
@@ -121,6 +139,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 	Nick *n=getNick(s);
 	if (!n)
 	{
+		qDebug() << "MUC::handlePresence: new Nick";
 		if (role=="none" || type=="unavailable")
 			return;
 		n=new Nick(conf, nick,getItem(s,"jid"));
@@ -139,6 +158,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 			qDebug() << "!!!!!! Removing nick";
 			conf->nicks()->remove(n);
 		}
+		bot()->roles()->remove(QString::fromStdString(s->from().full()));
 	}
 	else
 	{
@@ -151,18 +171,15 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		n->commit();
 
 		QString confJid=QString::fromStdString(s->from().full());
-		if (!confJid.isEmpty())
+		bot()->roles()->insert(confJid, n->jid().section('/',0,0));
+		bot()->roles()->update(confJid, RoleList::calc(n->role(), n->affiliation()));
+/*		if (!confJid.isEmpty())
 		{
-			if (n->affiliation()=="admin" || n->affiliation()=="owner")
-			{
-				if (bot()->tmpOwners()->indexOf(confJid)<0)
-					bot()->tmpOwners()->append(confJid);
-			}
-			else
-			{
-				bot()->tmpOwners()->removeAll(confJid);
-			}
+			if (bot()->owners()->indexOf(n->jid().section('/',0,0))>=0)
+				bot()->tmpOwners()->append(confJid);
+
 		}
+*/
 		conf->removeExpired();
 		checkJID(conf, n);
 	}
@@ -184,7 +201,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 
 	if (cmd=="JOIN")
 	{
-		if (!isFromOwner(s))
+		if (!isFromBotOwner(s))
 			return true;
 		if (arg.indexOf('@')<0 || arg.indexOf('/')>=0)
 		{
@@ -197,7 +214,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	}
 	if (cmd=="LEAVE")
 	{
-		if (!isFromOwner(s, false))
+		if (!isFromBotOwner(s, false))
 		{
 			if (isFromConfOwner(s))
 			{
@@ -229,6 +246,8 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		for (int i=0; i<conferences.count(); i++)
 			confList << (conferences[i]->name().section('@',0,0)+"@");
 		reply(s,QString("Currently I'm spending time at %1").arg(confList.join(", ")));
+		if (!confInProgress.isEmpty())
+		reply(s,QString("Conferences in-progress:\n"+confInProgress.join("\n")));
 		return true;
 	}
 
@@ -375,9 +394,10 @@ Nick* MucPlugin::getNick(gloox::Stanza* s, const QString& nn)
 
 bool MucPlugin::isFromConfModerator(gloox::Stanza* s)
 {
-	QString jid=QString::fromStdString(s->from().bare());
-	if (bot()->owners()->indexOf(jid)>=0)
-		return true;
+	QString jid=QString::fromStdString(s->from().full());
+	return (bot()->roles()->get(jid) >= ROLE_MODERATOR);
+/*	if (bot()->owners()->indexOf(jid)>=0)
+		return true
 	QString nm=QString::fromStdString(s->from().resource());
 	Nick *nick=getNick(s,nm);
 	if (!nick) return false;
@@ -388,11 +408,15 @@ bool MucPlugin::isFromConfModerator(gloox::Stanza* s)
 		return false;
 	}
 	return true;
+*/
+	
 }
 
 bool MucPlugin::isFromConfAdmin(gloox::Stanza* s)
 {
-	QString jid=QString::fromStdString(s->from().bare());
+	QString jid=QString::fromStdString(s->from().full());
+	return (bot()->roles()->get(jid) > ROLE_ADMIN);
+/*
 	if (bot()->owners()->indexOf(jid)>=0)
 		return true;
 
@@ -408,6 +432,7 @@ bool MucPlugin::isFromConfAdmin(gloox::Stanza* s)
 		return false;
 	}
 	return true;
+*/
 }
 
 bool MucPlugin::isFromConfOwner(gloox::Stanza* s)

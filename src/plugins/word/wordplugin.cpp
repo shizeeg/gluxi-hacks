@@ -1,5 +1,6 @@
 #include "wordplugin.h"
 #include "base/gluxibot.h"
+#include "base/rolelist.h"
 
 #include <QtDebug>
 #include <QTime>
@@ -18,7 +19,7 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 {
 	QString body=getBody(s);
 	QString cmd=body.section(' ',0,0).toUpper();
-	QString arg=body.section(' ',1);
+	QString arg=body.section(' ',1).trimmed();
 
 	if (cmd=="ADD")
 	{
@@ -68,23 +69,23 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 	if (cmd=="SHOWPRIV")
 	{
 		//TODO: Implement nick handler
+		arg.replace("  "," ");
 		QString dest=arg.section(' ',0,0);
 		QString word=arg.section(' ',1);
 		bool allowUser=false;
-
+		
 		if (word.isEmpty() && !dest.isEmpty())
 		{
 			allowUser=true;
 			word=dest;
 			dest=getNick(s);
 		}
-
 		if (dest.isEmpty() || word.isEmpty())
 		{
 			reply(s,"Syntax: SHOWPRIV <NICK> <WORD>");
 			return true;
 		}
-		if (!allowUser && bot()->tmpOwners()->indexOf(QString::fromStdString(s->from().full()))<0)
+		if (!allowUser && getRole(s)<ROLE_ADMIN)
 		{
 			reply(s,"You should be at least admin to do this");
 			return true;

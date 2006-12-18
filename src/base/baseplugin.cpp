@@ -1,8 +1,10 @@
 #include "baseplugin.h"
 #include "gluxibot.h"
 #include "datastorage.h"
+#include "rolelist.h"
 
 #include <QString>
+#include <QtDebug>
 
 #include <string>
 #include <iostream>
@@ -204,15 +206,20 @@ bool BasePlugin::isOfflineMessage(gloox::Stanza *s)
 	return (s->hasChild("x","xmlns","jabber:x:delay"));
 }
 
-bool BasePlugin::isFromOwner(gloox::Stanza *s, bool message)
+bool BasePlugin::isFromBotOwner(gloox::Stanza *s, bool message)
 {
-	QString jid=QString::fromStdString(s->from().bare());
-	bool res=bot()->owners()->indexOf(jid)>=0;
+	bool res=getRole(s)>=ROLE_BOTOWNER;
 	if (!res && message)
 	{
 		reply(s,"Only bot owner can do this");
 	}
 	return res;
+}
+
+int BasePlugin::getRole(gloox::Stanza *s)
+{
+	QString jid=QString::fromStdString(s->from().full());
+	return bot()->roles()->get(jid);
 }
 
 int BasePlugin::getStorage(gloox::Stanza*s)

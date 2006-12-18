@@ -6,6 +6,7 @@
 #include "asyncrequestlist.h"
 #include "common.h"
 #include "baseplugin.h"
+#include "rolelist.h"
 
 #include <QtDebug>
 #include <QMetaType>
@@ -35,8 +36,10 @@ GluxiBot::GluxiBot()
 	connect(myGloox, SIGNAL(sigIq(const MyStanza&)),
 		this, SLOT(handleIq(const MyStanza&)));
 	
-
-	myOwners.append(storage->getString("access/owner"));
+	myRoles=new RoleList();
+	myRoles->insert(storage->getString("access/owner"),ROLE_BOTOWNER);
+/*	myOwners.append(storage->getString("access/owner"));*/
+	
 	myAsyncRequests=new AsyncRequestList();
 	PluginLoader::loadPlugins(&myPlugins,this);
 

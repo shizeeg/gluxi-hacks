@@ -48,7 +48,9 @@ protected:
  	bool isOfflineMessage(gloox::Stanza*);
 	QString getBody(gloox::Stanza*, bool usePrefix=true );
 	QString getNick(gloox::Stanza*);
-	virtual bool isFromOwner(gloox::Stanza*, bool message=false);
+
+	virtual bool isFromBotOwner(gloox::Stanza*, bool message=false);
+	int getRole(gloox::Stanza*);
 };
 
 #endif
