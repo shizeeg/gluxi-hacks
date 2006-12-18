@@ -415,7 +415,7 @@ bool MucPlugin::isFromConfModerator(gloox::Stanza* s)
 bool MucPlugin::isFromConfAdmin(gloox::Stanza* s)
 {
 	QString jid=QString::fromStdString(s->from().full());
-	return (bot()->roles()->get(jid) > ROLE_ADMIN);
+	return (bot()->roles()->get(jid) >= ROLE_ADMIN);
 /*
 	if (bot()->owners()->indexOf(jid)>=0)
 		return true;
