@@ -190,6 +190,10 @@ void BasePlugin::reply(gloox::Stanza* to, const QString& body, bool forcePrivate
 	{
 		dest=to->from().full();
 		msg=body;
+		if (msg.length()>10000) //TODO: Divide message to parts
+		{
+			msg=msg.left(10000)+"[...]";
+		}
 	}
 
 
