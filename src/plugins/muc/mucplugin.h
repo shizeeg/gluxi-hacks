@@ -42,11 +42,10 @@ private:
 	void setRole(gloox::Stanza* s, Nick*, const QString& role, const QString& reason=QString::null);
 	void setRole(Conference* conf, Nick*, const QString& role, const QString& reason=QString::null);
 	QString getIqError(gloox::Stanza* s);
-	bool aFind(AList* list, const QString& jid, bool nickOnly=false);
+	bool aFind(AList* list, Nick *n);
 	// Advanced commands
 	bool autoLists(gloox::Stanza* s);
-	void checkNick(Conference*c , Nick*n, const QString&, bool nickOnly=false);
-	void checkJID(Conference* c, Nick*);
+	void checkMember(Conference* c, Nick*);
 	void recheckJIDs(Conference* c);
 	void sendMessage(Conference* conf, const QString&msg);
 	QRegExp getConfExp(const QString&);

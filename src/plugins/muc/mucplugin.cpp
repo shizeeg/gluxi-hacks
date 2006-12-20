@@ -181,7 +181,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		}
 */
 		conf->removeExpired();
-		checkJID(conf, n);
+		checkMember(conf, n);
 	}
 }
 
@@ -638,12 +638,18 @@ bool MucPlugin::autoLists(gloox::Stanza *s)
 	if (arg=="AFIND")
 	{
 		QString answer;
+		Nick *n=conf->nicks()->byName(arg2);
+		if (!n)
+		{
+			reply(s,QString("Can't see \"%1\" here").arg(arg2));
+			return true;
+		}
 
-		if (aFind(conf->akick(),arg2))
+		if (aFind(conf->akick(),n))
 			answer+=QString("\"%1\" is in akick list\n").arg(arg2.toLower());
-		if (aFind(conf->avisitor(),arg2))
+		if (aFind(conf->avisitor(),n))
 			answer+=QString("\"%1\" is in avisitor list\n").arg(arg2.toLower());
-		if (aFind(conf->amoderator(),arg2))
+		if (aFind(conf->amoderator(),n))
 			answer+=QString("\"%1\" is in amoderator list\n").arg(arg2.toLower());
 		if (answer.endsWith("\n"))
 			answer.remove(answer.length()-1,1);
@@ -809,6 +815,9 @@ bool MucPlugin::autoLists(gloox::Stanza *s)
 	arg2=arg2.toUpper();
 	if (isNick)
 		arg2="NICK "+arg2;
+	else
+		if (isJid)
+			arg2="JID "+arg2;
 
 	if (alist->indexOf(arg2)>=0)
 	{
@@ -829,22 +838,31 @@ bool MucPlugin::autoLists(gloox::Stanza *s)
 	return true;
 }
 
-bool MucPlugin::aFind(AList* list, const QString& jid, bool nickOnly)
+bool MucPlugin::aFind(AList* list, Nick* nick)
 {
 	int cnt=list->count();
 	QString line;
-	QString uJID=jid.toUpper();
+	QString uJid=nick->jid().toUpper();
+	QString uNick=nick->nick().toUpper();
+	bool nickOnly;
+	bool jidOnly;
 	for (int i=0; i<cnt; i++)
 	{
+		nickOnly=false;
+		jidOnly=false;
 		line=list->at(i);
 		if (line.startsWith("NICK "))
 		{
 			line=line.section(' ',1);
+			nickOnly=true;
 		}
 		else
 		{
-			if (nickOnly)
-				continue;
+			if (line.startsWith("JID "))
+			{
+				line=line.section(' ',1);
+				jidOnly=true;
+			}
 		}
 
 		if (line.startsWith("EXP "))
@@ -852,47 +870,45 @@ bool MucPlugin::aFind(AList* list, const QString& jid, bool nickOnly)
 			QRegExp exp(line.section(' ',1));
 			exp.setMinimal(FALSE);
 			exp.setCaseSensitivity(Qt::CaseInsensitive);
-			int ps=exp.indexIn(uJID);
-			if (ps==0 && exp.matchedLength()==jid.count())
-				return TRUE;
+			if (!nickOnly)
+			{
+				if (exp.exactMatch(uJid))
+					return TRUE;
+			}
+			if (!jidOnly)
+			{
+				if (exp.exactMatch(uNick))
+					return TRUE;
+			}
 		}
 		else
 		{
-			if (line==uJID)
+			if (!nickOnly && line==uJid)
+				return TRUE;
+			if (!jidOnly && line==uNick)
 				return TRUE;
 		}
 	}
 	return FALSE;
 }
 
-void MucPlugin::checkNick(Conference*c , Nick* n, const QString& jid, bool nickOnly)
+void MucPlugin::checkMember(Conference*c , Nick* n)
 {
-	if (!jid.isEmpty())
+	if (aFind(c->akick(), n))
 	{
-		if (aFind(c->akick(), jid,nickOnly))
-		{
-			setRole(c, n, "none", "You are not welcomed here");
-			return;
-		}
-		if (aFind(c->avisitor(), jid,nickOnly))
-		{
-			setRole(c, n, "visitor", "You shoud be a visitor");
-			return;
-		}
-		if (aFind(c->amoderator(), jid,nickOnly))
-		{
-			setRole(c, n, "moderator", "You shoud be a moderator");
-			return;
-		}
+		setRole(c, n, "none", "You are not welcomed here");
+		return;
 	}
-}
-
-void MucPlugin::checkJID(Conference* c, Nick *n)
-{
-	QString jid=n->jid().section('/',0,0);
-	qDebug() << "!!! Checking jid " << jid;
-	checkNick(c,n, jid);
-	checkNick(c,n,n->nick(),true);
+	if (aFind(c->avisitor(), n))
+	{
+		setRole(c, n, "visitor", "You shoud be a visitor");
+		return;
+	}
+	if (aFind(c->amoderator(), n))
+	{
+		setRole(c, n, "moderator", "You shoud be a moderator");
+		return;
+	}
 }
 
 void MucPlugin::recheckJIDs(Conference *c)
@@ -903,7 +919,7 @@ void MucPlugin::recheckJIDs(Conference *c)
 	{
 		Nick *n=c->nicks()->at(i);
 		assert(n);
-		checkJID(c,n);
+		checkMember(c,n);
 	}
 }
 
