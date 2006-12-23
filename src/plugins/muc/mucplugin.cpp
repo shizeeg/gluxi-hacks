@@ -842,15 +842,16 @@ bool MucPlugin::aFind(AList* list, Nick* nick)
 {
 	int cnt=list->count();
 	QString line;
-	QString uJid=nick->jid().toUpper();
+	QString uJid=nick->jid().toUpper().section('/',0,0);
 	QString uNick=nick->nick().toUpper();
+
 	bool nickOnly;
 	bool jidOnly;
 	for (int i=0; i<cnt; i++)
 	{
 		nickOnly=false;
 		jidOnly=false;
-		line=list->at(i);
+		line=list->at(i).toUpper();
 		if (line.startsWith("NICK "))
 		{
 			line=line.section(' ',1);
