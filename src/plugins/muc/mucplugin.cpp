@@ -895,15 +895,23 @@ bool MucPlugin::aFind(AList* list, Nick* nick)
 
 void MucPlugin::checkMember(Conference*c , Nick* n)
 {
-	if (aFind(c->akick(), n))
-	{
-		setRole(c, n, "none", "You are not welcomed here");
+	if (!n)
 		return;
-	}
-	if (aFind(c->avisitor(), n))
+	
+	QString aff=n->affiliation().toUpper();
+	
+	if ((aff!="OWNER") && !aff.startsWith("ADMIN") &&  aff!="MEMBER")
 	{
-		setRole(c, n, "visitor", "You shoud be a visitor");
-		return;
+		if (aFind(c->akick(), n) )
+		{
+			setRole(c, n, "none", "You are not welcomed here");
+			return;
+		}
+		if (aFind(c->avisitor(), n))
+		{
+			setRole(c, n, "visitor", "You shoud be a visitor");
+			return;
+		}
 	}
 	if (aFind(c->amoderator(), n))
 	{
