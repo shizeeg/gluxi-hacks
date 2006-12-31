@@ -5,6 +5,8 @@
 
 #include <gloox/stanza.h>
 
+class WebStatusThread;
+
 /**
 	@author Dmitry Nezhevenko <dion@inhex.net>
 */
@@ -19,6 +21,8 @@ public:
 	virtual bool parseMessage(gloox::Stanza* );
 	virtual void onPresence(gloox::Stanza* s);
 	virtual bool canHandlePresence(gloox::Stanza* s);
+private:
+	WebStatusThread *thread;
 };
 
 #endif

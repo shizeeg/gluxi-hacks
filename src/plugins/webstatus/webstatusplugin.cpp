@@ -1,4 +1,5 @@
 #include "webstatusplugin.h"
+#include "webstatusthread.h"
 #include "base/gluxibot.h"
 
 #include <gloox/stanza.h>
@@ -13,11 +14,19 @@ WebstatusPlugin::WebstatusPlugin(GluxiBot *parent)
 {
 	commands << "INVITE" << "INFO" << "AVAILABLE" << "AWAY" 
 		<< "CHAT" << "DND" << "UNAVAILABLE" << "XA";
+	thread=new WebStatusThread();
+	thread->start();
 }
 
 
 WebstatusPlugin::~WebstatusPlugin()
-{}
+{
+	thread->stop();
+	thread->terminate();
+	thread->wait(1);
+	delete thread;
+	thread=0;
+}
 
 bool WebstatusPlugin::parseMessage(gloox::Stanza* s)
 {

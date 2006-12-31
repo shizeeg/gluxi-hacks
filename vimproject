@@ -97,7 +97,9 @@ gluxi=$VIMPROJECT/src CD=../release filter="*.h *.cpp *.txt" in=../in.vim out=..
   }
   webstatus=webstatus {
    webstatusplugin.h
+   webstatusthread.h
    webstatusplugin.cpp
+   webstatusthread.cpp
    CMakeLists.txt
   }
  }
