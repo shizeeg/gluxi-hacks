@@ -63,6 +63,13 @@ bool WebstatusPlugin::parseMessage(gloox::Stanza* s)
 			reply(s,QString("Usage: %1 <URL>").arg(cmd));
 			return true;
 		}
+		QString argU=arg.toUpper();
+		if (!(argU.startsWith("HTTP://") || argU.startsWith("HTTPS://")))
+		{
+			reply(s,"Only http:// and https:// are supported");
+			return true;
+		}
+
 		QString jid=QString::fromStdString(s->from().bare());
 		qDebug() << "WebStatus: Updating conf for " << jid;
 		QSqlQuery query;
