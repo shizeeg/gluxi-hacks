@@ -92,6 +92,25 @@ CREATE TABLE `conferences` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
+-- Table structure for table `webstatus`
+--
+
+DROP TABLE IF EXISTS `webstatus`;
+CREATE TABLE `webstatus` (
+  `jid` varchar(50) collate utf8_unicode_ci NOT NULL,
+  `hash` varchar(50) collate utf8_unicode_ci NOT NULL,
+  `status` varchar(15) collate utf8_unicode_ci default NULL,
+  `available` varchar(100) collate utf8_unicode_ci default NULL,
+  `away` varchar(100) collate utf8_unicode_ci default NULL,
+  `chat` varchar(100) collate utf8_unicode_ci default NULL,
+  `dnd` varchar(100) collate utf8_unicode_ci default NULL,
+  `unavailable` varchar(100) collate utf8_unicode_ci default NULL,
+  `xa` varchar(100) collate utf8_unicode_ci default NULL,
+  PRIMARY KEY  (`jid`),
+  UNIQUE KEY `hash` (`hash`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
 -- Table structure for table `words`
 --
 
@@ -115,4 +134,4 @@ CREATE TABLE `words` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2006-11-30 22:06:52
+-- Dump completed on 2006-12-31  2:18:16
