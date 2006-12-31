@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/un.h>
 
 #include <QMutexLocker>
@@ -34,6 +35,9 @@ void WebStatusThread::run()
 	int fd_srv=socket(AF_UNIX, SOCK_STREAM, 0);
 	bind(fd_srv, (struct sockaddr*)&sa, sizeof(sa));
 	listen(fd_srv, SOMAXCONN);
+
+	chmod(socketName.toLocal8Bit().data(), 0777);
+
 	int sw;
 	char buf[1024];
 	int bsize;

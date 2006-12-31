@@ -23,6 +23,7 @@ public:
 	virtual bool canHandlePresence(gloox::Stanza* s);
 private:
 	WebStatusThread *thread;
+	QString url;
 };
 
 #endif

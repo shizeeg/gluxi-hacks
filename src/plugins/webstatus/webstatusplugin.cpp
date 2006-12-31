@@ -1,6 +1,7 @@
 #include "webstatusplugin.h"
 #include "webstatusthread.h"
 #include "base/gluxibot.h"
+#include "base/datastorage.h"
 
 #include <gloox/stanza.h>
 
@@ -14,6 +15,9 @@ WebstatusPlugin::WebstatusPlugin(GluxiBot *parent)
 {
 	commands << "INVITE" << "INFO" << "AVAILABLE" << "AWAY" 
 		<< "CHAT" << "DND" << "UNAVAILABLE" << "XA";
+
+	url=DataStorage::instance()->getString("webstatus/url");
+
 	thread=new WebStatusThread();
 	thread->start();
 }
@@ -62,6 +66,33 @@ bool WebstatusPlugin::parseMessage(gloox::Stanza* s)
 	}
 	if (cmd=="INFO")
 	{
+		QString jid=QString::fromStdString(s->from().bare());
+		QSqlQuery query;
+		query.prepare("SELECT hash, available, away, chat, dnd, unavailable, xa"
+			" FROM webstatus WHERE jid=?");
+		query.addBindValue(jid);
+		if (!query.exec() || !query.next())
+		{
+			reply(s,"Failed. Probably not registered");
+			return true;
+		}
+		QString myUrl=QString(url).arg(query.value(0).toString());
+		QString res=QString("WebStatus URL: %1\n"
+			"Available: %2\n"
+			"Away: %3\n"
+			"Chat: %4\n"
+			"Dnd: %5\n"
+			"Unavailable: %6\n"
+			"Xa: %7\n")
+			.arg(myUrl)
+			.arg(query.value(1).toString())
+			.arg(query.value(2).toString())
+			.arg(query.value(3).toString())
+			.arg(query.value(4).toString())
+			.arg(query.value(5).toString())
+			.arg(query.value(6).toString());
+		reply(s,res);
+
 		return true;
 	}
 	if (cmd=="AVAILABLE" || cmd=="AWAY" || cmd=="CHAT" || cmd=="DND"

@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#define SOCKETNAME "/tmp/gluxi_webstatus"
+#define SOCKETNAME "/home/i386/tmp/gluxi_webstatus"
 
 void reportForbidden(char *s)
 {
@@ -32,7 +32,10 @@ int main(void)
 	int fd=socket(AF_UNIX, SOCK_STREAM, 0);
 	int res=connect(fd, (struct sockaddr*)&sa, sizeof(sa));
 	if (res == -1)
+	{
+		perror("connect:");
 		reportForbidden("Can't connect to gluxi socket");
+	}
 	char myquery[105];
 	snprintf(myquery,104,"%s\n",query);
 	write(fd,myquery,strlen(myquery));
