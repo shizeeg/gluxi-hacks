@@ -30,7 +30,6 @@ private:
 	ConferenceList conferences;
 	QStringList confInProgress;
 	QString getItem(gloox::Stanza*, const QString& name);
-	QString getPresence(const gloox::Presence& pr);
 	void join(const QString& name);
 	void leave(const QString& name);
 	Conference* getConf(gloox::Stanza* s);

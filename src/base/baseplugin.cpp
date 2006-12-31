@@ -257,3 +257,18 @@ void BasePlugin::onQuit(const QString&)
 {
 }
 
+QString BasePlugin::getPresence(const gloox::Presence& pr)
+{
+        switch (pr)
+        {
+        case gloox::PresenceAvailable : return "Available";
+        case gloox::PresenceAway: return "Away";
+        case gloox::PresenceChat: return "Chat";
+        case gloox::PresenceDnd: return "Dnd";
+        case gloox::PresenceUnavailable: return "Unavailiable";
+        case gloox::PresenceXa: return "Xa";
+        case gloox::PresenceUnknown: return "Unknown";
+        }
+        return "Unknown";
+}
+
