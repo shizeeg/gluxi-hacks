@@ -20,6 +20,10 @@ WebStatusThread::WebStatusThread()
 	socketName=DataStorage::instance()->getString("webstatus/socket");
 	shouldWork=1;
 	db=QSqlDatabase::cloneDatabase(QSqlDatabase::database(),"webStatus");
+	if (!db.open())
+	{
+		qDebug() << "Unable to open DB for webstatus: " << db.lastError().text();
+	}
 }
 
 WebStatusThread::~WebStatusThread()
