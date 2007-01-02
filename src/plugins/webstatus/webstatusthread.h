@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QMutex>
+#include <QSqlDatabase>
 
 class WebStatusThread: public QThread
 {
@@ -17,6 +18,7 @@ private:
 	int shouldWork;
 	QString socketName;
 	QMutex mutex;
+	QSqlDatabase db;
 };
 
 #endif

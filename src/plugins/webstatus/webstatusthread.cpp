@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
+#include <errno.h>
 
 #include <QMutexLocker>
 #include <QtDebug>
@@ -18,13 +19,14 @@ WebStatusThread::WebStatusThread()
 {
 	socketName=DataStorage::instance()->getString("webstatus/socket");
 	shouldWork=1;
-
+	db=QSqlDatabase::cloneDatabase(QSqlDatabase::database(),"webStatus");
 }
 
 WebStatusThread::~WebStatusThread()
 {
 	if (!socketName.isEmpty())
 		unlink(socketName.toLocal8Bit().data());
+	db.close();
 }
 
 void WebStatusThread::run()
@@ -36,7 +38,10 @@ void WebStatusThread::run()
 	bind(fd_srv, (struct sockaddr*)&sa, sizeof(sa));
 	listen(fd_srv, SOMAXCONN);
 
-	chmod(socketName.toLocal8Bit().data(), 0777);
+	if (chmod(socketName.toLocal8Bit().data(), 0777)!=0)
+	{
+		perror("Unable to chmod for socket: ");
+	}
 
 	int sw;
 	char buf[1024];
@@ -99,7 +104,7 @@ void WebStatusThread::run()
 		{
 			request.remove(0,3); // Delete id=
 			qDebug() << request;
-			QSqlQuery query;
+			QSqlQuery query(db);
 			query.prepare("SELECT LOWER(status) FROM webstatus WHERE hash=?");
 			query.addBindValue(request);
 			if (query.exec() && query.next())
