@@ -2,6 +2,7 @@
 #define GLOOXWRAPPER_CPP
 
 #include <QThread>
+#include <QMutex>
 
 #include <gloox/client.h>
 #include <gloox/presencehandler.h>
@@ -25,6 +26,7 @@ public:
 protected:
 	void run();
 private:
+	QMutex mutex;
 	gloox::Client* myClient;
 	
 	virtual void handlePresence( gloox::Stanza *stanza );

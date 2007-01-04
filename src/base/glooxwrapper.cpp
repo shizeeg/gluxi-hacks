@@ -14,6 +14,7 @@
 #include <assert.h>
 #include <string>
 #include <iostream>
+#include <sys/select.h>
 
 GlooxWrapper::GlooxWrapper()
 	:QThread()
@@ -47,7 +48,37 @@ GlooxWrapper::~GlooxWrapper()
 void GlooxWrapper::run()
 {
 	qDebug() << "GlooxWrapper::run()";
-	myClient->connect();
+	
+	// We run connect() in non-blocking mode just because we should be 
+	// able to sync our threads
+	myClient->connect(false);
+	qDebug() << "Connected";
+
+	// Gluxi loop
+	int fd=myClient->fileDescriptor();
+	fd_set rfds;
+	struct timeval tv;
+	FD_ZERO(&rfds);
+	FD_SET(fd,&rfds);
+	int res;
+	while (1)
+	{
+		tv.tv_sec=0;
+		tv.tv_usec=100000;
+		res=select(fd+1,&rfds,NULL,NULL,&tv);
+		if (res<0)
+			break;
+		if (res>0)
+		{
+			mutex.lock();
+			if (myClient->recv(0)!=gloox::ConnNoError)
+			{
+				mutex.unlock();
+				break;
+			}
+			mutex.unlock();
+		}
+	}
 	qDebug() << "GlooxWrapper disconnected";
 	QCoreApplication::exit(0);
 }
