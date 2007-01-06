@@ -56,16 +56,20 @@ void GlooxWrapper::run()
 
 	// Gluxi loop
 	int fd=myClient->fileDescriptor();
-	fd_set rfds;
+	fd_set rfdsR, rfdsE, rfdsW;
 	struct timeval tv;
-	FD_ZERO(&rfds);
-	FD_SET(fd,&rfds);
 	int res;
 	while (1)
 	{
-		tv.tv_sec=0;
-		tv.tv_usec=100000;
-		res=select(fd+1,&rfds,NULL,NULL,&tv);
+		tv.tv_sec=10;
+		tv.tv_usec=0;
+		FD_ZERO(&rfdsR);
+		FD_SET(fd,&rfdsR);
+		FD_ZERO(&rfdsE);
+		FD_SET(fd,&rfdsE);
+		FD_ZERO(&rfdsW);
+		FD_SET(fd,&rfdsW);
+		res=select(fd+1,&rfdsR,&rfdsW,&rfdsE,&tv);
 		if (res<0)
 			break;
 		if (res>0)
