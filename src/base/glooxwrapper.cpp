@@ -75,13 +75,17 @@ void GlooxWrapper::run()
 			break;
 		if (res>0)
 		{
+			qDebug() << "Locking mutex";
 			mutex.lock();
+			qDebug() << "Locked";
 			if (myClient->recv(0)!=gloox::ConnNoError)
 			{
+				qDebug() << "recv() err";
 				mutex.unlock();
 				break;
 			}
 			mutex.unlock();
+			qDebug() << "Unlocked";
 		}
 	}
 	qDebug() << "GlooxWrapper disconnected";
@@ -106,6 +110,7 @@ bool GlooxWrapper::onTLSConnect( const gloox::CertInfo& )
 
 void GlooxWrapper::handleMessage(gloox::Stanza* s)
 {
+	qDebug() << "Got message";
 	emit sigMessage(MyStanza(s));
 }
 
@@ -127,7 +132,33 @@ bool GlooxWrapper::handleIqID(gloox::Stanza*, int)
 // Thread-safe members
 void GlooxWrapper::disconnect()
 {
+	qDebug() << "Disconnect";
 	QMutexLocker locker(&mutex);
 	myClient->disconnect();
+	qDebug() << "/Disconnect";
+}
+
+void GlooxWrapper::send(gloox::Stanza* s)
+{
+	QMutexLocker locker(&mutex);
+	myClient->send(s);
+}
+
+void GlooxWrapper::registerIqHandler(const QString& service)
+{
+	QMutexLocker locker(&mutex);
+	myClient->registerIqHandler(this,service.toStdString());
+}
+
+std::string GlooxWrapper::getID()
+{
+	QMutexLocker locker(&mutex);
+	return myClient->getID();
+}
+
+gloox::JID GlooxWrapper::jid()
+{
+	QMutexLocker locker(&mutex);
+	return myClient->jid();
 }
 

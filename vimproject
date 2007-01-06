@@ -1,4 +1,4 @@
-gluxi=$VIMPROJECT/src CD=../release filter="*.h *.cpp *.txt" in=../in.vim out=../out.vim {
+gluxi=$VIMPROJECT/src CD=../debug filter="*.h *.cpp *.c *.txt" in=../in.vim out=../out.vim {
  CMakeLists.txt
  base=base {
   asyncrequest.h
@@ -12,6 +12,7 @@ gluxi=$VIMPROJECT/src CD=../release filter="*.h *.cpp *.txt" in=../in.vim out=..
   pluginlist.h
   pluginloader.h
   rolelist.h
+  segfault.h
   asyncrequest.cpp
   asyncrequestlist.cpp
   baseplugin.cpp

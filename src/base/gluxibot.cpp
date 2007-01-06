@@ -30,11 +30,11 @@ GluxiBot::GluxiBot()
 	connect(myGloox, SIGNAL(sigConnect()), 
 		this, SLOT(onConnect()),Qt::QueuedConnection);
 	connect(myGloox, SIGNAL(sigMessage(const MyStanza&)),
-		this, SLOT(handleMessage(const MyStanza&)));
+		this, SLOT(handleMessage(const MyStanza&)), Qt::QueuedConnection);
 	connect(myGloox, SIGNAL(sigPresence(const MyStanza&)),
-		this, SLOT(handlePresence(const MyStanza&)));
+		this, SLOT(handlePresence(const MyStanza&)), Qt::QueuedConnection);
 	connect(myGloox, SIGNAL(sigIq(const MyStanza&)),
-		this, SLOT(handleIq(const MyStanza&)));
+		this, SLOT(handleIq(const MyStanza&)), Qt::QueuedConnection);
 	
 	myRoles=new RoleList();
 	myRoles->insert(storage->getString("access/owner"),ROLE_BOTOWNER);

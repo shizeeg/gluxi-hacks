@@ -16,6 +16,7 @@ set (base_HDR
 	datastorage.h	
 	pluginlist.h
 	rolelist.h
+	segfault.h
 )
 
 set (base_SRC
@@ -30,6 +31,7 @@ set (base_SRC
 	asyncrequest.cpp
 	asyncrequestlist.cpp
 	rolelist.cpp
+	segfault.c
 )
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
