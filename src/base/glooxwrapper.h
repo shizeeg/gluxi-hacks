@@ -21,8 +21,15 @@ class GlooxWrapper: public QThread, gloox::ConnectionListener, gloox::PresenceHa
 public:
 	GlooxWrapper();
 	~GlooxWrapper();
-	gloox::Client* client() {return myClient; };
+//	gloox::Client* client() {return myClient; };
         virtual void handleMessage(gloox::Stanza*);
+	
+	// These members should be thread-safe
+	void disconnect();
+	void send(gloox::Stanza* s);
+	void registerIqHandler(const QString& service);
+	std::string getID();
+	gloox::JID jid();
 protected:
 	void run();
 private:

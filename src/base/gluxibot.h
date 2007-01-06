@@ -26,8 +26,8 @@ class GluxiBot: public QObject
 public:
 	GluxiBot();
 	~GluxiBot();
-	gloox::Client* client();
-	GlooxWrapper *gloox() { return myGloox; };
+//	gloox::Client* client();
+	GlooxWrapper *client() { return myGloox; };
 
 	RoleList *roles() { return myRoles; };
 	// Depreacted members

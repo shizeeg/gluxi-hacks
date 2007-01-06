@@ -15,7 +15,7 @@ UserPlugin::UserPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
 	commands << "VERSION" << "PING";
-	bot()->client()->registerIqHandler(bot()->gloox(),"jabber:iq:version");
+	bot()->client()->registerIqHandler("jabber:iq:version");
 }
 
 

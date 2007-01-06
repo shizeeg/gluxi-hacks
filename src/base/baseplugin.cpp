@@ -1,5 +1,6 @@
 #include "baseplugin.h"
 #include "gluxibot.h"
+#include "glooxwrapper.h"
 #include "datastorage.h"
 #include "rolelist.h"
 

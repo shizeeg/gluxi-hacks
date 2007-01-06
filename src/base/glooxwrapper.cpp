@@ -6,6 +6,7 @@
 
 #include <QtDebug>
 #include <QCoreApplication>
+#include <QMutexLocker>
 
 #include <gloox/client.h>
 #include <gloox/disco.h>
@@ -121,5 +122,12 @@ bool GlooxWrapper::handleIq(gloox::Stanza* s)
 bool GlooxWrapper::handleIqID(gloox::Stanza*, int)
 {
 	return true;
+}
+
+// Thread-safe members
+void GlooxWrapper::disconnect()
+{
+	QMutexLocker locker(&mutex);
+	myClient->disconnect();
 }
 

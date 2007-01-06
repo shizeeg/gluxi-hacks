@@ -52,10 +52,12 @@ GluxiBot::~GluxiBot()
 	delete myGloox;
 }
 
+/*
 gloox::Client* GluxiBot::client()
 {
 	return myGloox->client();
 }
+*/
 
 void GluxiBot::onConnect()
 {
@@ -219,7 +221,9 @@ void GluxiBot::onQuit(const QString& reason)
 		assert(plugin);
 		plugin->onQuit(reason);
 	}
-	myGloox->client()->disconnect();
+	
+//	myGloox->client()->disconnect();
+	myGloox->disconnect();
 }
 
 BasePlugin* GluxiBot::pluginByStanzaId(gloox::Stanza* s)

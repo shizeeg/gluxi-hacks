@@ -1,6 +1,7 @@
 #include "webstatusplugin.h"
 #include "webstatusthread.h"
 #include "base/gluxibot.h"
+#include "base/glooxwrapper.h"
 #include "base/datastorage.h"
 
 #include <gloox/stanza.h>

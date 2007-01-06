@@ -5,6 +5,7 @@
 
 #include "base/common.h"
 #include "base/gluxibot.h"
+#include "base/glooxwrapper.h"
 #include "base/datastorage.h"
 #include "base/rolelist.h"
 

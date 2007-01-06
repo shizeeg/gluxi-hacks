@@ -55,7 +55,7 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 		s->finalize();
 		
 		// TODO: Fix alias plugin
-		bot()->gloox()->handleMessage(s);
+		bot()->client()->handleMessage(s);
 		return true;
 	}
 	myShouldIgnoreError=true;
