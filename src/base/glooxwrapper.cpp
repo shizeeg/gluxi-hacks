@@ -73,11 +73,16 @@ void GlooxWrapper::run()
 		res=select(fd+1,&rfdsR,&rfdsW,&rfdsE,&tv);
 		if (res<0)
 			break;
-		if (res>0)
+		if (!res)
+			continue;
+		if (FD_ISSET(fd,&rfdsE))
 		{
-			qDebug() << "Locking mutex";
+			qDebug() << "GlooxWrapper: error";
+			break;
+		}
+		if (FD_ISSET(fd,&rfdsR))
+		{
 			mutex.lock();
-			qDebug() << "Locked";
 			if (myClient->recv(0)!=gloox::ConnNoError)
 			{
 				qDebug() << "recv() err";
@@ -85,7 +90,6 @@ void GlooxWrapper::run()
 				break;
 			}
 			mutex.unlock();
-			qDebug() << "Unlocked";
 		}
 	}
 	qDebug() << "GlooxWrapper disconnected";
@@ -132,10 +136,9 @@ bool GlooxWrapper::handleIqID(gloox::Stanza*, int)
 // Thread-safe members
 void GlooxWrapper::disconnect()
 {
-	qDebug() << "Disconnect";
+	qDebug() << "Disconnect request";
 	QMutexLocker locker(&mutex);
 	myClient->disconnect();
-	qDebug() << "/Disconnect";
 }
 
 void GlooxWrapper::send(gloox::Stanza* s)
