@@ -211,6 +211,17 @@ QString GluxiBot::JIDtoNick(const QString& jid)
 	return QString::null;
 }
 
+void GluxiBot::customEvent(QEvent *event)
+{
+        if (event->type()==QEvent::User)
+        {
+                QuitEvent *msg=(QuitEvent*)event;
+		QString reason=msg->msg();
+		onQuit(reason);
+	}
+}
+
+
 void GluxiBot::onQuit(const QString& reason)
 {
 	QListIterator<BasePlugin*> it(myPlugins);
@@ -221,8 +232,6 @@ void GluxiBot::onQuit(const QString& reason)
 		assert(plugin);
 		plugin->onQuit(reason);
 	}
-	
-//	myGloox->client()->disconnect();
 	myGloox->disconnect();
 }
 

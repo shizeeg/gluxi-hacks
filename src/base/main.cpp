@@ -11,20 +11,35 @@
 #endif
 
 GluxiBot *bot;
+int wasSignal;
 
 #ifndef Q_WS_WIN
 void termHandler(int)
 {
-	bot->onQuit("got SIGTERM signal");
+	if (!wasSignal)
+	{
+		wasSignal=1;
+		QCoreApplication::postEvent(bot, new QuitEvent("got SIGTERM signal"));
+	}
+	else
+		exit(0);
 }
 
 void quitHandler(int)
 {
-	bot->onQuit("got SIGINT signal. Possible Ctrl+C from console");
+	if (!wasSignal)
+	{
+		wasSignal=1;
+		QCoreApplication::postEvent(bot, 
+			new QuitEvent("got SIGINT signal. Possible Ctrl+C from console"));
+	}
+	else
+		exit(0);
 }
 
 void installSigHandlers()
 {
+	wasSignal=0;
         struct sigaction act;
         memset(&act,0,sizeof(act));
         act.sa_handler=termHandler;

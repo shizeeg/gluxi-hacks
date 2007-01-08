@@ -4,6 +4,7 @@
 #include "pluginlist.h"
 
 #include <QObject>
+#include <QEvent>
 #include <QStringList>
 
 #include <gloox/client.h>
@@ -19,6 +20,16 @@ class RoleList;
 
 class gloox::Client;
 class gloox::Stanza;
+
+class QuitEvent: public QEvent
+{
+public:
+        QuitEvent(const QString& msg) : QEvent(QEvent::User) , message(msg) {; }
+        const QString& msg() const { return message; }
+private:
+        QString message;
+};
+
 
 class GluxiBot: public QObject
 {
@@ -41,30 +52,21 @@ public:
 	bool isMyMessage(gloox::Stanza *);
 	QString getJID(gloox::Stanza*s, const QString&);
 	QString JIDtoNick(const QString& jid);
-
-	void onQuit(const QString&reason);
+	void onQuit(const QString& reason);
 private:
 	GlooxWrapper *myGloox;
 
 	RoleList *myRoles;
-
-	// Deprecated
-	// Bot owners (Real jids)
-//	QStringList myOwners;
-	// Bot temporary owners: owners conference jids
-//	QStringList myTmpOwners;
-	
 	PluginList myPlugins;
 	AsyncRequestList *myAsyncRequests;
 	BasePlugin* pluginByStanzaId(gloox::Stanza*);
-
+protected:
+        void customEvent(QEvent *event);
 private slots:
 	void handleMessage(const MyStanza&);
 	void handlePresence(const MyStanza&);
 	void handleIq(const MyStanza&);
 	void onConnect();
-
-private slots:
 };
 
 #endif
