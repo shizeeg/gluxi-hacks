@@ -15,7 +15,7 @@
 #include <assert.h>
 #include <string>
 #include <iostream>
-#include <sys/select.h>
+#include <poll.h>
 
 GlooxWrapper::GlooxWrapper()
 	:QThread()
@@ -57,40 +57,26 @@ void GlooxWrapper::run()
 
 	// Gluxi loop
 	int fd=myClient->fileDescriptor();
-	fd_set rfdsR, rfdsE, rfdsW;
-	struct timeval tv;
 	int res;
+	struct pollfd pfd;
+	pfd.fd=fd;
+	pfd.events=POLLIN | POLLPRI | POLLERR | POLLNVAL;
 	while (1)
 	{
-		tv.tv_sec=10;
-		tv.tv_usec=0;
-		FD_ZERO(&rfdsR);
-		FD_SET(fd,&rfdsR);
-		FD_ZERO(&rfdsE);
-		FD_SET(fd,&rfdsE);
-		FD_ZERO(&rfdsW);
-		FD_SET(fd,&rfdsW);
-		res=select(fd+1,&rfdsR,&rfdsW,&rfdsE,&tv);
+		res=poll(&pfd,1,-1);
+
 		if (res<0)
 			break;
 		if (!res)
 			continue;
-		if (FD_ISSET(fd,&rfdsE))
+		
+		mutex.lock();
+		if (myClient->recv(0)!=gloox::ConnNoError)
 		{
-			qDebug() << "GlooxWrapper: error";
+			mutex.unlock();
 			break;
 		}
-		if (FD_ISSET(fd,&rfdsR))
-		{
-			mutex.lock();
-			if (myClient->recv(0)!=gloox::ConnNoError)
-			{
-				qDebug() << "recv() err";
-				mutex.unlock();
-				break;
-			}
-			mutex.unlock();
-		}
+		mutex.unlock();
 	}
 	qDebug() << "GlooxWrapper disconnected";
 	QCoreApplication::exit(0);
@@ -136,8 +122,8 @@ bool GlooxWrapper::handleIqID(gloox::Stanza*, int)
 // Thread-safe members
 void GlooxWrapper::disconnect()
 {
-	qDebug() << "Disconnect request";
 	QMutexLocker locker(&mutex);
+	qDebug() << "Disconnect request";
 	myClient->disconnect();
 }
 
