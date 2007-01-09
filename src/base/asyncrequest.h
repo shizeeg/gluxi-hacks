@@ -1,8 +1,9 @@
 #ifndef ASYNCREQUEST_H
 #define ASYNCREQUEST_H
 
-#include <QObject>
+#include <QThread>
 #include <QDateTime>
+#include <QMutex>
 
 namespace gloox
 {
@@ -11,7 +12,7 @@ namespace gloox
 
 class BasePlugin;
 
-class AsyncRequest: public QObject
+class AsyncRequest: public QThread
 {
 	Q_OBJECT
 public:
@@ -31,6 +32,7 @@ public:
 	void update();
 	bool expired();
 	QString stanzaId() const;
+	QMutex deleteMutex;
 private:
 	int myId;
 	BasePlugin* myPlugin;
@@ -39,8 +41,11 @@ private:
 	int myTimeout;
 	QDateTime myTime;
 	bool notified;
+protected:
+	void wantDelete();
+	virtual void run();
 signals:
-//	void wantDelete(AsyncRequest*);
+	void onWantDelete(AsyncRequest*);
 	void onDelete(AsyncRequest*);
 	void onExpire();
 };

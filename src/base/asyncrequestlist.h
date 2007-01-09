@@ -23,6 +23,7 @@ public:
 	AsyncRequest* byStanzaId(const QString& req);
 private slots:
 	void onDelete(AsyncRequest*);
+	void onWantDelete(AsyncRequest*);
 };
 
 #endif

@@ -45,3 +45,12 @@ QString AsyncRequest::stanzaId() const
         return QString::fromStdString(myStanza->findAttribute("id"));
 }
 
+void AsyncRequest::run()
+{
+}	
+
+void AsyncRequest::wantDelete()
+{
+	emit onWantDelete(this);
+}
+
