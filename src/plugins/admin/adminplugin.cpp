@@ -27,6 +27,7 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 		if (isFromBotOwner(s))
 		{
 			reply(s,"Ok");
+			
 			bot()->onQuit("QUIT command from bot owner");
 		}
 		else

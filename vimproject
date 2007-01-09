@@ -24,6 +24,7 @@ gluxi=$VIMPROJECT/src CD=../debug filter="*.h *.cpp *.c *.txt" in=../in.vim out=
   mystanza.cpp
   pluginlist.cpp
   rolelist.cpp
+  segfault.c
   CMakeLists.txt
  }
  plugins=plugins {
@@ -92,8 +93,8 @@ gluxi=$VIMPROJECT/src CD=../debug filter="*.h *.cpp *.c *.txt" in=../in.vim out=
    pingrequest.cpp
    svnrequest.cpp
    tracerouterequest.cpp
-   wwwrequest.cpp
    xeprequest.cpp
+   wwwrequest.cpp
    CMakeLists.txt
   }
   webstatus=webstatus {
@@ -103,5 +104,12 @@ gluxi=$VIMPROJECT/src CD=../debug filter="*.h *.cpp *.c *.txt" in=../in.vim out=
    webstatusthread.cpp
    CMakeLists.txt
   }
+ }
+ proxy=proxy {
+  baseproxy.h
+  directproxy.h
+  baseproxy.cpp
+  directproxy.cpp
+  CMakeLists.txt
  }
 }

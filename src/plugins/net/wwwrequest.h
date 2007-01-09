@@ -5,6 +5,7 @@
 
 #include <QString>
 #include <QProcess>
+#include <QThread>
 
 class WWWRequest: public AsyncRequest
 {
@@ -12,13 +13,12 @@ class WWWRequest: public AsyncRequest
 public:
 	WWWRequest(BasePlugin *plugin, gloox::Stanza *from, const QString& dest);
 	~WWWRequest();
-	void exec();
+	void launch();
 private:
 	QString myDest;
 	QProcess *proc;
-private slots:
-	void onProcessFinished();
-	void onStateChanged( QProcess::ProcessState newState );
+protected:
+	void run();
 };
 
 #endif

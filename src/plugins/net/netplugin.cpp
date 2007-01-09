@@ -73,8 +73,8 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 			return true;
 		}
 		WWWRequest *req=new WWWRequest(this, s->clone(), arg);
-		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
-		req->exec();
+		bot()->asyncRequests()->append(req);
+		req->launch();
 		return true;
 	}
 	
