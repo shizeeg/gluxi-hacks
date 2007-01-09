@@ -53,7 +53,7 @@ void WWWRequest::run()
 	
 	proc=new QProcess();
 	QStringList args;
-	args << "-dump" << "-nolist" << "-display_charset=utf-8" << "-stdin";
+	args << "-dump" << "-nolist" << "-display_charset=utf-8" << "-assume_charset=utf-8" << "-stdin";
 	proc->start("lynx",args);
 	if (!proc->waitForStarted())
 	{
