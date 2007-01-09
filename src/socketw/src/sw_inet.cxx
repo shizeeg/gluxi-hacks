@@ -85,7 +85,7 @@ bool SWInetSocket::bind(int port, string host, SWBaseError *error)
 		// Bind to a specific address
 	
 		if( (h = gethostbyname(host.c_str())) == NULL ){
- 			set_error(error, fatal, "SWInetSocket::bind() - Can't get host by name");
+ 			set_error(error, fatal, "Can't get host by name");
  			return false;
  		}
 		
@@ -106,7 +106,7 @@ bool SWInetSocket::bind(int port, string host, SWBaseError *error)
 	myAdr.sin_addr.s_addr = inp.s_addr;
 
 	if(::bind(myfd, (sockaddr *)&myAdr, sizeof(myAdr)) == -1){
-		handle_errno(error, "SWInetSocket::bind() error: ");
+		handle_errno(error, "");
 		return false;
 	}
 		
@@ -121,7 +121,7 @@ bool SWInetSocket::connect(int port, string hostname, SWBaseError *error)
 	hostent *host;
 
 	if( (host = gethostbyname(hostname.c_str())) == NULL ){
-		set_error(error, fatal, "SWInetSocket::connect() - Can't get host by name");
+		set_error(error, fatal, "Can't get host by name");
 		return false;
 	}
 
@@ -133,7 +133,7 @@ bool SWInetSocket::connect(int port, string hostname, SWBaseError *error)
 	remoteAdr.sin_addr = *((in_addr *)host->h_addr);
 
 	if(::connect(myfd, (sockaddr *)&remoteAdr, sizeof(remoteAdr)) == -1){
-		handle_errno(error, "SWInetSocket::connect() error: ");
+		handle_errno(error, "");
 		return false;
 	}
 
@@ -152,7 +152,7 @@ string SWInetSocket::get_peerAddr(SWBaseError *error)
 	char *pnt;
 	
 	if( (pnt = inet_ntoa(adr.sin_addr)) == NULL ){
-		set_error(error, fatal, "SWInetSocket::get_peerName() - Can't get peer address");
+		set_error(error, fatal, "Can't get peer address");
 		return "";
 	}
 	string name(pnt);
@@ -183,7 +183,7 @@ string SWInetSocket::get_peerName(SWBaseError *error)
 	hostent *h; 	
 
  	if( (h = gethostbyname(name.c_str())) == NULL ){
- 		set_error(error, fatal, "SWInetSocket::get_peerName() - Can't get peer by address");
+ 		set_error(error, fatal, "Can't get peer by address");
  		return "";
  	}
 	string host_name(h->h_name);
@@ -205,14 +205,14 @@ string SWInetSocket::get_hostAddr(SWBaseError *error)
 	hostent *host;
 
 	if( (host = gethostbyname(name.c_str())) == NULL ){
-		set_error(error, fatal, "SWInetSocket::get_hostAddr() - Can't get host by name");
+		set_error(error, fatal, "Can't get host by name");
 		return "";
 	}
 	
 	char *pnt;
 	
 	if( (pnt = inet_ntoa(*((in_addr *)host->h_addr))) == NULL){
-		set_error(error, fatal, "SWInetSocket::get_hostAddr() - Can't get host address");
+		set_error(error, fatal, "Can't get host address");
 		return "";
 	}
 	
@@ -238,7 +238,7 @@ string SWInetSocket::get_hostName(SWBaseError *error)
 	char buf[256];
 	
 	if( gethostname(buf, 256) != 0 ){
-		handle_errno(error, "SWInetSocket::gethostname() error: ");
+		handle_errno(error, "");
 		return "";
 	}
 	
