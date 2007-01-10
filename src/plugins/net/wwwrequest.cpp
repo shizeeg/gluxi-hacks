@@ -33,6 +33,8 @@ void WWWRequest::run()
 	proxy.contentTypes << "text/plain" << "text/html";
 	QStringList cookies;
 	QString referer="";
+	if (myDest.indexOf("://")<0)
+		myDest="http://"+myDest;
 	QString res=proxy.fetch(myDest,referer,&cookies,0);
 	if(res.isEmpty())
 	{
