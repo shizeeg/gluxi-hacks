@@ -11,10 +11,11 @@ class WWWRequest: public AsyncRequest
 {
 	Q_OBJECT
 public:
-	WWWRequest(BasePlugin *plugin, gloox::Stanza *from, const QString& dest);
+	WWWRequest(BasePlugin *plugin, gloox::Stanza *from, const QString& cmd, const QString& dest);
 	~WWWRequest();
 	void launch();
 private:
+	QString myCmd;
 	QString myDest;
 	QProcess *proc;
 protected:

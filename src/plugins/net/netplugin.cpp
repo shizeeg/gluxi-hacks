@@ -15,7 +15,7 @@
 NetPlugin::NetPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
-	commands << "PING" << "TRACEROUTE" << "WWW" << "XEP" << "GOOGLE" << "SVN";
+	commands << "PING" << "TRACEROUTE" << "WWW" << "XEP" << "GOOGLE" << "SVN" << "HEADERS";
 }
 
 
@@ -65,14 +65,14 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
                 return true;
         }
 
-	if (cmd=="WWW")
+	if (cmd=="WWW" || cmd=="HEADERS")
 	{
 		if (arg.isEmpty())
 		{
 			reply(s, "Usage: net www [URL]");
 			return true;
 		}
-		WWWRequest *req=new WWWRequest(this, s->clone(), arg);
+		WWWRequest *req=new WWWRequest(this, s->clone(), cmd, arg);
 		bot()->asyncRequests()->append(req);
 		req->launch();
 		return true;

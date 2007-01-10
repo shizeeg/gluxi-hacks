@@ -46,6 +46,7 @@ public:
 	int contentLength;
 	bool headersOnly;
 	QString errorString;
+	QString redirectTo;
 private:
 	int id;
 	int type;

@@ -8,9 +8,10 @@
 #include <QMutexLocker>
 #include <QTextCodec>
 
-WWWRequest::WWWRequest(BasePlugin *plugin, gloox::Stanza *from, const QString& dest)
+WWWRequest::WWWRequest(BasePlugin *plugin, gloox::Stanza *from, const QString& cmd, const QString& dest)
 	:AsyncRequest(-1, plugin, from, 300)
 {
+	myCmd=cmd;
 	myDest=dest;
 	proc=0;
 }
@@ -31,18 +32,41 @@ void WWWRequest::run()
 	QMutexLocker locker(&deleteMutex);
 	DirectProxy proxy(0,0,"");
 	proxy.maxSize=2*1024*1024;
-	proxy.contentTypes << "text/plain" << "text/html";
+	if (myCmd=="HEADERS")
+		proxy.headersOnly=true;
+	else
+		proxy.contentTypes << "text/plain" << "text/html";
+	
 	QStringList cookies;
 	QString referer="";
 	if (myDest.indexOf("://")<0)
 		myDest="http://"+myDest;
 	QString res=proxy.fetch(myDest,referer,&cookies,0);
+	if (proxy.headersOnly)
+	{
+		if (proxy.headers.isEmpty())
+			plugin()->reply(stanza(),"Error: Can't fetch HTTP headers");
+		else
+			plugin()->reply(stanza(),QString("Headers for: %1:\n%2")
+				.arg(myDest).arg(proxy.headers.join("\n")));
+		wantDelete();
+		return;
+	}
+	
+	if (!proxy.redirectTo.isEmpty())
+	{
+		plugin()->reply(stanza(),QString("Location: %1").arg(proxy.redirectTo));
+		wantDelete();
+		return;
+	}
+
 	if(res.isEmpty())
 	{
 		plugin()->reply(stanza(),"Error: "+proxy.errorString);
 		wantDelete();
 		return;
 	}
+
 	QString enc=proxy.charset;
 	if (enc.isEmpty())
 		enc="Windows-1251";

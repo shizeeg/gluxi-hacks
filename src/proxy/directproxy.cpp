@@ -25,6 +25,7 @@ DirectProxy::~DirectProxy()
 
 QByteArray DirectProxy::httpRequest(const QString& prot, const QString&host, const QString&url, QStringList* cookies, QStringList* custHeader, QString& lastURL)
 {
+	redirectTo.clear();
 	QByteArray arr;
 	int length;
 	if (!custHeader && !wascustom)
@@ -143,6 +144,7 @@ int DirectProxy::parseResponseLine(QString& line, QStringList*cookies, QString&r
 	if (line.toUpper().startsWith("LOCATION:"))
 	{
 		redirect=line.section(":",1,1000).trimmed();
+		redirectTo=redirect;
 		errorString=QString("Redirect to: %1").arg(redirect);
 	}
 
