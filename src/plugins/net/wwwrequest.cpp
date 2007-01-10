@@ -1,5 +1,6 @@
 #include "wwwrequest.h"
 #include "base/baseplugin.h"
+#include "base/common.h"
 #include "proxy/directproxy.h"
 
 #include <QProcess>
@@ -46,9 +47,16 @@ void WWWRequest::run()
 	if (enc.isEmpty())
 		enc="Windows-1251";
 
+	// No recode if we have codepage in META
+	QString tag=getValue(res,"<meta[^>]+http-equiv=[\\\"]{0,1}Content-Type[\\\"]{0,1}"
+		"[^>]+content=\\\"([^\\\"]+)\\\"[^>]*>");
+	QString htmlCharset;
+	if (!tag.isEmpty())
+		htmlCharset=getValue(tag,"charset=([A-Za-z0-9\\-\\_]+)");
+
 	QByteArray data;
 	QTextCodec *codec=QTextCodec::codecForName(enc.toLatin1().data());
-	if (codec)
+	if (codec && htmlCharset.isEmpty())
 		data=codec->toUnicode(proxy.lastData).toUtf8();
 	else
 		data=proxy.lastData;

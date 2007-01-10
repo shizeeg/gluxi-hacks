@@ -61,6 +61,7 @@ QString getValue(const QString&s,const QString&exp, bool last)
 {
         QRegExp expr(exp);
         expr.setMinimal(TRUE);
+	expr.setCaseSensitivity(Qt::CaseInsensitive);
         if (!last)
         {
                 if (expr.indexIn(s)<0)
