@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#define SOCKETNAME "/home/i386/tmp/gluxi_webstatus"
+#define SOCKETNAME "/tmp/gluxi_webstatus"
 
 void reportForbidden(char *s)
 {
