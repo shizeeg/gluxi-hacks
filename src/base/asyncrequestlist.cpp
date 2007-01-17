@@ -3,6 +3,20 @@
 #include <gloox/stanza.h>
 
 #include <QtDebug>
+#include <QTimer>
+
+AsyncRequestList::AsyncRequestList()
+	:QObject(), QList<AsyncRequest*>()
+{
+	timer=new QTimer(this);
+	connect(timer, SIGNAL(timeout()), SLOT(onTimeout()));
+	timer->start(60000);
+}
+
+AsyncRequestList::~AsyncRequestList()
+{
+	delete timer;
+}
 
 void AsyncRequestList::clear()
 {
@@ -74,5 +88,23 @@ void AsyncRequestList::onWantDelete(AsyncRequest* s)
 	s->terminate();
 	s->wait(1);
 	delete(s);
+}
+
+void AsyncRequestList::onTimeout()
+{
+	qDebug() << "Testing for old requests";
+	// Check for each request for timeout
+	QList<AsyncRequest*>::iterator it=begin();
+	while (it!=end())
+	{
+		if ((*it)->expired())
+		{
+			(*it)->disconnect();
+			delete *it;
+			it=erase(it);
+		}
+		else
+			++it;
+	}
 }
 
