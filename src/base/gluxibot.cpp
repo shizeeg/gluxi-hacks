@@ -29,6 +29,8 @@ GluxiBot::GluxiBot()
 	myGloox=new GlooxWrapper();
 	connect(myGloox, SIGNAL(sigConnect()), 
 		this, SLOT(onConnect()),Qt::QueuedConnection);
+	connect(myGloox, SIGNAL(sigDisconnect()),
+		this, SLOT(onDisconnect()), Qt::QueuedConnection);
 	connect(myGloox, SIGNAL(sigMessage(const MyStanza&)),
 		this, SLOT(handleMessage(const MyStanza&)), Qt::QueuedConnection);
 	connect(myGloox, SIGNAL(sigPresence(const MyStanza&)),
@@ -49,6 +51,7 @@ GluxiBot::GluxiBot()
 
 GluxiBot::~GluxiBot()
 {
+	qDebug() << "~GluxiBot";
 	delete myGloox;
 }
 
@@ -233,6 +236,21 @@ void GluxiBot::onQuit(const QString& reason)
 		plugin->onQuit(reason);
 	}
 	myGloox->disconnect();
+}
+
+void GluxiBot::onDisconnect()
+{
+	qDebug() << "Oops.. Disconnected";
+	myAsyncRequests->clear();
+	while (myPlugins.count())
+	{
+		BasePlugin *plugin=myPlugins.first();
+		qDebug() << "~: " << plugin->name();
+		delete plugin;
+		myPlugins.removeFirst();
+	}
+	qDebug() << "Ok.. Deleted";
+	QCoreApplication::exit(0);
 }
 
 BasePlugin* GluxiBot::pluginByStanzaId(gloox::Stanza* s)

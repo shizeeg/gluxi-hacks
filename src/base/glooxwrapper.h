@@ -48,6 +48,7 @@ signals:
 	void sigPresence(const MyStanza&);
 	void sigIq(const MyStanza&);
 	void sigConnect();
+	void sigDisconnect();
 };
 
 #endif
