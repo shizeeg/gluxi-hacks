@@ -27,7 +27,7 @@ void SVNRequest::exec()
 	QString cmd="svn";
 	QStringList args;
 	//svn info http://svn.xmpp.ru/repos/bombus/trunk
-	args << "info" <<  myDest;
+	args << "log" <<  myDest;
 	proc->start(cmd,args);
 	if (!proc->waitForStarted())
 	{
@@ -49,20 +49,18 @@ void SVNRequest::onProcessFinished()
 	}
 	if (!lines.endsWith('\n'))
 		lines+='\n';
-	QString rev=getValue(lines,"\\Revision: ([0-9]+)\\n");
-	QString author=getValue(lines,"\\nLast Changed Author: (.+)\\n");
-	QString date=getValue(lines,"\\nLast Changed Date: (.+)\\n");
-	if (rev.isEmpty())
-	{
-		plugin()->reply(stanza(),"Can't parse svn output:\n");
-		deleteLater();
-		return;
-	}
-	QString res=QString("SVN info for %1:\nRevision: %2").arg(myDest).arg(rev);
-	if (!author.isEmpty())
-		res+=QString(" by %1").arg(author);
-	if (!date.isEmpty())
-		res+=QString(" (%1)").arg(date);
+	QStringList list=lines.split('\n');
+	if (list.count() && list[0].startsWith("--"))
+		list.removeFirst();
+	if (list.count() && list[list.count()-1].startsWith("--"))
+		list.removeLast();
+	int i=0;
+	while (i<list.count())
+		if (list[i].isEmpty())
+			list.removeAt(i);
+		else
+			i++;
+	QString res=QString("SVN info for %1:\n%2").arg(myDest).arg(list.join("\n"));
 	
 	plugin()->reply(stanza(),res);
 	deleteLater();
