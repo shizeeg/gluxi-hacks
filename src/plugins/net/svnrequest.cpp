@@ -47,8 +47,8 @@ void SVNRequest::onProcessFinished()
 		deleteLater();
 		return;
 	}
-	if (!lines.endsWith('\n'))
-		lines+='\n';
+	if (lines.endsWith('\n'))
+		lines.remove(lines.count()-1,1);
 	QStringList list=lines.split('\n');
 	if (list.count() && list[0].startsWith("--"))
 		list.removeFirst();
