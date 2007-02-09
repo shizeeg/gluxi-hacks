@@ -27,7 +27,7 @@ void SVNRequest::exec()
 	QString cmd="svn";
 	QStringList args;
 	//svn info http://svn.xmpp.ru/repos/bombus/trunk
-	args << "log" << "--non-interactive" << "--limit" << "1" <<"-r" << myDest;
+	args << "log" << "--non-interactive" << "--limit" << "1" << myDest;
 	proc->start(cmd,args);
 	if (!proc->waitForStarted())
 	{
