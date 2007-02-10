@@ -79,7 +79,7 @@ void GlooxWrapper::run()
 		mutex.unlock();
 	}
 	qDebug() << "GlooxWrapper disconnected";
-	emit sigDisconnect();
+	QCoreApplication::exit(0);
 }
 
 void GlooxWrapper::onConnect()

@@ -67,7 +67,6 @@ private slots:
 	void handlePresence(const MyStanza&);
 	void handleIq(const MyStanza&);
 	void onConnect();
-	void onDisconnect();
 };
 
 #endif
