@@ -114,6 +114,21 @@ bool GlooxWrapper::handleIq(gloox::Stanza* s)
 	emit sigIq(MyStanza(s));
 }
 
+void GlooxWrapper::handleDiscoInfoResult (gloox::Stanza *s, int/* context*/)
+{
+	emit sigIq(MyStanza(s));
+}
+
+void GlooxWrapper::handleDiscoItemsResult (gloox::Stanza *s, int/* context*/)
+{
+        emit sigIq(MyStanza(s));
+}
+
+void GlooxWrapper::handleDiscoError (gloox::Stanza *s, int/* context*/)
+{
+        emit sigIq(MyStanza(s));
+}
+
 bool GlooxWrapper::handleIqID(gloox::Stanza*, int)
 {
 	return true;

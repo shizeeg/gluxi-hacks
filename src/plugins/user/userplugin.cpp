@@ -14,8 +14,9 @@
 UserPlugin::UserPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
-	commands << "VERSION" << "PING";
+	commands << "VERSION" << "PING" << "DISCO";
 	bot()->client()->registerIqHandler("jabber:iq:version");
+	bot()->client()->registerIqHandler("http://jabber.org/protocol/disco#items");
 }
 
 
@@ -62,6 +63,27 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 		bot()->client()->send(st);
 		return true;
 	}
+	if (cmd=="DISCO")
+	{
+		std::string id=bot()->client()->getID();
+		QString jid=bot()->getJID(s,arg);
+		if (jid.isEmpty())
+			jid=arg;
+		if (jid.isEmpty())
+			jid=QString::fromStdString(s->from().full());
+		gloox::Stanza *st=gloox::Stanza::createIqStanza(
+			gloox::JID(jid.toStdString()),
+			id,
+			gloox::StanzaIqGet,
+			"http://jabber.org/protocol/disco#items");
+		gloox::Stanza *sf=s->clone();
+		sf->addAttribute("id",id);
+		AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
+		req->setName(cmd);
+		bot()->asyncRequests()->append(req);
+		bot()->client()->send(st);
+		return true;
+	}
 	return false;
 }
 
@@ -84,15 +106,29 @@ void UserPlugin::sendVersion(gloox:: Stanza* s)
 bool UserPlugin::onIq(gloox::Stanza* s)
 {
 	QString xmlns=QString::fromStdString(s->xmlns());
-	if (xmlns=="jabber:iq:version" &&
-		s->subtype()==gloox::StanzaIqGet)
+	AsyncRequest* req=bot()->asyncRequests()->byStanza(s);
+	if (s->subtype()==gloox::StanzaIqGet)
 	{
-		//We should send our version
-		sendVersion(s);
+		if (xmlns=="jabber:iq:version")
+		{
+			//We should send our version
+			sendVersion(s);
+		}
+		if (xmlns=="http://jabber.org/protocol/disco#items")
+		{
+			//Disco items request. Report error;
+			gloox::Stanza *st=gloox::Stanza::createIqStanza(
+				s->from(),
+				s->findAttribute("id"),
+				gloox::StanzaIqError,
+				xmlns.toStdString());
+			bot()->client()->send(st);
+		}
+		if (req)
+			bot()->asyncRequests()->removeAll(req);
 		return true;
 	}
-
-	AsyncRequest* req=bot()->asyncRequests()->byStanza(s);
+	
 	if (!req)
 		return false;
 	if (req->plugin()!=this)
@@ -154,6 +190,58 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 			reply(req->stanza(),"Unable to get version");
 		}
 	}
+	if (xmlns=="http://jabber.org/protocol/disco#items")
+	{
+		if (s->subtype()==gloox::StanzaIqError)
+			reply(req->stanza(),"Unable to query");
+		else
+		{
+			QList<gloox::Tag*> lst=QList<gloox::Tag*>::fromStdList(query->children());
+			QStringList strings;
+			bool haveValues=true;
+			for (int i=0; i<lst.count(); i++)
+			{
+				QString name=QString::fromStdString(lst[i]->findAttribute("name"));
+				if (name.isEmpty())
+					name=QString::fromStdString(lst[i]->findAttribute("jid"));
+				if (name.isEmpty())
+					continue;
+				QString cnt=getValue(name,"^.*\\(([0-9]+)\\)$");
+				if (cnt.isEmpty() || !haveValues)
+				{
+					haveValues=false;
+					cnt="0";
+				}
+				else
+					name=getValue(name,"^(.*)\\([0-9]+\\)$").trimmed();
+				cnt=cnt.rightJustified(8,'0',true);
+				strings.append(QString("%1 %2").arg(cnt).arg(name));
+			}
+			qDebug() << strings;
+			strings.sort();
+			QStringList replyList;
+			int idx=strings.count()-1;
+			for (int i=0; i<strings.count(); i++)
+			{
+				int curIdx=haveValues ? idx: i;
+				int value=strings[curIdx].section(' ',0,0).toInt();
+				QString name=strings[curIdx].section(' ',1);
+				idx--;
+				QString item=QString("%1) %2").arg(i+1).arg(name);
+				if (haveValues)
+					item+=QString(": %1").arg(value);
+				replyList.append(item);
+				if (replyList.count()>=100)
+				{
+					replyList.append("...");
+					break;
+				}
+			}
+			reply(req->stanza(),"Disco items:\n"+replyList.join("\n"));
+		}
+	}
+	
+
 	bot()->asyncRequests()->removeAll(req);
 	delete req;
 	return true;
