@@ -224,7 +224,7 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 			if (lst.count())
 			{
 				double perc=((double)noval)/((double)(lst.count()));
-				haveValues=perc>0.2;
+				haveValues=perc<0.2;
 			}
 
 			int idx=strings.count()-1;
