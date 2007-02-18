@@ -198,7 +198,7 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 		{
 			QList<gloox::Tag*> lst=QList<gloox::Tag*>::fromStdList(query->children());
 			QStringList strings;
-			bool haveValues=true;
+			int noval=0;
 			for (int i=0; i<lst.count(); i++)
 			{
 				QString name=QString::fromStdString(lst[i]->findAttribute("name"));
@@ -207,10 +207,10 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 				if (name.isEmpty())
 					continue;
 				QString cnt=getValue(name,"^.*\\(([0-9]+)\\)$");
-				if (cnt.isEmpty() || !haveValues)
+				if (cnt.isEmpty())
 				{
-					haveValues=false;
 					cnt="0";
+					noval++;
 				}
 				else
 					name=getValue(name,"^(.*)\\([0-9]+\\)$").trimmed();
@@ -220,6 +220,13 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 			qDebug() << strings;
 			strings.sort();
 			QStringList replyList;
+			bool haveValues;
+			if (lst.count())
+			{
+				double perc=((double)noval)/((double)(lst.count()));
+				haveValues=perc>0.2;
+			}
+
 			int idx=strings.count()-1;
 			for (int i=0; i<strings.count(); i++)
 			{
