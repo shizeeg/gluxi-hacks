@@ -278,7 +278,8 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		int cnt=conf->nicks()->count();
 		for (int i=0; i<cnt; i++)
 			nickList << conf->nicks()->at(i)->nick();
-		reply(s,QString("I can see followed guys here: %1").arg(nickList.join(", ")));
+		reply(s,QString("I can see %1 guys here: %2").arg(cnt)
+			.arg(nickList.join(", ")));
 		return true;
 	}
 
