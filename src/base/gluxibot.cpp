@@ -38,6 +38,14 @@ GluxiBot::GluxiBot()
 	
 	myRoles=new RoleList();
 	myRoles->insert(storage->getString("access/owner"),ROLE_BOTOWNER);
+	int i=1;
+	while (1)
+	{
+		QString tmp=storage->getString(QString("access/owner%1").arg(i++));
+		if (tmp.isEmpty())
+			break;
+		myRoles->insert(tmp, ROLE_BOTOWNER);
+	}
 /*	myOwners.append(storage->getString("access/owner"));*/
 	
 	myAsyncRequests=new AsyncRequestList();
