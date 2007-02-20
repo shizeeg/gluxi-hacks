@@ -79,7 +79,7 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 		gloox::Stanza *sf=s->clone();
 		sf->addAttribute("id",id);
 		AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
-		req->setName(cmd);
+		req->setName(jid);
 		bot()->asyncRequests()->append(req);
 		bot()->client()->send(st);
 		return true;
@@ -198,12 +198,13 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 		{
 			QList<gloox::Tag*> lst=QList<gloox::Tag*>::fromStdList(query->children());
 			QStringList strings;
-			int noval=0;
+			bool safeJid=req->name().indexOf('@')<0;
 			for (int i=0; i<lst.count(); i++)
 			{
 				QString name=QString::fromStdString(lst[i]->findAttribute("name"));
+				QString jid=QString::fromStdString(lst[i]->findAttribute("jid"));
 				if (name.isEmpty())
-					name=QString::fromStdString(lst[i]->findAttribute("jid"));
+					name=jid;
 				if (name.isEmpty())
 					continue;
 				QString cnt=getValue(name,"^.*\\(([0-9]+)\\)$");
@@ -215,6 +216,8 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 				else
 					name=getValue(name,"^(.*)\\([0-9]+\\)$").trimmed();
 				cnt=cnt.rightJustified(8,'0',true);
+				if (name!=jid && safeJid)
+					name+=QString(" [%1]").arg(jid);
 				strings.append(QString("%1 %2").arg(cnt).arg(name));
 			}
 			qDebug() << strings;
