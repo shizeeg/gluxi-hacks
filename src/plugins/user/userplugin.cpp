@@ -199,6 +199,7 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 			QList<gloox::Tag*> lst=QList<gloox::Tag*>::fromStdList(query->children());
 			QStringList strings;
 			bool safeJid=req->name().indexOf('@')<0;
+			int noval=0;
 			for (int i=0; i<lst.count(); i++)
 			{
 				QString name=QString::fromStdString(lst[i]->findAttribute("name"));
