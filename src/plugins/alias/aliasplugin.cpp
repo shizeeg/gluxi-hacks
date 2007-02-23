@@ -48,14 +48,20 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 	if (!res.isEmpty())
 	{
 		QString expanded=expandAlias(res,arg);
-		gloox::Tag *tg=s->findChild("body");
-		assert(tg);
-		tg->setCData(expanded.toStdString());
-		s->addAttribute("glooxbot_alias","true");
-		s->finalize();
-		
-		// TODO: Fix alias plugin
-		bot()->client()->handleMessage(s);
+		while (1)
+		{
+			QString item=expanded.section(";",0,0).trimmed();
+			expanded=expanded.section(1);
+			if (item.isEmpty())
+				break;
+			gloox::Tag *tg=s->findChild("body");
+			assert(tg);
+			tg->setCData(expanded.toStdString());
+			s->addAttribute("glooxbot_alias","true");
+			s->finalize();
+			// TODO: Fix alias plugin
+			bot()->client()->handleMessage(s);
+		}
 		return true;
 	}
 	myShouldIgnoreError=true;
