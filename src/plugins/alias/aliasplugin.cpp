@@ -56,7 +56,7 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 				break;
 			gloox::Tag *tg=s->findChild("body");
 			assert(tg);
-			tg->setCData(expanded.toStdString());
+			tg->setCData(item.toStdString());
 			s->addAttribute("glooxbot_alias","true");
 			s->finalize();
 			// TODO: Fix alias plugin
