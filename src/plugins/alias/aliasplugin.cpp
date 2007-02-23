@@ -51,7 +51,7 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 		while (1)
 		{
 			QString item=expanded.section(";",0,0).trimmed();
-			expanded=expanded.section(1);
+			expanded=expanded.section(";",1);
 			if (item.isEmpty())
 				break;
 			gloox::Tag *tg=s->findChild("body");
