@@ -47,11 +47,12 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 
 	if (!res.isEmpty())
 	{
-		QString expanded=expandAlias(res,arg);
+//		QString expanded=expandAlias(res,arg);
 		while (1)
 		{
-			QString item=expanded.section(";",0,0).trimmed();
-			expanded=expanded.section(";",1);
+			QString item=res.section(";",0,0).trimmed();
+			res=res.section(";",1).trimmed();
+			item=expandAlias(item,arg);
 			if (item.isEmpty())
 				break;
 			gloox::Tag *tg=s->findChild("body");
