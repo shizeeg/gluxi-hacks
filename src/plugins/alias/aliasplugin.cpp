@@ -166,25 +166,31 @@ QString AliasPlugin::expandAlias(const QString&alias, const QString& args)
 	while (1)
 	{
 		bool wasRepl=false;
+		int offset=0;
 		exp.setPattern(QString("[^\\\\]\\%")+QString::number(idx));
+		QString subStr=args.section(' ',idx-1,idx-1);
 		while (1)
 		{
-			int ps=exp.indexIn(res);
+			int ps=exp.indexIn(res,offset);
 			if (ps<0) break;
 			res.remove(ps+1,exp.matchedLength()-1);
-			res.insert(ps+1, args.section(' ',idx-1,idx-1));
+			res.insert(ps+1, subStr);
 			wasRepl=1;
+			offset=ps+subStr.length();
 		}
 		if (!wasRepl) break;
 		idx++;
 	}
 	exp.setPattern(QString("[^\\\\]\\%\\*"));
+	int offset=0;
+	QString subStr=args.section(' ',idx-1);
 	while (1)
 	{
-		int ps=exp.indexIn(res);
+		int ps=exp.indexIn(res,offset);
 		if (ps<0) break;
 		res.remove(ps+1,exp.matchedLength()-1);
-		res.insert(ps+1, args.section(' ',idx-1));
+		res.insert(ps+1, subStr);
+		offset=ps+subStr.length();
 	}
 	return res.trimmed();
 }
