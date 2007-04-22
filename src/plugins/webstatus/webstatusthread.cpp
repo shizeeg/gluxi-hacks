@@ -62,8 +62,6 @@ void WebStatusThread::run()
 		int fd_client=accept(fd_srv, NULL, 0);
 		if (fd_client<0) continue;
 		
-		FD_ZERO(&rfds);
-		FD_SET(fd_client, &rfds);
 		bsize=0;
 
 		bool requestFinished=false;
@@ -71,6 +69,8 @@ void WebStatusThread::run()
 		{
 			tv.tv_sec=3;
 			tv.tv_usec=0;
+			FD_ZERO(&rfds);
+			FD_SET(fd_client, &rfds);
 			int res=select(fd_client+1, &rfds, NULL, NULL, &tv);
 			if (res == -1)
 				break;
