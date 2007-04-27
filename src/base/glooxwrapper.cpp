@@ -28,12 +28,18 @@ GlooxWrapper::GlooxWrapper()
 		storage->getStdString("account/server"),
 		storage->getStdString("account/resource"));
 
+	myConnection = new gloox::ConnectionTCP(myClient, myClient->logInstance(), 
+		storage->getStdString("account/server"),
+		5222 );
+ 	myClient->setConnectionImpl(myConnection);
 
 	myClient->disco()->setVersion("GluxiBot (libGLOOX based bot)","0.1",
 		version().toStdString());
 	myClient->disco()->setIdentity( "client", "bot" );
-	myClient->setAutoPresence( true );
-	myClient->setInitialPriority(storage->getInt("account/priority"));
+//	myClient->setAutoPresence( true );
+//	myClient->setPriority(storage->getInt("account/priority"));
+	myClient->setPresence(gloox::PresenceAvailable, 
+		storage->getInt("account/priority"));
 	myClient->registerConnectionListener( this );
 	myClient->registerMessageHandler(this);
 	myClient->registerPresenceHandler(this);
@@ -52,17 +58,18 @@ void GlooxWrapper::run()
 	
 	// We run connect() in non-blocking mode just because we should be 
 	// able to sync our threads
-	myClient->connect(false);
+ 	myClient->connect(false);
 	qDebug() << "Connected";
 
 	// Gluxi loop
-	int fd=myClient->fileDescriptor();
+	int fd=myConnection->socket();
 	int res;
 	struct pollfd pfd;
 	pfd.fd=fd;
 	pfd.events=POLLIN | POLLPRI | POLLERR | POLLNVAL;
 	while (1)
 	{
+
 		res=poll(&pfd,1,-1);
 
 		if (res<0)
@@ -71,8 +78,10 @@ void GlooxWrapper::run()
 			continue;
 		
 		mutex.lock();
-		if (myClient->recv(0)!=gloox::ConnNoError)
+		int err;
+		if ((err=myClient->recv(0))!=gloox::ConnNoError)
 		{
+			qDebug() << QString::fromStdString(myClient->streamErrorText());
 			mutex.unlock();
 			break;
 		}
@@ -98,7 +107,7 @@ bool GlooxWrapper::onTLSConnect( const gloox::CertInfo& )
 	return true;
 }
 
-void GlooxWrapper::handleMessage(gloox::Stanza* s)
+void GlooxWrapper::handleMessage(gloox::Stanza* s, gloox::MessageSession*)
 {
 	qDebug() << "Got message";
 	emit sigMessage(MyStanza(s));
@@ -121,12 +130,12 @@ void GlooxWrapper::handleDiscoInfoResult (gloox::Stanza *s, int/* context*/)
 
 void GlooxWrapper::handleDiscoItemsResult (gloox::Stanza *s, int/* context*/)
 {
-        emit sigIq(MyStanza(s));
+	emit sigIq(MyStanza(s));
 }
 
 void GlooxWrapper::handleDiscoError (gloox::Stanza *s, int/* context*/)
 {
-        emit sigIq(MyStanza(s));
+	emit sigIq(MyStanza(s));
 }
 
 bool GlooxWrapper::handleIqID(gloox::Stanza*, int)

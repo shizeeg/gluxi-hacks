@@ -166,7 +166,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		n->setAffiliation(getItem(s,"affiliation"));
 		n->setJid(getItem(s,"jid"));
 		n->setRole(role);
-		n->setShow(getPresence(s->show()));
+		n->setShow(getPresence(s->presence()));
 		n->setStatus(QString::fromStdString(s->status()));
 		n->updateLastActivity();
 		n->commit();

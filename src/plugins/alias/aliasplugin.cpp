@@ -61,7 +61,7 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 			s->addAttribute("glooxbot_alias","true");
 			s->finalize();
 			// TODO: Fix alias plugin
-			bot()->client()->handleMessage(s);
+			bot()->client()->handleMessage(s,0);
 		}
 		return true;
 	}

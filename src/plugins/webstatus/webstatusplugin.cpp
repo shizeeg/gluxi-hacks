@@ -144,7 +144,7 @@ void WebstatusPlugin::onPresence(gloox::Stanza *s)
 		return;
 
 	qDebug() << "Got presence from " << from;
-	QString status=getPresence(s->show());
+	QString status=getPresence(s->presence());
 	if (status.isEmpty())
 		return;
 	query.prepare("UPDATE webstatus SET status=? WHERE jid=?");
