@@ -65,7 +65,7 @@ void GoogleRequest::httpRequestFinished(int, bool err)
 		return;
 	}
 	QString buf=http->readAll();
-	QRegExp exp("(<a class=l[^>]*>.*)<h2 class=r>");
+	QRegExp exp("<div class=g><h2 class=r>(.*)</td></tr></table></div>");
 	exp.setMinimal(TRUE);
 	QString res;
 	int ps=0;
@@ -83,10 +83,9 @@ void GoogleRequest::httpRequestFinished(int, bool err)
 		deleteLater();
 		return;
 	}
-	QString url=removeHtml(getValue(res,"<a class=l href=\\\"(.*)\\\">"));
-	QString subj=removeHtml(getValue(res,"<a class=l[^>]*>([^<]*)</a>"));
+	QString url=removeHtml(getValue(res,"<a href=\\\"(.*)\\\" class=l>"));
+	QString subj=removeHtml(getValue(res,"<a[^>]*class=l>(.*)</a>"));
 	QString body=removeHtml(getValue(res,"<tr><td class=j><font size=-1>(.*)<br><span class=a>"));
-	
 	plugin()->reply(stanza(),QString("%1\n%2\n%3").arg(subj).arg(body).arg(url));
 	deleteLater();
 }
