@@ -85,7 +85,7 @@ void GoogleRequest::httpRequestFinished(int, bool err)
 	}
 	QString url=removeHtml(getValue(res,"<a href=\\\"(.*)\\\" class=l>"));
 	QString subj=removeHtml(getValue(res,"<a[^>]*class=l>(.*)</a>"));
-	QString body=removeHtml(getValue(res,"<tr><td class=j><font size=-1>(.*)<br><span class=a>"));
+	QString body=removeHtml(getValue(res,"<tr><td class=\"j\"><font size=-1>(.*)<br><span class=a>"));
 	plugin()->reply(stanza(),QString("%1\n%2\n%3").arg(subj).arg(body).arg(url));
 	deleteLater();
 }
