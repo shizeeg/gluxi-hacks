@@ -92,6 +92,7 @@ QString removeHtml(const QString& s)
 	res.replace("&amp;","&");
 	res.replace("&gt;",">");
 	res.replace("&quot;","\"");
+	res.replace("&#39;","'");
 	return res;
 }
 
