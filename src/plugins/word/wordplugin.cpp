@@ -85,7 +85,7 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 			reply(s,"Syntax: SHOWPRIV <NICK> <WORD>");
 			return true;
 		}
-		if (!allowUser && getRole(s)<ROLE_ADMIN)
+		if (!allowUser && getRole(s)<ROLE_MODERATOR)
 		{
 			reply(s,"You should be at least admin to do this");
 			return true;
