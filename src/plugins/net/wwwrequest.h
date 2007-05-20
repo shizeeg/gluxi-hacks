@@ -17,6 +17,7 @@ public:
 private:
 	QString myCmd;
 	QString myDest;
+	QString myExp;
 	QProcess *proc;
 protected:
 	void run();

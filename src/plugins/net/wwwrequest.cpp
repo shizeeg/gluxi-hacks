@@ -11,8 +11,9 @@
 WWWRequest::WWWRequest(BasePlugin *plugin, gloox::Stanza *from, const QString& cmd, const QString& dest)
 	:AsyncRequest(-1, plugin, from, 300)
 {
+	QMutexLocker locker(&deleteMutex);
 	myCmd=cmd;
-	myDest=dest;
+	myDest=dest.trimmed();
 	proc=0;
 }
 
@@ -30,12 +31,40 @@ void WWWRequest::launch()
 void WWWRequest::run()
 {
 	QMutexLocker locker(&deleteMutex);
+
+	
+	if (myDest.toUpper().startsWith("EXP"))
+	{
+		// We have RegExp
+		myDest.remove(0,4);
+		myDest=myDest.trimmed();
+		if (myDest.startsWith("\n"))
+			myDest=myDest.section('\n',1).trimmed();
+		myExp=myDest.section('\n',0,0);
+		myDest=myDest.section('\n',1);
+		if (myExp.isEmpty() || myDest.isEmpty())
+		{
+			plugin()->reply(stanza(),"RegExp expected");
+			wantDelete();
+			return;
+		}
+		if (!QRegExp(myExp).isValid())
+		{
+			plugin()->reply(stanza(),"RegExp error");
+			wantDelete();
+			return;
+		}
+		qDebug() << "|| exp=" << myExp << "  || dest=" << myDest;
+	}
+
+	QRegExp exp(myExp);
+
 	DirectProxy proxy(0,0,"");
 	proxy.maxSize=2*1024*1024;
 	if (myCmd=="HEADERS")
 		proxy.headersOnly=true;
 	else
-		proxy.contentTypes << "text/plain" << "text/html";
+		proxy.contentTypes << "text/plain" << "text/html" << "text/xml";
 	
 	QStringList cookies;
 	QString referer="";
@@ -84,6 +113,30 @@ void WWWRequest::run()
 		data=codec->toUnicode(proxy.lastData).toUtf8();
 	else
 		data=proxy.lastData;
+	
+	if (!myExp.isEmpty())
+	{
+		// Apply regexp
+		QString myString(data);
+		if (exp.indexIn(myString)<0)
+		{
+			plugin()->reply(stanza(), "RegExp don't match");
+			wantDelete();
+			return;
+		}
+		QStringList list=exp.capturedTexts();
+		if (list.count()<2)
+		{
+			plugin()->reply(stanza(), "No text captured");
+			wantDelete();
+			return;
+		}
+		list.removeFirst();
+		myString=removeHtml(list.join("\n"));
+		plugin()->reply(stanza(), myString);
+		wantDelete();
+		return;
+	}
 	
 	proc=new QProcess();
 	QStringList args;
