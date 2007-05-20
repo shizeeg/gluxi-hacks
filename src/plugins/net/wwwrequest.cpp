@@ -118,6 +118,7 @@ void WWWRequest::run()
 	{
 		// Apply regexp
 		QString myString(data);
+		exp.setMinimal(true);
 		if (exp.indexIn(myString)<0)
 		{
 			plugin()->reply(stanza(), "RegExp don't match");
