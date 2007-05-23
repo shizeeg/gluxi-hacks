@@ -64,7 +64,7 @@ void WWWRequest::run()
 	if (myCmd=="HEADERS")
 		proxy.headersOnly=true;
 	else
-		proxy.contentTypes << "text/plain" << "text/html" << "text/xml" << "text/vnd.sun.j2me.app-descriptor"
+		proxy.contentTypes << "text/plain" << "text/html" << "text/xml" << "text/vnd.sun.j2me.app-descriptor";
 	
 	QStringList cookies;
 	QString referer="";
@@ -133,7 +133,18 @@ void WWWRequest::run()
 			return;
 		}
 		list.removeFirst();
-		myString=removeHtml(list.join("\n"));
+		myString.clear();
+		for (int i=0; i<list.count(); ++i)
+		{
+			QString line=removeHtml(list[i]).trimmed();
+			if (!line.isEmpty())
+			{
+				if (!myString.isEmpty())
+					myString+="\n";
+				myString+=line;
+			}
+		}
+
 		plugin()->reply(stanza(), myString);
 		wantDelete();
 		return;
