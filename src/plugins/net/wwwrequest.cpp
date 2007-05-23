@@ -64,7 +64,7 @@ void WWWRequest::run()
 	if (myCmd=="HEADERS")
 		proxy.headersOnly=true;
 	else
-		proxy.contentTypes << "text/plain" << "text/html" << "text/xml";
+		proxy.contentTypes << "text/plain" << "text/html" << "text/xml" << "text/vnd.sun.j2me.app-descriptor"
 	
 	QStringList cookies;
 	QString referer="";
