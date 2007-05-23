@@ -133,6 +133,7 @@ void WWWRequest::run()
 			return;
 		}
 		list.removeFirst();
+		list=list.join("\n").split("\n");
 		myString.clear();
 		for (int i=0; i<list.count(); ++i)
 		{
@@ -150,25 +151,30 @@ void WWWRequest::run()
 		return;
 	}
 	
-	proc=new QProcess();
-	QStringList args;
-	args << "-dump" << "-nolist" << "-display_charset=utf-8" << "-assume_charset=utf-8" << "-stdin";
-	proc->start("lynx",args);
-	if (!proc->waitForStarted())
+	if (proxy.contentType=="text/html")
 	{
-		plugin()->reply(stanza(),"Unable to launch lynx -dump");
-		wantDelete();
-		return;
+		proc=new QProcess();
+		QStringList args;
+		args << "-dump" << "-nolist" << "-display_charset=utf-8" << "-assume_charset=utf-8" << "-stdin";
+		proc->start("lynx",args);
+		if (!proc->waitForStarted())
+		{
+			plugin()->reply(stanza(),"Unable to launch lynx -dump");
+			wantDelete();
+			return;
+		}
+		proc->write(data);
+		proc->closeWriteChannel();
+		if (!proc->waitForFinished())
+		{
+			plugin()->reply(stanza(),"Error: lynx timeout");
+			wantDelete();
+			return;
+		}
+		res=QString(proc->readAll());
 	}
-	proc->write(data);
-	proc->closeWriteChannel();
-	if (!proc->waitForFinished())
-	{
-		plugin()->reply(stanza(),"Error: lynx timeout");
-		wantDelete();
-		return;
-	}
-	res=QString(proc->readAll());
+	else
+		res=data;
 	plugin()->reply(stanza(),res);
 
 	wantDelete();
