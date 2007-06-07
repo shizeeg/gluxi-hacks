@@ -111,6 +111,15 @@ void WWWRequest::run()
 	if (!tag.isEmpty())
 		htmlCharset=getValue(tag,"charset=([A-Za-z0-9\\-\\_]+)");
 
+	if (!myExp.isEmpty())
+	{
+		if (!htmlCharset.isEmpty())
+		{
+			enc=htmlCharset;
+			htmlCharset="";
+		}
+	}
+
 	QByteArray data;
 	QTextCodec *codec=QTextCodec::codecForName(enc.toLatin1().data());
 	if (codec && htmlCharset.isEmpty())
