@@ -466,12 +466,14 @@ bool MucPlugin::isFromConfAdmin(gloox::Stanza* s)
 
 bool MucPlugin::isFromConfOwner(gloox::Stanza* s)
 {
-	QString jid=QString::fromStdString(s->from().bare());
+/*	QString jid=QString::fromStdString(s->from().bare());
 	QString nm=QString::fromStdString(s->from().resource());
 	Nick *nick=getNick(s,nm);
 	if (!nick) return false;
+*/
+	QString jid=QString::fromStdString(s->from().full());
 
-	if (nick->affiliation()!="owner")
+	if (bot()->roles()->get(jid) >= ROLE_OWNER)
 	{
 		reply(s,"Only conference owner can do this.");
 		return false;
