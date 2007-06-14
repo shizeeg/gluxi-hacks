@@ -473,7 +473,7 @@ bool MucPlugin::isFromConfOwner(gloox::Stanza* s)
 */
 	QString jid=QString::fromStdString(s->from().full());
 
-	if (bot()->roles()->get(jid) >= ROLE_OWNER)
+	if (bot()->roles()->get(jid) < ROLE_OWNER)
 	{
 		reply(s,"Only conference owner can do this.");
 		return false;
