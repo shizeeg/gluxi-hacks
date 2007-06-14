@@ -118,6 +118,11 @@ bool BasePlugin::canHandleMessage(gloox::Stanza* s)
 	return (!getBody(s).isEmpty());
 }
 
+QString BasePlugin::getMyNick(gloox::Stanza*)
+{
+	return QString::fromStdString(bot()->client()->jid().username()).toUpper()+":";
+}
+
 QString BasePlugin::getBody(gloox::Stanza* s, bool usePrefix)
 {
 	if (isOfflineMessage(s))
@@ -126,7 +131,7 @@ QString BasePlugin::getBody(gloox::Stanza* s, bool usePrefix)
 	QString body=QString::fromStdString(s->body());
 	int isec=0;
 	QString first=body.section(' ',isec,isec).toUpper();
-	QString nick=QString::fromStdString(bot()->client()->jid().username()).toUpper()+":";
+	QString nick=getMyNick(s);
 	bool isMe=false;
 	if (first.startsWith('!'))
 	{

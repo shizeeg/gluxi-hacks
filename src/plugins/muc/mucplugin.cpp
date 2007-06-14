@@ -21,7 +21,7 @@ MucPlugin::MucPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
 	commands << "WHEREAMI" << "NICK" << "IDLE" << "JOIN" << "LEAVE" << "KICK" << "VISITOR" << "PARTICIPANT" << "MODERATOR";
-	commands << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND" << "SEEN" << "CLIENTS";
+	commands << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND" << "SEEN" << "CLIENTS" << "SETNICK";
 	pluginId=1;
 }
 
@@ -60,6 +60,14 @@ bool MucPlugin::isMyMessage(gloox::Stanza*s)
 	if (res.isEmpty() || conf->nick()==res)
 		return true;
 	return false;
+}
+
+QString MucPlugin::getMyNick(gloox::Stanza* s)
+{
+	Conference *conf=getConf(s);
+	if (!conf)
+		return BasePlugin::getMyNick(s);
+	return conf->nick();
 }
 
 bool MucPlugin::canHandleMessage(gloox::Stanza* s)
@@ -361,6 +369,25 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 			reply(s,res);
 		return true;
 	}
+	if (cmd=="SETNICK")
+	{
+		if (isFromConfOwner(s))
+		{
+			conf->setNick(arg);
+		
+			gloox::Stanza *st=gloox::Stanza::createPresenceStanza(
+				gloox::JID(QString(conf->name()+"/"+arg).toStdString()));
+
+			gloox::Tag *tg=new gloox::Tag("x");
+			tg->addAttribute("xmlns","http://jabber.org/protocol/muc");
+			st->addChild(tg);
+			bot()->client()->send(st);
+
+		}
+		else
+			reply(s,"never");
+		return true;
+	}
 
 	return false;
 }
@@ -492,6 +519,7 @@ Nick* MucPlugin::getNickVerbose(gloox::Stanza* s, const QString& nn)
 
 void MucPlugin::join(const QString& name)
 {
+	qDebug() << "MucPlugin::join: " << name;
 	QString cname;
 	QString cnick;
 	QString confName=name;

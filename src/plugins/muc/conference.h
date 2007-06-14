@@ -28,6 +28,7 @@ public:
 	AList* amoderator() { return myModerator; };
 	QString seen(const QString& nick);
 	QString clientStat();
+	void setNick(const QString& name);
 private:
 	int myId;
 	QString myNick;

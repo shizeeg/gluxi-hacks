@@ -188,3 +188,13 @@ QString Conference::clientStat()
 		return QString::null;
 }
 
+void Conference::setNick(const QString& nick)
+{
+	myNick=nick;
+	QSqlQuery query;
+	query.prepare("UPDATE conferences SET nick=? WHERE conference_id=?");
+	query.addBindValue(nick);
+	query.addBindValue(myId);
+	query.exec();
+}
+

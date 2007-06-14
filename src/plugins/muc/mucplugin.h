@@ -25,6 +25,7 @@ public:
 	virtual int getStorage(gloox::Stanza*s );
 	virtual QString getJID(gloox::Stanza*s, const QString&nick);
 	virtual QString JIDtoNick(const QString& jid);
+	virtual QString getMyNick(gloox::Stanza* s);
 	virtual void onQuit(const QString& reason);
 private:
 	ConferenceList conferences;
