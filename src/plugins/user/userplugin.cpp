@@ -54,7 +54,7 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 
 		qDebug() << QString::fromStdString(st->xml());
 		
-		gloox::Stanza *sf=s->clone();
+		gloox::Stanza *sf=new gloox::Stanza(s);
 		sf->addAttribute("id",id);
 
 		AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
@@ -76,7 +76,7 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 			id,
 			gloox::StanzaIqGet,
 			"http://jabber.org/protocol/disco#items");
-		gloox::Stanza *sf=s->clone();
+		gloox::Stanza *sf=new gloox::Stanza(s);
 		sf->addAttribute("id",id);
 		AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
 		req->setName(jid);

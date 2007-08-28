@@ -41,7 +41,7 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 			reply(s,"Incorrect character in domain name");
 			return true;
 		}
-		PingRequest *req=new PingRequest(this, s->clone(), arg);
+		PingRequest *req=new PingRequest(this, new gloox::Stanza(s), arg);
 		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
 		req->exec();
 		return true;
@@ -59,7 +59,7 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
                         reply(s,"Incorrect character in domain name");
                         return true;
                 }
-                TraceRouteRequest *req=new TraceRouteRequest(this, s->clone(), arg);
+                TraceRouteRequest *req=new TraceRouteRequest(this, new gloox::Stanza(s), arg);
                 bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
                 req->exec();
                 return true;
@@ -72,7 +72,7 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 			reply(s, "Usage: net www [URL]");
 			return true;
 		}
-		WWWRequest *req=new WWWRequest(this, s->clone(), cmd, arg);
+		WWWRequest *req=new WWWRequest(this, new gloox::Stanza(s), cmd, arg);
 		bot()->asyncRequests()->append(req);
 		req->launch();
 		return true;
@@ -85,7 +85,7 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 			reply(s, "Usage: net svn [repository URL] "+arg);
 			return true;
 		}
-		SVNRequest *req=new SVNRequest(this, s->clone(), arg);
+		SVNRequest *req=new SVNRequest(this, new gloox::Stanza(s), arg);
 		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
 		req->exec();
 		return true;
@@ -93,14 +93,14 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 
 	if (cmd=="XEP")
 	{
-		XepRequest *req=new XepRequest(this, s->clone(), arg);
+		XepRequest *req=new XepRequest(this, new gloox::Stanza(s), arg);
 		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
 		req->exec();
 		return true;
 	}
 	if (cmd=="GOOGLE")
 	{
-		GoogleRequest *req=new GoogleRequest(this, s->clone(), arg);
+		GoogleRequest *req=new GoogleRequest(this, new gloox::Stanza(s), arg);
 		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
 		req->exec();
 		return true;

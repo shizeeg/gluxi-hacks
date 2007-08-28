@@ -9,12 +9,12 @@ MyStanza::MyStanza()
 
 MyStanza::MyStanza(const MyStanza& stanza)
 {
-	st=stanza.stanza()->clone();
+	st=new gloox::Stanza(stanza.stanza());
 }
 
 MyStanza::MyStanza(gloox::Stanza* stanza)
 {
-	st=stanza->clone();
+	st=new gloox::Stanza(stanza);
 }
 
 MyStanza::~MyStanza()
@@ -27,6 +27,6 @@ void MyStanza::setStanza(gloox::Stanza* stanza)
 {
 	if (st)
 		delete st;
-	st=stanza->clone();
+	st=new gloox::Stanza(stanza);
 }
 

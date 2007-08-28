@@ -4,7 +4,7 @@
 #include <QThread>
 #include <QMutex>
 
-#include <gloox/connectiontcp.h>
+#include <gloox/connectiontcpclient.h>
 #include <gloox/client.h>
 #include <gloox/presencehandler.h>
 #include <gloox/connectionlistener.h>
@@ -37,7 +37,7 @@ protected:
 private:
 	QMutex mutex;
 	gloox::Client* myClient;
-	gloox::ConnectionTCP* myConnection;
+	gloox::ConnectionTCPClient* myConnection;
 	
 	virtual void handlePresence( gloox::Stanza *stanza );
 	virtual bool handleIq(gloox::Stanza*);

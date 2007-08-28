@@ -28,7 +28,7 @@ GlooxWrapper::GlooxWrapper()
 		storage->getStdString("account/server"),
 		storage->getStdString("account/resource"));
 
-	myConnection = new gloox::ConnectionTCP(myClient, myClient->logInstance(), 
+	myConnection = new gloox::ConnectionTCPClient(myClient, myClient->logInstance(), 
 		storage->getStdString("account/server"),
 		5222 );
  	myClient->setConnectionImpl(myConnection);

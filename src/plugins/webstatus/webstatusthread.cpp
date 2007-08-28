@@ -36,6 +36,7 @@ WebStatusThread::~WebStatusThread()
 void WebStatusThread::run()
 {
 	struct sockaddr_un sa;
+	unlink(socketName.toLocal8Bit().data());
 	strcpy(sa.sun_path, socketName.toLocal8Bit().data());
 	sa.sun_family=AF_UNIX;
 	int fd_srv=socket(AF_UNIX, SOCK_STREAM, 0);
