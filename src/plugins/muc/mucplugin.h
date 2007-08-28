@@ -15,6 +15,7 @@ public:
 	virtual QString description() const { return "MUC support"; };
 	virtual QString help() const { return ""; };
 	virtual void onConnect();
+	virtual void onDisconnect();
 	virtual bool canHandlePresence(gloox::Stanza* s);
 	virtual bool canHandleMessage(gloox::Stanza* s);
 	virtual void onPresence(gloox::Stanza* );

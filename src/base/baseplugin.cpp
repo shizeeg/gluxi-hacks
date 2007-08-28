@@ -31,6 +31,10 @@ void BasePlugin::onConnect()
 {
 }
 
+void BasePlugin::onDisconnect()
+{
+}
+
 void BasePlugin::onPresence(gloox::Stanza* /* s */)
 {
 }

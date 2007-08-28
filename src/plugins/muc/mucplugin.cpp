@@ -37,6 +37,13 @@ void MucPlugin::onConnect()
 		join(it.next());
 }
 
+void MucPlugin::onDisconnect()
+{
+	qDebug() << "MucPlugin: cleaning for onDisconnect()";
+	confInProgress.clear();
+	conferences.clear();
+}
+
 bool MucPlugin::canHandlePresence(gloox::Stanza* s)
 {
 	QString from=QString::fromStdString(s->from().bare());

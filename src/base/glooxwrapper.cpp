@@ -58,36 +58,40 @@ void GlooxWrapper::run()
 	
 	// We run connect() in non-blocking mode just because we should be 
 	// able to sync our threads
- 	myClient->connect(false);
-	qDebug() << "Connected";
-
-	// Gluxi loop
-	int fd=myConnection->socket();
-	int res;
-	struct pollfd pfd;
-	pfd.fd=fd;
-	pfd.events=POLLIN | POLLPRI | POLLERR | POLLNVAL;
 	while (1)
-	{
+ 	{
+		myClient->connect(false);
+		qDebug() << "Connected";
 
-		res=poll(&pfd,1,-1);
-
-		if (res<0)
-			break;
-		if (!res)
-			continue;
-		
-		mutex.lock();
-		int err;
-		if ((err=myClient->recv(0))!=gloox::ConnNoError)
+		// Gluxi loop
+		int fd=myConnection->socket();
+		int res;
+		struct pollfd pfd;
+		pfd.fd=fd;
+		pfd.events=POLLIN | POLLPRI | POLLERR | POLLNVAL;
+		while (1)
 		{
-			qDebug() << QString::fromStdString(myClient->streamErrorText());
+
+			res=poll(&pfd,1,-1);
+
+			if (res<0)
+				break;
+			if (!res)
+				continue;
+		
+			mutex.lock();
+			int err;
+			if ((err=myClient->recv(0))!=gloox::ConnNoError)
+			{
+				qDebug() << QString::fromStdString(myClient->streamErrorText());
+				mutex.unlock();
+				break;
+			}
 			mutex.unlock();
-			break;
 		}
-		mutex.unlock();
+		qDebug() << "GlooxWrapper disconnected. Waiting 30 secs";
+		sleep(10);
 	}
-	qDebug() << "GlooxWrapper disconnected";
 	QCoreApplication::exit(0);
 }
 
@@ -98,6 +102,7 @@ void GlooxWrapper::onConnect()
 
 void GlooxWrapper::onDisconnect(gloox::ConnectionError /* e */)
 {
+	emit sigDisconnect();
 	// Disconnect
 }
 

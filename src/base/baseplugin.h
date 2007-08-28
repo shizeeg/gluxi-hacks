@@ -23,6 +23,7 @@ public:
 	virtual QString help() const { return QString::null; };
 	virtual QString description() const { return "base plugin"; };
 	virtual void onConnect();
+	virtual void onDisconnect();
 	virtual bool allMessages() const { return false; };
 	virtual bool onMessage(gloox::Stanza* );
 	virtual bool parseMessage(gloox::Stanza*);

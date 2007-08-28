@@ -29,6 +29,8 @@ GluxiBot::GluxiBot()
 	myGloox=new GlooxWrapper();
 	connect(myGloox, SIGNAL(sigConnect()), 
 		this, SLOT(onConnect()),Qt::QueuedConnection);
+	connect(myGloox, SIGNAL(sigDisconnect()),
+		this, SLOT(onDisconnect()), Qt::QueuedConnection);
 	connect(myGloox, SIGNAL(sigMessage(const MyStanza&)),
 		this, SLOT(handleMessage(const MyStanza&)), Qt::QueuedConnection);
 	connect(myGloox, SIGNAL(sigPresence(const MyStanza&)),
@@ -82,6 +84,20 @@ void GluxiBot::onConnect()
 	std::cout << "onConnect() sent" << std::endl;
 }
 
+void GluxiBot::onDisconnect()
+{
+	std::cout << "Disconnected" << std::endl;
+
+	QListIterator<BasePlugin*> it(myPlugins);
+	BasePlugin *plugin;
+	while (it.hasNext())
+	{
+		plugin=it.next();
+		assert(plugin);
+		plugin->onDisconnect();
+	}
+	std::cout << "onDisconnect() sent" << std::endl;
+}
 void GluxiBot::handleMessage(const MyStanza& st)
 {
 	gloox::Stanza *s=st.stanza();
