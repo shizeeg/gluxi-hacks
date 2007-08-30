@@ -16,6 +16,7 @@ BaseProxy::BaseProxy(int ID, int typ, QString nfo)
 	postSize=0;
 	maxSize=0;
 	headersOnly=false;
+	userAgent="Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.10) Gecko/20050822 Firefox/1.0.6 (Debian package 1.0.6-3)";
 }
 
 BaseProxy::~BaseProxy()

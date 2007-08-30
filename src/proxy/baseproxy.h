@@ -47,6 +47,7 @@ public:
 	bool headersOnly;
 	QString errorString;
 	QString redirectTo;
+	QString userAgent;
 private:
 	int id;
 	int type;

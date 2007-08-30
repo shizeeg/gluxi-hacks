@@ -40,7 +40,7 @@ QByteArray DirectProxy::httpRequest(const QString& prot, const QString&host, con
 	lastURL=QString("%1%2%3").arg(prot,host,url);
 	arr.append(QString("Host: %1\r\n").arg(host));
 	arr.append("Accept: */*\r\n");
-	arr.append("User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.10) Gecko/20050822 Firefox/1.0.6 (Debian package 1.0.6-3)\r\n");
+	arr.append(QString("User-Agent: %s\r\n").arg(userAgent));
 	arr.append("Connection: close\r\n");
 	if (cookies->count())
 	{
