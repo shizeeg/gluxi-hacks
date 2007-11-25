@@ -60,6 +60,7 @@ int RoleList::calc(const QString& role, const QString& affiliation)
 		return(ROLE_MEMBER);
 	if (r.startsWith("PARTICIPANT"))
 		return(ROLE_PARTICIPANT);
+	return 0;
 }
 
 int RoleList::operator[](const QString&key)
