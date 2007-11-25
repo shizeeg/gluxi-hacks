@@ -179,7 +179,7 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 			QString src=bot()->JIDtoNick(QString::fromStdString(
 					s->from().full()));
 			if (!src.isEmpty())
-				src+=" use ";
+				src+=" uses ";
 			src+=res;
 
 			reply(req->stanza(),src);
