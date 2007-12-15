@@ -1,4 +1,5 @@
 #include "aliaslist.h"
+#include "base/datastorage.h"
 
 #include <QList>
 #include <QVariant>
@@ -12,8 +13,8 @@ int AliasList::append(const QList<int>& storage, const QString& name, const QStr
 {
 	if (storage.count()!=2)
 		return 0;
-	QSqlQuery query;
-	query.prepare("INSERT INTO aliases(plugin, storage, name, value) VALUES (?, ?, ?, ?)");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("INSERT INTO aliases(plugin, storage, name, value) VALUES (?, ?, ?, ?)");
 	query.addBindValue(storage[0]);
 	query.addBindValue(storage[1]);
 	query.addBindValue(name);
@@ -36,8 +37,8 @@ QMap<QString,QString> AliasList::getAll(const QList<int>& storage)
 	QMap<QString,QString> map;
 	if (storage.count()!=2)
 		return map;
-	QSqlQuery query;
-	query.prepare("SELECT name, value FROM aliases WHERE plugin=? AND storage=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("SELECT name, value FROM aliases WHERE plugin=? AND storage=?");
 	query.addBindValue(storage[0]);
 	query.addBindValue(storage[1]);
 	query.exec();
@@ -50,8 +51,8 @@ QString AliasList::get(const QList<int>& storage, const QString&name)
 {
 	if (storage.count()!=2)
 		return QString::null;
-	QSqlQuery query;
-	query.prepare("SELECT value FROM aliases WHERE plugin=? AND storage=? AND name=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("SELECT value FROM aliases WHERE plugin=? AND storage=? AND name=?");
 	query.addBindValue(storage[0]);
 	query.addBindValue(storage[1]);
 	query.addBindValue(name);
@@ -63,10 +64,12 @@ QString AliasList::get(const QList<int>& storage, const QString&name)
 
 void AliasList::clear(const QList<int>& storage)
 {
-	QSqlQuery query;
+	//WTF???
 	if (storage.count()!=2)
 		return;
-	query.prepare("DELETE FROM aliases WHERE plugin=? AND storage=?");
+	
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("DELETE FROM aliases WHERE plugin=? AND storage=?");
 	query.addBindValue(storage[0]);
 	query.addBindValue(storage[1]);
 	query.exec();
@@ -76,8 +79,8 @@ int AliasList::count(const QList<int>& storage)
 {
 	if (storage.count()!=2)
 		return 0;
-	QSqlQuery query;
-	query.prepare("SELECT COUNT(name) FROM aliases WHERE plugin=? AND storage=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("SELECT COUNT(name) FROM aliases WHERE plugin=? AND storage=?");
 	query.addBindValue(storage[0]);
 	query.addBindValue(storage[1]);
 	query.exec();
@@ -88,10 +91,10 @@ int AliasList::count(const QList<int>& storage)
 
 bool AliasList::remove(const QList<int>& storage, const QString& name)
 {
-	QSqlQuery query;
 	if (storage.count()!=2)
 		return false;
-	query.prepare("DELETE FROM aliases WHERE plugin=? AND storage=? AND name=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("DELETE FROM aliases WHERE plugin=? AND storage=? AND name=?");
 	query.addBindValue(storage[0]);
 	query.addBindValue(storage[1]);
 	query.addBindValue(name);

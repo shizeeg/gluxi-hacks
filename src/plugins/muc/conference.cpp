@@ -1,6 +1,7 @@
 #include "conference.h"
 #include "alist.h"
 #include "base/common.h"
+#include "base/datastorage.h"
 
 #include <QtDebug>
 #include <QSqlQuery>
@@ -19,8 +20,8 @@ Conference::Conference(const QString& name, const QString& nick)
 	myNick=nick;
 	qDebug() << myName;
 	qDebug() << myNick;
-	QSqlQuery query;
-	query.prepare("SELECT id, name FROM conferences WHERE name = ?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("SELECT id, name FROM conferences WHERE name = ?");
 	query.addBindValue(myName);
 	query.exec();
 	if (query.next())
@@ -80,9 +81,8 @@ Conference::Conference(const QString& name, const QString& nick)
 Conference::~Conference()
 {
 	qDebug() << "~Conference";
-	QSqlQuery query;
-	query.clear();
-	query.prepare("UPDATE conferences SET online = 0 WHERE id = ?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("UPDATE conferences SET online = 0 WHERE id = ?");
 	query.addBindValue(myId);
 	query.exec();
 	delete myKick;
@@ -92,8 +92,8 @@ Conference::~Conference()
 
 QStringList Conference::autoJoinList()
 {
-	QSqlQuery query;
-	query.prepare("SELECT name, nick FROM conferences WHERE autojoin=1");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("SELECT name, nick FROM conferences WHERE autojoin=1");
 	query.exec();
 	QStringList result;
 	while (query.next())
@@ -110,8 +110,8 @@ QStringList Conference::autoJoinList()
 
 void Conference::setAutoJoin(bool b)
 {
-	QSqlQuery query;
-	query.prepare("UPDATE conferences SET autojoin=? WHERE id=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("UPDATE conferences SET autojoin=? WHERE id=?");
 	query.addBindValue(b);
 	query.addBindValue(myId);
 	query.exec();
@@ -142,8 +142,8 @@ QString Conference::seen(const QString&n)
 */
 		return QString("\"%1\" is already in room").arg(n);
 	}
-	QSqlQuery query;
-	query.prepare("SELECT jid FROM conference_nicks WHERE conference_id=? AND nick=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("SELECT jid FROM conference_nicks WHERE conference_id=? AND nick=?");
 	query.addBindValue(myId);
 	query.addBindValue(n);
 	if (query.exec() && query.next())
@@ -191,8 +191,8 @@ QString Conference::clientStat()
 void Conference::setNick(const QString& nick)
 {
 	myNick=nick;
-	QSqlQuery query;
-	query.prepare("UPDATE conferences SET nick=? WHERE conference_id=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("UPDATE conferences SET nick=? WHERE conference_id=?");
 	query.addBindValue(nick);
 	query.addBindValue(myId);
 	query.exec();

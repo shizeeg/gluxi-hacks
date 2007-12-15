@@ -1,6 +1,7 @@
 #include "nick.h"
 #include "conference.h"
 #include "jid.h"
+#include "base/datastorage.h"
 
 #include <QtDebug>
 #include <QVariant>
@@ -17,8 +18,8 @@ Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 
 	myJid=new Jid(this, jid);
 
-	QSqlQuery query;
-	query.prepare("SELECT id FROM conference_nicks WHERE conference_id = ? AND nick = ?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("SELECT id FROM conference_nicks WHERE conference_id = ? AND nick = ?");
 	query.addBindValue(myParent->id());
 	query.addBindValue(myNick);
 	if (!query.exec())
@@ -59,8 +60,8 @@ Nick::~Nick()
 {
 	qDebug() << "[NICK] destroyed: " << myNick;
 	delete myJid;
-	QSqlQuery query;
-	query.prepare("UPDATE conference_nicks SET online=0 WHERE id=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("UPDATE conference_nicks SET online=0 WHERE id=?");
 	query.addBindValue(myId);
 	query.exec();
 }
@@ -87,8 +88,8 @@ void Nick::setJid(const QString& jid)
 
 void Nick::commit()
 {
-	QSqlQuery query;
-	query.prepare("UPDATE conference_nicks SET nick=?, jid=?, lastaction=? WHERE id=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("UPDATE conference_nicks SET nick=?, jid=?, lastaction=? WHERE id=?");
 	query.addBindValue(myNick); // Nick
 	query.addBindValue(myJid->id());
 	query.addBindValue(myLastActivity);
@@ -98,9 +99,8 @@ void Nick::commit()
 
 void Nick::setAllOffline (Conference* conf)
 {
-	QSqlQuery query;
-	query.clear();
-	query.prepare("UPDATE conference_nicks SET online = 0 WHERE conference_id = ?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("UPDATE conference_nicks SET online = 0 WHERE conference_id = ?");
 	query.addBindValue(conf->id());
 	query.exec();
 	Jid::removeTemporary(conf);

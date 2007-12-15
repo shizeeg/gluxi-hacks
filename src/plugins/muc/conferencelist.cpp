@@ -1,13 +1,13 @@
 #include "conferencelist.h"
+#include "base/datastorage.h"
 
 #include <QtDebug>
 #include <QSqlQuery>
 
 ConferenceList::ConferenceList()
 {
-	QSqlQuery query;
-	query.clear();
-	query.prepare("UPDATE conferences SET online = 0");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("UPDATE conferences SET online = 0");
 	query.exec();
 }
 

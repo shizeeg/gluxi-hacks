@@ -64,18 +64,30 @@ int DataStorage::getInt(const QString& name)
 
 bool DataStorage::connect()
 {
-	QSqlDatabase db = QSqlDatabase::addDatabase(myType);
-	db.setHostName(myServer);
-	db.setPort(myPort);
-	db.setDatabaseName(myDatabase);
-	db.setUserName(myUser);
-	db.setPassword(myPassword);
-	if (!db.open())
+	database = QSqlDatabase::addDatabase(myType);
+	database.setHostName(myServer);
+	database.setPort(myPort);
+	database.setDatabaseName(myDatabase);
+	database.setUserName(myUser);
+	database.setPassword(myPassword);
+	if (!database.open())
 	{
-		qFatal("%s\n",db.lastError().text().toLatin1().data());
+		qFatal("%s\n",database.lastError().text().toLatin1().data());
 		return false;
 	}
 	qDebug() << "DataStorage:: Connect to database success";
 	return true;
 }
 
+QSqlQuery DataStorage::prepareQuery(const QString& query)
+{
+	if (!database.isOpen())
+	{
+		qWarning() << "Database connection lost";
+		QSqlDatabase::removeDatabase(myType);
+		connect();
+	}
+	QSqlQuery q;
+	q.prepare(query);
+	return q;
+}

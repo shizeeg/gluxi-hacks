@@ -1,5 +1,6 @@
 #include "jid.h"
 #include "conference.h"
+#include "base/datastorage.h"
 
 #include <QtDebug>
 #include <QString>
@@ -37,8 +38,8 @@ Jid::~Jid()
 
 void Jid::loadJid()
 {
-	QSqlQuery query;
-	query.prepare("SELECT id FROM conference_jids WHERE conference_id = ? AND jid = ?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("SELECT id FROM conference_jids WHERE conference_id = ? AND jid = ?");
 	qDebug() << myParent->conference()->id() << myJid;
 	query.addBindValue(myParent->conference()->id());
 	query.addBindValue(myJid);
@@ -53,8 +54,8 @@ void Jid::loadJid()
 	}
 	else
 	{
-		query.clear();
-		query.prepare("INSERT INTO conference_jids ( conference_id, jid, resource, temporary, created) "
+		query=DataStorage::instance()
+			->prepareQuery("INSERT INTO conference_jids ( conference_id, jid, resource, temporary, created) "
 			"VALUES ( ?, ?, ?, ?, ? )");
 		query.addBindValue(myParent->conference()->id());
 		query.addBindValue(myJid);
@@ -94,18 +95,21 @@ void Jid::removeTemporary(Conference *conf)
 	QSqlQuery query;
 	if (conf)
 	{
-		query.prepare("DELETE FROM conference_jids WHERE conference_id=? AND temporary=1");
+		query=DataStorage::instance()
+			->prepareQuery("DELETE FROM conference_jids WHERE conference_id=? AND temporary=1");
 		query.addBindValue(conf->id());
 	}
 	else
-		query.prepare("DELETE FROM conference_jids WHERE temporary=1");
+		query=DataStorage::instance()
+			->prepareQuery("DELETE FROM conference_jids WHERE temporary=1");
 	query.exec();
 }
 
 void Jid::remove()
 {
 		QSqlQuery query;
-		query.prepare("DELETE FROM conference_jids WHERE id = ?");
+		query=DataStorage::instance()
+			->prepareQuery("DELETE FROM conference_jids WHERE id = ?");
 		query.addBindValue(myId);
 		query.exec();
 }

@@ -1,6 +1,7 @@
 #include "alist.h"
-#include "base/common.h"
 #include "conference.h"
+#include "base/common.h"
+#include "base/datastorage.h"
 
 #include <QtDebug>
 #include <QSqlQuery>
@@ -19,8 +20,8 @@ AList::AList(Conference* conf, int type)
 void AList::load()
 {
 	clear();
-	QSqlQuery query;
-	query.prepare("SELECT value FROM conference_alists WHERE conference_id=? AND list=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("SELECT value FROM conference_alists WHERE conference_id=? AND list=?");
 	query.addBindValue(myParent->id());
 	query.addBindValue(myType);
 	query.exec();
@@ -32,8 +33,8 @@ void AList::removeAt(int idx)
 {
 	if (idx>count()-1)
 		return;
-	QSqlQuery query;
-	query.prepare("DELETE FROM conference_alists WHERE conference_id=? AND list=? AND value=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("DELETE FROM conference_alists WHERE conference_id=? AND list=? AND value=?");
 	query.addBindValue(myParent->id());
 	query.addBindValue(myType);
 	query.addBindValue(QStringList::at(idx));
@@ -43,8 +44,8 @@ void AList::removeAt(int idx)
 
 int AList::removeAll(const QString& s)
 {
-	QSqlQuery query;
-	query.prepare("DELETE FROM conference_alists WHERE conference_id=? AND list=? AND value=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("DELETE FROM conference_alists WHERE conference_id=? AND list=? AND value=?");
 	query.addBindValue(myParent->id());
 	query.addBindValue(myType);
 	query.addBindValue(s);
@@ -54,8 +55,8 @@ int AList::removeAll(const QString& s)
 
 bool AList::removeExpired()
 {
-	QSqlQuery query;
-	query.prepare("DELETE FROM conference_alists WHERE conference_id=? AND list=? AND expire<=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("DELETE FROM conference_alists WHERE conference_id=? AND list=? AND expire<=?");
 	query.addBindValue(myParent->id());
 	query.addBindValue(myType);
 	query.addBindValue(QDateTime::currentDateTime());
@@ -70,8 +71,8 @@ bool AList::removeExpired()
 
 void AList::append(const QString&s)
 {
-	QSqlQuery query;
-	query.prepare("INSERT INTO conference_alists (conference_id, value, list) VALUES (?, ?, ?)");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("INSERT INTO conference_alists (conference_id, value, list) VALUES (?, ?, ?)");
 	query.addBindValue(myParent->id());
 	query.addBindValue(s);
 	query.addBindValue(myType);
@@ -83,8 +84,8 @@ void AList::append(const QString&s)
 
 void AList::append(const QString&s, const QDateTime& expire)
 {
-	QSqlQuery query;
-	query.prepare("INSERT INTO conference_alists (conference_id, value, list, expire) VALUES (?, ?, ?, ?)");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("INSERT INTO conference_alists (conference_id, value, list, expire) VALUES (?, ?, ?, ?)");
 	query.addBindValue(myParent->id());
 	query.addBindValue(s);
 	query.addBindValue(myType);
@@ -96,8 +97,8 @@ void AList::append(const QString&s, const QDateTime& expire)
 }
 void AList::removeItems()
 {
-	QSqlQuery query;
-	query.prepare("DELETE FROM conference_alists WHERE conference_id=? AND list=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("DELETE FROM conference_alists WHERE conference_id=? AND list=?");
 	query.addBindValue(myParent->id());
 	query.addBindValue(myType);
 	query.exec();
@@ -107,8 +108,8 @@ void AList::removeItems()
 QString AList::toString()
 {
 	QStringList res;
-	QSqlQuery query;
-	query.prepare("SELECT value, expire FROM conference_alists WHERE conference_id=? AND list=?");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("SELECT value, expire FROM conference_alists WHERE conference_id=? AND list=?");
 	query.addBindValue(myParent->id());
 	query.addBindValue(myType);
 	query.exec();
