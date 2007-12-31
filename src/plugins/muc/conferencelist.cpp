@@ -7,7 +7,7 @@
 ConferenceList::ConferenceList()
 {
 	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("UPDATE conferences SET online = 0");
+		->prepareQuery("UPDATE conferences SET online = false");
 	query.exec();
 }
 

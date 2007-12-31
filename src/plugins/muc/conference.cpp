@@ -32,7 +32,7 @@ Conference::Conference(const QString& name, const QString& nick)
 
 
 		query.clear();
-		query.prepare("UPDATE conferences SET nick = ?, joined = ?, online = 1, autojoin=1 WHERE id = ?");
+		query.prepare("UPDATE conferences SET nick = ?, joined = ?, online = true, autojoin = true WHERE id = ?");
 		query.addBindValue(myNick);
 		query.addBindValue(QDateTime::currentDateTime());
 		query.addBindValue(myId);
@@ -49,7 +49,7 @@ Conference::Conference(const QString& name, const QString& nick)
 		query.addBindValue(myName);
 		query.addBindValue(myNick);
 		query.addBindValue(QDateTime::currentDateTime());
-		query.addBindValue(1);
+		query.addBindValue(true);
 		query.addBindValue(QDateTime::currentDateTime());
 		if (!query.exec())
 		{
@@ -82,7 +82,7 @@ Conference::~Conference()
 {
 	qDebug() << "~Conference";
 	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("UPDATE conferences SET online = 0 WHERE id = ?");
+		->prepareQuery("UPDATE conferences SET online = false WHERE id = ?");
 	query.addBindValue(myId);
 	query.exec();
 	delete myKick;
@@ -93,7 +93,7 @@ Conference::~Conference()
 QStringList Conference::autoJoinList()
 {
 	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("SELECT name, nick FROM conferences WHERE autojoin=1");
+		->prepareQuery("SELECT name, nick FROM conferences WHERE autojoin=true");
 	query.exec();
 	QStringList result;
 	while (query.next())

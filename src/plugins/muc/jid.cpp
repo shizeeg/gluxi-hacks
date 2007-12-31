@@ -62,7 +62,10 @@ void Jid::loadJid()
 		query.addBindValue(myResource);
 		query.addBindValue(myTemporary);
 		query.addBindValue(QDateTime::currentDateTime());
-		query.exec();
+		if  (!query.exec())
+		{
+			qDebug() << "[JID] " << QSqlDatabase::database().lastError().text();
+		}
 		myId=query.lastInsertId().toInt();
 	}
 
@@ -96,12 +99,12 @@ void Jid::removeTemporary(Conference *conf)
 	if (conf)
 	{
 		query=DataStorage::instance()
-			->prepareQuery("DELETE FROM conference_jids WHERE conference_id=? AND temporary=1");
+			->prepareQuery("DELETE FROM conference_jids WHERE conference_id=? AND temporary=true");
 		query.addBindValue(conf->id());
 	}
 	else
 		query=DataStorage::instance()
-			->prepareQuery("DELETE FROM conference_jids WHERE temporary=1");
+			->prepareQuery("DELETE FROM conference_jids WHERE temporary=true");
 	query.exec();
 }
 

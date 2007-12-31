@@ -31,7 +31,7 @@ Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 	{
 		myId=query.value(0).toInt();
 		query.clear();
-		query.prepare("UPDATE conference_nicks SET jid=?, joined = ?, lastaction = ?, online = 1 WHERE id = ?");
+		query.prepare("UPDATE conference_nicks SET jid=?, joined = ?, lastaction = ?, online = true WHERE id = ?");
 		query.addBindValue(myJid->id());
 		query.addBindValue(QDateTime::currentDateTime());
 		query.addBindValue(QDateTime::currentDateTime());
@@ -47,7 +47,7 @@ Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 		query.addBindValue(myNick);
 		query.addBindValue(myJid->id());
 		query.addBindValue(QDateTime::currentDateTime());
-		query.addBindValue(1);
+		query.addBindValue(true);
 		query.addBindValue(QDateTime::currentDateTime());
 		query.addBindValue(QDateTime::currentDateTime());
 		query.exec();
@@ -61,7 +61,7 @@ Nick::~Nick()
 	qDebug() << "[NICK] destroyed: " << myNick;
 	delete myJid;
 	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("UPDATE conference_nicks SET online=0 WHERE id=?");
+		->prepareQuery("UPDATE conference_nicks SET online=false WHERE id=?");
 	query.addBindValue(myId);
 	query.exec();
 }
@@ -100,7 +100,7 @@ void Nick::commit()
 void Nick::setAllOffline (Conference* conf)
 {
 	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("UPDATE conference_nicks SET online = 0 WHERE conference_id = ?");
+		->prepareQuery("UPDATE conference_nicks SET online = false WHERE conference_id = ?");
 	query.addBindValue(conf->id());
 	query.exec();
 	Jid::removeTemporary(conf);
