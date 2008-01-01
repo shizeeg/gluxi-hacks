@@ -17,6 +17,7 @@ set (base_HDR
 	pluginlist.h
 	rolelist.h
 	segfault.h
+	messageparser.h
 )
 
 set (base_SRC
@@ -31,6 +32,7 @@ set (base_SRC
 	asyncrequest.cpp
 	asyncrequestlist.cpp
 	rolelist.cpp
+	messageparser.cpp
 	segfault.c
 )
 

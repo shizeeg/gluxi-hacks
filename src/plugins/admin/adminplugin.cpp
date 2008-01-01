@@ -3,9 +3,12 @@
 #include "base/asyncrequestlist.h"
 #include "base/asyncrequest.h"
 #include "base/rolelist.h"
+#include "base/messageparser.h"
 
 #include <gloox/client.h>
 #include <gloox/stanza.h>
+
+#include <QtDebug>
 
 AdminPlugin::AdminPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
@@ -19,8 +22,9 @@ AdminPlugin::~AdminPlugin()
 
 bool AdminPlugin::parseMessage(gloox::Stanza* s)
 {
-	QString body=getBody(s);
-	QString cmd=body.section(' ',0,0).toUpper();
+	MessageParser parser(s);
+	parser.nextToken();
+	QString cmd=parser.nextToken().toUpper();
 
 	if (cmd=="QUIT")
 	{

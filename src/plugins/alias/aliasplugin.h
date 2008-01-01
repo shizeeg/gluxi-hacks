@@ -6,6 +6,8 @@
 
 #include <QMap>
 
+class MessageParser;
+
 class AliasPlugin : public BasePlugin
 {
 	Q_OBJECT
@@ -20,7 +22,7 @@ public:
 	virtual bool allMessages() const { return false; };
 
 	virtual bool parseMessage(gloox::Stanza* );
-	virtual bool parseCommands(gloox::Stanza* );
+	virtual bool parseCommands(gloox::Stanza* s, MessageParser& parser);
 private:
 	AliasList aliases;
 	QString expandAlias(const QString&alias, const QString& args);

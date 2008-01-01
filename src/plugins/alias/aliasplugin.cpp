@@ -2,66 +2,61 @@
 #include "base/gluxibot.h"
 #include "base/glooxwrapper.h"
 #include "base/rolelist.h"
+#include "base/messageparser.h"
 
 #include <QList>
 #include <QtDebug>
 
 #include <assert.h>
 
-AliasPlugin::AliasPlugin(GluxiBot *parent)
-		: BasePlugin(parent)
+AliasPlugin::AliasPlugin(GluxiBot *parent) :
+	BasePlugin(parent)
 {
-	commands << "SHOW"  << "CLEAR" << "COUNT" << "ADD" << "DEL";
+	commands << "SHOW" << "CLEAR" << "COUNT" << "ADD" << "DEL";
 }
 
-
 AliasPlugin::~AliasPlugin()
-{}
+{
+}
 
 bool AliasPlugin::canHandleMessage(gloox::Stanza* s)
 {
-	if (isOfflineMessage(s))
-		return false;
 	if (BasePlugin::canHandleMessage(s))
 		return true;
 	if (bot()->isMyMessage(s))
 		return false;
+
+	//Stanza with already expanded alias
 	if (s->hasAttribute("glooxbot_alias"))
 		return false;
-	QString body=getBody(s,false);
-	qDebug() << "AliasPlugin::canHandleMessage() " << body;
-	return (!body.isEmpty());
+	return true;
 }
 
 bool AliasPlugin::parseMessage(gloox::Stanza* s)
 {
-	QString body=getBody(s,false);
-	qDebug() << "AliasPlugin::parseMessage() " << body;
-	QString cmd=body.section(' ',0,0).toUpper();
-	QString arg=body.section(' ',1);
-	// 	reply(s,QString("got: \"%1\"").arg(body));
+	MessageParser parser(s, getMyNick(s));
+	QString cmd=parser.nextToken().toUpper();
 	if (cmd=="ALIAS")
-		return parseCommands(s);
+		return parseCommands(s, parser);
 
-	QString res=aliases.get(bot()->getStorage(s),cmd);
+	QString res=aliases.get(bot()->getStorage(s), cmd);
 
 	if (!res.isEmpty())
 	{
-//		QString expanded=expandAlias(res,arg);
+		//		QString expanded=expandAlias(res,arg);
 		while (1)
 		{
 			QString item=res.section(";",0,0).trimmed();
 			res=res.section(";",1).trimmed();
-			item=expandAlias(item,arg);
+			item=expandAlias(item, parser.joinBody());
 			if (item.isEmpty())
 				break;
 			gloox::Tag *tg=s->findChild("body");
 			assert(tg);
 			tg->setCData(item.toStdString());
-			s->addAttribute("glooxbot_alias","true");
+			s->addAttribute("glooxbot_alias", "true");
 			s->finalize();
-			// TODO: Fix alias plugin
-			bot()->client()->handleMessage(s,0);
+			bot()->client()->handleMessage(s, 0);
 		}
 		return true;
 	}
@@ -69,22 +64,16 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 	return false;
 }
 
-bool AliasPlugin::parseCommands(gloox::Stanza* s)
+bool AliasPlugin::parseCommands(gloox::Stanza* s, MessageParser& parser)
 {
-	QString body=getBody(s);
-	QString cmd=body.section(' ',0,0).toUpper(); // First arg - "ALIAS"
-	QString arg=body.section(' ',1);
-
-	// 	reply(s,"Command: "+cmd);
+	QString cmd=parser.nextToken().toUpper();
 
 	if (cmd.isEmpty() || cmd=="LIST" || cmd=="HELP")
 		return BasePlugin::onMessage(s);
 
-/*	if (!isFromOwner(s) &&
-	        bot()->tmpOwners()->indexOf(QString::fromStdString(s->from().full()))<0)*/
 	if (getRole(s) < ROLE_ADMIN)
 	{
-		reply(s,"You should be admin to edit aliases");
+		reply(s, "You should be admin to edit aliases");
 		return true;
 	}
 
@@ -95,61 +84,63 @@ bool AliasPlugin::parseCommands(gloox::Stanza* s)
 		int cnt=all.count();
 		if (!cnt)
 		{
-			reply(s,"Alias list is empty");
+			reply(s, "Alias list is empty");
 			return true;
 		}
 		for (int i=0; i<cnt; i++)
 			res+=QString("\n%1) %2=%3").arg(i+1).arg(all.keys()[i].toLower()).arg(all.values()[i]);
-		reply(s,QString("Aliases:%1").arg(res));
+		reply(s, QString("Aliases:%1").arg(res));
 		return true;
 	}
 	if (cmd=="CLEAR")
 	{
 		aliases.clear(bot()->getStorage(s));
-		reply(s,"Cleared");
+		reply(s, "Cleared");
 		return true;
 	}
 	if (cmd=="COUNT")
 	{
-		reply(s,QString("Currntly I have %1 aliases").arg(aliases.count(bot()->getStorage(s))));
+		reply(s, QString("Currntly I have %1 aliases").arg(aliases.count(bot()->getStorage(s))));
 		return true;
 	}
 	//arg=arg.toUpper();
+	QString arg=parser.joinBody();
 	QString name=arg.section('=',0,0).toUpper().trimmed();
 	QString value=arg.section('=',1).trimmed();
 	if (cmd=="ADD")
 	{
 		if (name.isEmpty() || value.isEmpty())
 		{
-			reply(s,"Syntax: !alias add <name>=<value>, where value can contain %1, %2.. - arguments; %* - all arguemnts");
+			reply(s, 
+					"Syntax: !alias add <name>=<value>, where value can contain"
+							" %1, %2.. - arguments; %* - all arguemnts");
 			return true;
 		}
-		/*		QRegExp valExp("[^\\\\]%[0-9]");
-				if (value.startsWith("%") || valExp.indexIn(value)>=0)
-				{
-					reply(s, "value shouldn't conatin \"%\"");
-					return true;
-				}*/
-
-		int res=aliases.append( bot()->getStorage(s),name,value);
+		int res=aliases.append(bot()->getStorage(s), name, value);
 		switch (res)
 		{
-		case 0: reply(s, "Can't store"); break;
-		case 1: reply(s, "Saved"); break;
-		case 2: reply(s, "Updated"); break;
+		case 0:
+			reply(s, "Can't store");
+			break;
+		case 1:
+			reply(s, "Saved");
+			break;
+		case 2:
+			reply(s, "Updated");
+			break;
 		}
 
 		return true;
 	}
 	if (cmd=="DEL")
 	{
-		if (aliases.remove(bot()->getStorage(s),name))
+		if (aliases.remove(bot()->getStorage(s), name))
 		{
-			reply(s,"Deleted");
+			reply(s, "Deleted");
 		}
 		else
 		{
-			reply(s,"Can't delete");
+			reply(s, "Can't delete");
 		}
 		return true;
 	}
@@ -168,27 +159,30 @@ QString AliasPlugin::expandAlias(const QString&alias, const QString& args)
 		bool wasRepl=false;
 		int offset=0;
 		exp.setPattern(QString("[^\\\\]\\%")+QString::number(idx));
-		QString subStr=args.section(' ',idx-1,idx-1);
+		QString subStr=args.section(' ', idx-1, idx-1);
 		while (1)
 		{
-			int ps=exp.indexIn(res,offset);
-			if (ps<0) break;
-			res.remove(ps+1,exp.matchedLength()-1);
+			int ps=exp.indexIn(res, offset);
+			if (ps<0)
+				break;
+			res.remove(ps+1, exp.matchedLength()-1);
 			res.insert(ps+1, subStr);
 			wasRepl=1;
 			offset=ps+subStr.length();
 		}
-		if (!wasRepl) break;
+		if (!wasRepl)
+			break;
 		idx++;
 	}
 	exp.setPattern(QString("[^\\\\]\\%\\*"));
 	int offset=0;
-	QString subStr=args.section(' ',idx-1);
+	QString subStr=args.section(' ', idx-1);
 	while (1)
 	{
-		int ps=exp.indexIn(res,offset);
-		if (ps<0) break;
-		res.remove(ps+1,exp.matchedLength()-1);
+		int ps=exp.indexIn(res, offset);
+		if (ps<0)
+			break;
+		res.remove(ps+1, exp.matchedLength()-1);
 		res.insert(ps+1, subStr);
 		offset=ps+subStr.length();
 	}

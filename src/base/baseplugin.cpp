@@ -3,6 +3,7 @@
 #include "glooxwrapper.h"
 #include "datastorage.h"
 #include "rolelist.h"
+#include "messageparser.h"
 
 #include <QString>
 #include <QtDebug>
@@ -119,16 +120,25 @@ bool BasePlugin::canHandleMessage(gloox::Stanza* s)
 		return false;
 	if (allMessages())
 		return true;
-	return (!getBody(s).isEmpty());
+	return (MessageParser::isMessageAcceptable(s, getMyNick(s), prefix()));
 }
 
 QString BasePlugin::getMyNick(gloox::Stanza*)
 {
-	return QString::fromStdString(bot()->client()->jid().username()).toUpper()+":";
+	return QString::fromStdString(bot()->client()->jid().username());
 }
 
 QString BasePlugin::getBody(gloox::Stanza* s, bool usePrefix)
-{
+{	
+	qWarning() << "Deprecated getBody()";
+	
+	MessageParser parser(s,getMyNick(s));
+	QString token;
+	while (!(token=parser.nextToken()).isNull())
+	{
+		qDebug() <<"token: " << token;
+	}
+	
 	if (isOfflineMessage(s))
 		return QString::null;
 
@@ -169,6 +179,7 @@ QString BasePlugin::getBody(gloox::Stanza* s, bool usePrefix)
 	}
 	return QString::null;
 }
+
 
 bool BasePlugin::isGroupChat(gloox::Stanza* s)
 {
