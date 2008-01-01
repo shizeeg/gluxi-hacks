@@ -69,7 +69,7 @@ bool AliasPlugin::parseCommands(gloox::Stanza* s, MessageParser& parser)
 	QString cmd=parser.nextToken().toUpper();
 
 	if (cmd.isEmpty() || cmd=="LIST" || cmd=="HELP")
-		return BasePlugin::onMessage(s);
+		return false; //BasePlugin::onMessage(s);
 
 	if (getRole(s) < ROLE_ADMIN)
 	{
