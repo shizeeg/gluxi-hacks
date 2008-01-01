@@ -1,6 +1,9 @@
 #include "coreplugin.h"
 #include "base/gluxibot.h"
 #include "base/pluginlist.h"
+#include "base/messageparser.h"
+
+#include <QtDebug>
 
 CorePlugin::CorePlugin(GluxiBot *parent)
 		: BasePlugin(parent)
@@ -12,8 +15,9 @@ CorePlugin::~CorePlugin()
 
 bool CorePlugin::onMessage(gloox::Stanza* s)
 {
-	QString body=getBody(s);
-	QString cmd=body.section(' ',0,0).toUpper();
+	MessageParser parser(s, getMyNick(s));
+	qDebug() << parser.joinBody();
+	QString cmd=parser.nextToken().toUpper();
 
 	if (cmd=="HELP")
 	{

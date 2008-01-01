@@ -42,9 +42,10 @@ void BasePlugin::onPresence(gloox::Stanza* /* s */)
 
 bool BasePlugin::onMessage(gloox::Stanza* s )
 {
-	QString body=getBody(s);
-	QString cmd=body.section(' ',0,0).toUpper();
-
+	MessageParser parser(s, getMyNick(s));
+	parser.nextToken();
+	QString cmd=parser.nextToken().toUpper();
+	
 	if (BasePlugin::canHandleMessage(s))
 	{
 		if (cmd.isEmpty())
