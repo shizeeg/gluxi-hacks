@@ -3,6 +3,7 @@
 #include "base/gluxibot.h"
 #include "base/glooxwrapper.h"
 #include "base/datastorage.h"
+#include "base/messageparser.h"
 
 #include <gloox/stanza.h>
 
@@ -35,10 +36,10 @@ WebstatusPlugin::~WebstatusPlugin()
 
 bool WebstatusPlugin::parseMessage(gloox::Stanza* s)
 {
-	QString body=getBody(s);
-	QString cmd=body.section(' ',0,0).toUpper();
-	QString arg=body.section(' ',1);
-	
+	MessageParser parser(s, getMyNick(s));
+	parser.nextToken();
+	QString cmd=parser.nextToken().toUpper();
+	QString arg=parser.joinBody();
 	if (cmd=="INVITE")
 	{
 		if (!isFromBotOwner(s,true))

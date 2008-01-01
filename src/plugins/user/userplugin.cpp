@@ -3,6 +3,7 @@
 #include "base/glooxwrapper.h"
 #include "base/gluxibot.h"
 #include "base/asyncrequestlist.h"
+#include "base/messageparser.h"
 
 #include <QtDebug>
 #include <QTime>
@@ -33,9 +34,10 @@ bool UserPlugin::canHandleIq(gloox::Stanza* s)
 
 bool UserPlugin::parseMessage(gloox::Stanza* s)
 {
-	QString body=getBody(s);
-	QString cmd=body.section(' ',0,0).toUpper();
-	QString arg=body.section(' ',1).toUpper();
+	MessageParser parser(s, getMyNick(s));
+	parser.nextToken();
+	QString cmd=parser.nextToken().toUpper();
+	QString arg=parser.joinBody();
 
 	if (cmd=="VERSION" || cmd=="PING")
 	{

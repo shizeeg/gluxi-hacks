@@ -8,6 +8,7 @@
 #include "xeprequest.h"
 #include "googlerequest.h"
 #include "svnrequest.h"
+#include "base/messageparser.h"
 
 #include <QtDebug>
 #include <QRegExp>
@@ -24,9 +25,10 @@ NetPlugin::~NetPlugin()
 
 bool NetPlugin::parseMessage(gloox::Stanza* s)
 {
-	QString body=getBody(s);
-	QString cmd=body.section(' ',0,0).toUpper();
-	QString arg=body.section(' ',1);
+	MessageParser parser(s, getMyNick(s));
+	parser.nextToken();
+	QString cmd=parser.nextToken().toUpper();
+	QString arg=parser.joinBody();
 	qDebug() << "Got CMD: " << cmd << "; length=" << cmd.length();
 
 	if (cmd=="PING")

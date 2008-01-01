@@ -1,6 +1,7 @@
 #include "wordplugin.h"
 #include "base/gluxibot.h"
 #include "base/rolelist.h"
+#include "base/messageparser.h"
 
 #include <QtDebug>
 #include <QTime>
@@ -17,9 +18,10 @@ WordPlugin::~WordPlugin()
 
 bool WordPlugin::parseMessage(gloox::Stanza* s)
 {
-	QString body=getBody(s);
-	QString cmd=body.section(' ',0,0).toUpper();
-	QString arg=body.section(' ',1).trimmed();
+	MessageParser parser(s, getMyNick(s));
+	parser.nextToken();
+	QString cmd=parser.nextToken().toUpper();
+	QString arg=parser.joinBody();
 
 	if (cmd=="ADD")
 	{

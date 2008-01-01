@@ -65,10 +65,14 @@ QString MessageParser::firstToken() const
 QString MessageParser::nextToken()
 {
 	if (currentIdx_<tokens_.count())
+	{
 		return tokens_.at(currentIdx_++);
+	}
 	else
+	{
 		return QString::null;
 	}
+}
 
 void MessageParser::back(int count)
 {
