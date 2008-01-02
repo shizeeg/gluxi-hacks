@@ -71,17 +71,26 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 	if (cmd=="SHOWPRIV")
 	{
 		//TODO: Implement nick handler
-		arg.replace("  "," ");
 		QString dest=parser.nextToken();
 		QString word=parser.nextToken();
+
 		bool allowUser=false;
 		
-		if (word.isEmpty() && !dest.isEmpty())
+		if (dest.isEmpty() && !word.isEmpty())
 		{
 			allowUser=true;
-			word=dest;
 			dest=getNick(s);
 		}
+		else
+		{
+			if (word.isEmpty() && !dest.isEmpty())
+            {
+				allowUser=true;
+				word=dest;
+				dest=getNick(s);
+            }
+		}
+		
 		if (dest.isEmpty() || word.isEmpty())
 		{
 			reply(s,"Syntax: SHOWPRIV <NICK> <WORD>");
