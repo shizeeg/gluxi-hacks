@@ -21,6 +21,8 @@ AliasPlugin::~AliasPlugin()
 
 bool AliasPlugin::canHandleMessage(gloox::Stanza* s)
 {
+	if (isOfflineMessage(s))
+		return false;
 	if (BasePlugin::canHandleMessage(s))
 		return true;
 	if (bot()->isMyMessage(s))
