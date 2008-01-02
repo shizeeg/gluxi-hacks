@@ -10,6 +10,12 @@ MessageParser::MessageParser(gloox::Stanza* st, const QString& ownNick, const QC
 	int isec=0;
 	isForMe_=false;
 	QString first=body.section(' ',isec,isec).toUpper();
+	
+	if (QString::fromStdString(st->findAttribute("type"))!="groupchat")
+	{
+		isForMe_=true;
+	}
+	
 	if (first.startsWith('!'))
 	{
 		isForMe_=true;
