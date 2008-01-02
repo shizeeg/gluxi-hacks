@@ -25,6 +25,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 			<< "VISITOR" << "PARTICIPANT" << "MODERATOR";
 	commands << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND" << "SEEN"
 			<< "CLIENTS" << "SETNICK";
+	commands << "HERE";
 	pluginId=1;
 }
 
@@ -221,6 +222,8 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 
 	// conf can be nil here!!!
 
+	qDebug() << "** MUC CMD: " << cmd;
+	
 	if (cmd=="JOIN")
 	{
 		if (!isFromBotOwner(s))
@@ -289,7 +292,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	nick->updateLastActivity();
 	nick->commit();
 
-	if (arg.isNull() || msgPrefix!=prefix())
+	if (msgPrefix!=prefix())
 	{
 		myShouldIgnoreError=1;
 		return false;
@@ -301,7 +304,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		int cnt=conf->nicks()->count();
 		for (int i=0; i<cnt; i++)
 			nickList << conf->nicks()->at(i)->nick();
-		reply(s, QString("I can see %1 guys here: %2").arg(cnt)
+		reply(s, QString("I can see %1 users here: %2").arg(cnt)
 		.arg(nickList.join(", ")));
 		return true;
 	}
