@@ -211,6 +211,9 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 
 bool MucPlugin::parseMessage(gloox::Stanza* s)
 {
+	if (isOfflineMessage(s))
+		return true		;
+	
 	MessageParser parser(s, getMyNick(s));
 	QString msgPrefix=parser.nextToken().toUpper();
 	QString cmd=parser.nextToken().toUpper();
@@ -710,7 +713,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		alist=conf->amoderator();
 	if (!alist)
 	{
-		reply(s, QString("Try \"!muc %1 help").arg(arg.toLower()));
+		reply(s, QString("Try \"!muc help\""));
 		return TRUE;
 	}
 	arg=arg.toLower();
@@ -828,7 +831,8 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	}
 	else if (!isNick)
 	{
-		QString args=arg2;
+		parser.back(2);
+		QString args=parser.nextToken();
 		QRegExp exp("[^@ ]*@[^ ]*");
 		exp.setMinimal(FALSE);
 		int ps=exp.indexIn(args);
@@ -845,7 +849,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 				arg2=n->jid().section('/', 0, 0);
 			else
 			{
-				reply(s, "JID or nick is not valid");
+				reply(s, "JID or nick is not valid: "+args);
 				return true;
 			}
 		}

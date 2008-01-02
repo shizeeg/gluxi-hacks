@@ -72,8 +72,8 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 	{
 		//TODO: Implement nick handler
 		arg.replace("  "," ");
-		QString dest=arg.section(' ',0,0);
-		QString word=arg.section(' ',1);
+		QString dest=parser.nextToken();
+		QString word=parser.nextToken();
 		bool allowUser=false;
 		
 		if (word.isEmpty() && !dest.isEmpty())
@@ -97,7 +97,7 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 		QString jid=bot()->getJID(s,dest);
 		if (jid.isEmpty())
 		{
-			reply(s,"Nick not found");
+			reply(s,"Nick not found: "+dest);
 			return true;
 		}
 		QString nick;

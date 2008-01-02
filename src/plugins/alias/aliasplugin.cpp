@@ -39,18 +39,37 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 	if (cmd=="ALIAS")
 		return parseCommands(s, parser);
 
+	parser.back();
 	QString res=aliases.get(bot()->getStorage(s), cmd);
+	QString firstArg=res.section(' ',0,0).toUpper();
+
+	bool noWrap=false;
+	if (firstArg=="/NOWRAP")
+	{
+		noWrap=true;
+		res=res.section(' ', 1);
+	}
 
 	if (!res.isEmpty())
 	{
 		//		QString expanded=expandAlias(res,arg);
 		while (1)
 		{
-			QString item=res.section(";",0,0).trimmed();
-			res=res.section(";",1).trimmed();
-			item=expandAlias(item, parser.joinBody());
-			if (item.isEmpty())
+			QString originalItem=res.section(";",0,0).trimmed();
+			if (!noWrap)
+				originalItem.replace(' ', '\n');
+
+			if (originalItem.isEmpty())
 				break;
+
+			res=res.section(";",1).trimmed();
+			QString item=expandAlias(originalItem, parser);
+
+			//qDebug() << "------ Alias:\n| original: " << originalItem
+			//<< "\n| expanded: " << item;
+
+			if (item.isEmpty())
+				continue;
 			gloox::Tag *tg=s->findChild("body");
 			assert(tg);
 			tg->setCData(item.toStdString());
@@ -111,9 +130,9 @@ bool AliasPlugin::parseCommands(gloox::Stanza* s, MessageParser& parser)
 	{
 		if (name.isEmpty() || value.isEmpty())
 		{
-			reply(s, 
-					"Syntax: !alias add <name>=<value>, where value can contain"
-							" %1, %2.. - arguments; %* - all arguemnts");
+			reply(s, "Syntax: !alias add <name>=<value>,"
+				" where value can contain"
+				" %1, %2.. - arguments; %* - all arguemnts");
 			return true;
 		}
 		int res=aliases.append(bot()->getStorage(s), name, value);
@@ -147,7 +166,7 @@ bool AliasPlugin::parseCommands(gloox::Stanza* s, MessageParser& parser)
 	return false;
 }
 
-QString AliasPlugin::expandAlias(const QString&alias, const QString& args)
+QString AliasPlugin::expandAlias(const QString&alias, MessageParser parser)
 {
 	QString res=alias;
 	QRegExp exp;
@@ -159,7 +178,7 @@ QString AliasPlugin::expandAlias(const QString&alias, const QString& args)
 		bool wasRepl=false;
 		int offset=0;
 		exp.setPattern(QString("[^\\\\]\\%")+QString::number(idx));
-		QString subStr=args.section(' ', idx-1, idx-1);
+		QString subStr=parser.nextToken();
 		while (1)
 		{
 			int ps=exp.indexIn(res, offset);
@@ -176,7 +195,7 @@ QString AliasPlugin::expandAlias(const QString&alias, const QString& args)
 	}
 	exp.setPattern(QString("[^\\\\]\\%\\*"));
 	int offset=0;
-	QString subStr=args.section(' ', idx-1);
+	QString subStr=parser.joinBody();
 	while (1)
 	{
 		int ps=exp.indexIn(res, offset);
