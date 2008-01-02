@@ -12,7 +12,7 @@ class MessageParser
 {
 public:
 	MessageParser();
-	MessageParser(gloox::Stanza* st, const QString& ownNick=QString());
+	MessageParser(gloox::Stanza* st, const QString& ownNick=QString(), const QChar& separator=QChar());
 	MessageParser(const MessageParser& other);
 	virtual ~MessageParser();
 	QString firstToken() const;

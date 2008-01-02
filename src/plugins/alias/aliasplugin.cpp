@@ -40,13 +40,16 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 
 	QString cmd=parser.nextToken().toUpper();
 	if (cmd=="ALIAS")
-		return parseCommands(s, parser);
+		return parseCommands(s);
 
 	parser.back();
 	QString res=aliases.get(bot()->getStorage(s), cmd);
 	QString firstArg=res.section(' ',0,0).toUpper();
 
 	bool noWrap=false;
+	
+	qDebug() << "--- firstArg: " << firstArg;
+	
 	if (firstArg=="/NOWRAP")
 	{
 		noWrap=true;
@@ -68,8 +71,8 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 			res=res.section(";",1).trimmed();
 			QString item=expandAlias(originalItem, parser);
 
-			//qDebug() << "------ Alias:\n| original: " << originalItem
-			//<< "\n| expanded: " << item;
+			qDebug() << "------ Alias:\n| original: " << originalItem
+			<< "\n| expanded: " << item;
 
 			if (item.isEmpty())
 				continue;
@@ -86,8 +89,10 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 	return false;
 }
 
-bool AliasPlugin::parseCommands(gloox::Stanza* s, MessageParser& parser)
+bool AliasPlugin::parseCommands(gloox::Stanza* s)
 {
+	MessageParser parser(s, getMyNick(s), QChar(' '));
+	parser.nextToken();
 	QString cmd=parser.nextToken().toUpper();
 
 	if (cmd.isEmpty() || cmd=="LIST" || cmd=="HELP")

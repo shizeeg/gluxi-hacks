@@ -4,7 +4,7 @@
 
 #include <QtDebug>
 
-MessageParser::MessageParser(gloox::Stanza* st, const QString& ownNick)
+MessageParser::MessageParser(gloox::Stanza* st, const QString& ownNick, const QChar& separator)
 {
 	QString body=QString::fromStdString(st->body()).trimmed();
 	int isec=0;
@@ -29,21 +29,24 @@ MessageParser::MessageParser(gloox::Stanza* st, const QString& ownNick)
 			}
 		}
 	}
-	
-	if (body.contains('\n'))
+
+	if (separator==QChar() &&  body.contains('\n'))
 	{
 		//Using \n as token separator. Perform some "advanced" argument 
 		//parsing. Use \s for separator before first \n and then \n
-		
+
 		QString bodySpace=body.section('\n',0,0);
 		QString bodyNewLine=body.section('\n',1);
 		tokens_=bodySpace.split(' ');
 		tokens_ << bodyNewLine.split('\n');
 		separator_='\n';
-	} 
+	}
 	else
 	{
-		separator_=' ';
+		if (separator==QChar())
+			separator_=' ';
+		else
+			separator_=separator;
 		tokens_=body.split(separator_);
 	}
 	currentIdx_=0;
@@ -116,7 +119,7 @@ QString MessageParser::joinBody()
 QString MessageParser::joinBody(const QChar& sep)
 {
 	qDebug() << "Joining body. Separator: " << separator_.unicode();
-	
+
 	if (currentIdx_<tokens_.count())
 	{
 		QString total;

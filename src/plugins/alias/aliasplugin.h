@@ -22,7 +22,7 @@ public:
 	virtual bool allMessages() const { return false; };
 
 	virtual bool parseMessage(gloox::Stanza* );
-	virtual bool parseCommands(gloox::Stanza* s, MessageParser& parser);
+	virtual bool parseCommands(gloox::Stanza* s);
 private:
 	AliasList aliases;
 	QString expandAlias(const QString&alias, MessageParser parser);
