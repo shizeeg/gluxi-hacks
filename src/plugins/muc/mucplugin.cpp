@@ -214,9 +214,8 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	QString msgPrefix=parser.nextToken().toUpper();
 	QString cmd=parser.nextToken().toUpper();
 	QString arg=parser.nextToken();
-	
+
 	QString nickName=QString::fromStdString(s->from().resource());
-	
 
 	Conference* conf=getConf(s);
 
@@ -289,7 +288,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	}
 	nick->updateLastActivity();
 	nick->commit();
-	
+
 	if (arg.isNull() || msgPrefix!=prefix())
 	{
 		myShouldIgnoreError=1;
@@ -377,7 +376,8 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	{
 		if (!isFromConfAdmin(s))
 			return true;
-		return autoLists(s);
+		parser.back(2);
+		return autoLists(s, parser);
 	}
 	if (cmd=="CLIENTS")
 	{
@@ -661,20 +661,20 @@ QString MucPlugin::getIqError(gloox::Stanza *s)
 	return QString::fromStdString(res);
 }
 
-bool MucPlugin::autoLists(gloox::Stanza *s)
+bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 {
 	Conference* conf=getConf(s);
-	QString body=getBody(s);
-	qDebug() << "!!!!!!!!!!!!!!!!!!!!!!!! body=" << body;
+	QString arg=parser.nextToken().toUpper();
+	QString arg2=parser.nextToken();
 
-	int narg=0;
-	QString arg=body.section(' ',narg,narg).toUpper();
-	narg++;
-	qDebug() << "!!!!!!!!!!!!!!!!!!!!!!!! arg=" << arg;
 	QString nickName=QString::fromStdString(s->from().resource());
 
 	AList* alist=0;
-	QString arg2=body.section(' ',narg,narg).toUpper();
+
+	//	QString body="";
+	//	int narg=0;
+	//	QString args="";
+
 	if (arg=="AFIND")
 	{
 		QString answer;
@@ -711,15 +711,13 @@ bool MucPlugin::autoLists(gloox::Stanza *s)
 		return TRUE;
 	}
 	arg=arg.toLower();
-	QString args=body.section(' ', narg);
-	arg2=body.section(' ',narg,narg).toUpper();
-	narg++;
-	QString arg3=body.section(' ', narg);
+	//parser.back();
+	arg2=arg2.toUpper();
+	QString arg3=parser.nextToken();
 	if (arg2=="HELP" || arg2=="")
 	{
-		reply(
-				s,
-				QString("\"%1\" commands: help, show, count, clear, del <item>, exp <regexp>, <jid>").arg(arg));
+		reply(s, QString("\"%1\" commands: help, show, count, clear,"
+				" del <item>, exp <regexp>, <jid>").arg(arg));
 		return TRUE;
 	}
 	if (arg2=="SHOW")
@@ -792,27 +790,24 @@ bool MucPlugin::autoLists(gloox::Stanza *s)
 			return true;
 		}
 		howLong=dt*k;
-		arg2=body.section(' ',narg,narg).toUpper();
-		narg++;
-		arg3=body.section(' ', narg);
+		arg2=arg3.toUpper();
+		arg3=parser.nextToken();
 	}
 
 	bool isNick=false;
 	bool isJid=false;
 	if (arg2=="NICK")
 	{
-		arg2=body.section(' ',narg,narg).toUpper();
-		narg++;
-		arg3=body.section(' ', narg);
+		arg2=arg3.toUpper();
+		arg3=parser.nextToken();
 		qDebug() << arg2;
 		qDebug() << arg3;
 		isNick=true;
 	}
 	else if (arg2=="JID")
 	{
-		arg2=body.section(' ',narg,narg).toUpper();
-		narg++;
-		arg3=body.section(' ', narg);
+		arg2=arg3.toUpper();
+		arg3=parser.nextToken();
 		isJid=true;
 	}
 
@@ -830,7 +825,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s)
 	}
 	else if (!isNick)
 	{
-		args=QString(arg2+" "+arg3).trimmed();
+		QString args=arg2;
 		QRegExp exp("[^@ ]*@[^ ]*");
 		exp.setMinimal(FALSE);
 		int ps=exp.indexIn(args);

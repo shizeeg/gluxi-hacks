@@ -4,6 +4,8 @@
 #include "base/baseplugin.h"
 #include "conferencelist.h"
 
+class MessageParser;
+
 class MucPlugin : public BasePlugin
 {
 	Q_OBJECT
@@ -45,7 +47,7 @@ private:
 	QString getIqError(gloox::Stanza* s);
 	bool aFind(AList* list, Nick *n);
 	// Advanced commands
-	bool autoLists(gloox::Stanza* s);
+	bool autoLists(gloox::Stanza* s, MessageParser& parser);
 	void checkMember(Conference* c, Nick*);
 	void recheckJIDs(Conference* c);
 	void sendMessage(Conference* conf, const QString&msg);

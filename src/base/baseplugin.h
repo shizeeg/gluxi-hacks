@@ -48,7 +48,6 @@ protected:
 	GluxiBot* bot();
 	bool isGroupChat(gloox::Stanza* );
  	bool isOfflineMessage(gloox::Stanza*);
-	QString getBody(gloox::Stanza*, bool usePrefix=true );
 	QString getNick(gloox::Stanza*);
 
 	virtual bool isFromBotOwner(gloox::Stanza*, bool message=false);

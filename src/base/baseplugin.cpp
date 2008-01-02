@@ -129,59 +129,6 @@ QString BasePlugin::getMyNick(gloox::Stanza*)
 	return QString::fromStdString(bot()->client()->jid().username());
 }
 
-QString BasePlugin::getBody(gloox::Stanza* s, bool usePrefix)
-{	
-	qWarning() << "Deprecated getBody()";
-	
-	MessageParser parser(s,getMyNick(s));
-	QString token;
-	while (!(token=parser.nextToken()).isNull())
-	{
-		qDebug() <<"token: " << token;
-	}
-	
-	if (isOfflineMessage(s))
-		return QString::null;
-
-	QString body=QString::fromStdString(s->body());
-	int isec=0;
-	QString first=body.section(' ',isec,isec).toUpper();
-	QString nick=getMyNick(s);
-	bool isMe=false;
-	if (first.startsWith('!'))
-	{
-		isMe=true;
-		first.remove(0,1);
-	}
-	if (first==nick)
-	{
-		isMe=true;
-		isec=1;
-		first=body.section(' ',isec,isec).toUpper();
-	}
-
-	if (!isMe && isGroupChat(s))
-		return QString::null;
-
-	QString myPrefix;
-	if (usePrefix)
-		myPrefix=prefix();
-
-	if (myPrefix.isEmpty())
-	{
-		return QString(first+" "+body.section(' ',isec+1)).trimmed();
-	}
-
-	if (first==myPrefix)
-	{
-		first=body.section(' ',isec+1);
-		if (first.isEmpty()) first=" ";
-		return first;
-	}
-	return QString::null;
-}
-
-
 bool BasePlugin::isGroupChat(gloox::Stanza* s)
 {
 	return QString::fromStdString(s->findAttribute("type"))=="groupchat";
