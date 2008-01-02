@@ -31,12 +31,13 @@ bool AliasPlugin::canHandleMessage(gloox::Stanza* s)
 	//Stanza with already expanded alias
 	if (s->hasAttribute("glooxbot_alias"))
 		return false;
-	return true;
+	return MessageParser(s,getMyNick(s)).isForMe();
 }
 
 bool AliasPlugin::parseMessage(gloox::Stanza* s)
 {
 	MessageParser parser(s, getMyNick(s));
+
 	QString cmd=parser.nextToken().toUpper();
 	if (cmd=="ALIAS")
 		return parseCommands(s, parser);
