@@ -106,18 +106,31 @@ bool AliasPlugin::parseCommands(gloox::Stanza* s)
 
 	if (cmd=="SHOW")
 	{
-		QString res;
-		QMap<QString, QString> all=aliases.getAll(bot()->getStorage(s));
-		int cnt=all.count();
-		if (!cnt)
+		QString aliasName=parser.nextToken();
+		if (aliasName.isEmpty())
 		{
-			reply(s, "Alias list is empty");
+			QString res;
+			QMap<QString, QString> all=aliases.getAll(bot()->getStorage(s));
+			int cnt=all.count();
+			if (!cnt)
+			{
+				reply(s, "Alias list is empty");
+				return true;
+			}
+			for (int i=0; i<cnt; i++)
+				res+=QString("\n%1) %2=%3").arg(i+1).arg(all.keys()[i].toLower()).arg(all.values()[i]);
+			reply(s, QString("Aliases:%1").arg(res));
 			return true;
 		}
-		for (int i=0; i<cnt; i++)
-			res+=QString("\n%1) %2=%3").arg(i+1).arg(all.keys()[i].toLower()).arg(all.values()[i]);
-		reply(s, QString("Aliases:%1").arg(res));
-		return true;
+		else
+		{
+			QString value=aliases.get(bot()->getStorage(s),aliasName.toUpper());
+			if (!value.isNull())
+				reply(s, QString("Alias: %1=%2").arg(aliasName).arg(value));
+			else
+				reply(s, QString("No such alias: %1").arg(aliasName));
+			return true;
+		}
 	}
 	if (cmd=="CLEAR")
 	{
