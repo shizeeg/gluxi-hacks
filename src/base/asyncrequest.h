@@ -17,7 +17,7 @@ class AsyncRequest: public QThread
 	Q_OBJECT
 public:
 	AsyncRequest(int id, BasePlugin *plugin, gloox::Stanza *from, int timeout=600);
-	~AsyncRequest();
+	virtual ~AsyncRequest();
 	int id() const { return myId; };
 	BasePlugin* plugin() const { return myPlugin; };
 	QString name() const { return myName; };
@@ -41,13 +41,17 @@ private:
 	int myTimeout;
 	QDateTime myTime;
 	bool notified;
+private slots:
+	void sltThreadTerminated();
+	void sltThreadFinished();
+	
 protected:
-	void wantDelete();
 	virtual void run();
 signals:
-	void onWantDelete(AsyncRequest*);
 	void onDelete(AsyncRequest*);
 	void onExpire();
+	void onTerminated(AsyncRequest*);
+	void onFinished(AsyncRequest*);
 };
 
 #endif

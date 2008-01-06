@@ -672,7 +672,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	Conference* conf=getConf(s);
 	QString arg=parser.nextToken().toUpper();
 	QString arg2=parser.nextToken();
-
+	
 	QString nickName=QString::fromStdString(s->from().resource());
 
 	AList* alist=0;

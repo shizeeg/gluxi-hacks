@@ -11,6 +11,8 @@ AsyncRequest::AsyncRequest(int id, BasePlugin *plugin, gloox::Stanza *from, int 
 	myStanza=from;
 	myTimeout=timeout;
 	update();
+	connect(this, SIGNAL(terminated()), SLOT(sltThreadTerminated()));
+	connect(this, SIGNAL(finished()), SLOT(sltThreadFinished()));
 }
 
 AsyncRequest::~AsyncRequest()
@@ -49,8 +51,12 @@ void AsyncRequest::run()
 {
 }	
 
-void AsyncRequest::wantDelete()
+void AsyncRequest::sltThreadTerminated()
 {
-	emit onWantDelete(this);
+	emit onTerminated(this);
 }
 
+void AsyncRequest::sltThreadFinished()
+{
+	emit onFinished(this);
+}

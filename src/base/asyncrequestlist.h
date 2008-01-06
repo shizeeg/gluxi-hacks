@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QList>
+#include <QMutex>
 
 class QTimer;
 
@@ -27,10 +28,11 @@ public:
 	AsyncRequest* byStanzaId(const QString& req);
 private:
 	QTimer* timer;
+	QMutex listMutex_;
 private slots:
 	void onTimeout();
 	void onDelete(AsyncRequest*);
-	void onWantDelete(AsyncRequest*);
+	void onFinished(AsyncRequest*);
 };
 
 #endif

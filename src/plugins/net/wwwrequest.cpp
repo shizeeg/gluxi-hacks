@@ -45,13 +45,11 @@ void WWWRequest::run()
 		if (myExp.isEmpty() || myDest.isEmpty())
 		{
 			plugin()->reply(stanza(),"RegExp expected");
-			wantDelete();
 			return;
 		}
 		if (!QRegExp(myExp).isValid())
 		{
 			plugin()->reply(stanza(),"RegExp error");
-			wantDelete();
 			return;
 		}
 		qDebug() << "|| exp=" << myExp << "  || dest=" << myDest;
@@ -78,21 +76,18 @@ void WWWRequest::run()
 		else
 			plugin()->reply(stanza(),QString("Headers for: %1:\n%2")
 				.arg(myDest).arg(proxy.headers.join("\n")));
-		wantDelete();
 		return;
 	}
 	
 	if (!proxy.redirectTo.isEmpty())
 	{
 		plugin()->reply(stanza(),QString("Location: %1").arg(proxy.redirectTo));
-		wantDelete();
 		return;
 	}
 
 	if(res.isEmpty())
 	{
 		plugin()->reply(stanza(),"Error: "+proxy.errorString);
-		wantDelete();
 		return;
 	}
 
@@ -135,14 +130,12 @@ void WWWRequest::run()
 		if (exp.indexIn(myString)<0)
 		{
 			plugin()->reply(stanza(), "RegExp don't match");
-			wantDelete();
 			return;
 		}
 		QStringList list=exp.capturedTexts();
 		if (list.count()<2)
 		{
 			plugin()->reply(stanza(), "No text captured");
-			wantDelete();
 			return;
 		}
 		list.removeFirst();
@@ -160,7 +153,6 @@ void WWWRequest::run()
 		}
 
 		plugin()->reply(stanza(), myString);
-		wantDelete();
 		return;
 	}
 	
@@ -173,7 +165,6 @@ void WWWRequest::run()
 		if (!proc->waitForStarted())
 		{
 			plugin()->reply(stanza(),"Unable to launch lynx -dump");
-			wantDelete();
 			return;
 		}
 		proc->write(data);
@@ -181,7 +172,6 @@ void WWWRequest::run()
 		if (!proc->waitForFinished())
 		{
 			plugin()->reply(stanza(),"Error: lynx timeout");
-			wantDelete();
 			return;
 		}
 		res=QString(proc->readAll());
@@ -189,7 +179,5 @@ void WWWRequest::run()
 	else
 		res=data;
 	plugin()->reply(stanza(),res);
-
-	wantDelete();
 }
 
