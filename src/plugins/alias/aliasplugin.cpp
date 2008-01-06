@@ -42,7 +42,6 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 	if (cmd=="ALIAS")
 		return parseCommands(s);
 
-	parser.back();
 	QString res=aliases.get(bot()->getStorage(s), cmd);
 	QString firstArg=res.section(' ',0,0).toUpper();
 
@@ -56,6 +55,12 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 		res=res.section(' ', 1);
 	}
 
+	if (res.contains('\n'))
+	{
+		//Force nowrap for multiline aliases
+		noWrap=true;
+	}
+	
 	if (!res.isEmpty())
 	{
 		//		QString expanded=expandAlias(res,arg);
