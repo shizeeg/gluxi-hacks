@@ -199,6 +199,7 @@ QString AliasPlugin::expandAlias(const QString&alias, MessageParser parser)
 	exp.setMinimal(false);
 	exp.setCaseSensitivity(Qt::CaseInsensitive);
 	int idx=1;
+	int parserIdx=parser.getCurrentIndex();
 	while (1)
 	{
 		bool wasRepl=false;
@@ -219,9 +220,11 @@ QString AliasPlugin::expandAlias(const QString&alias, MessageParser parser)
 			break;
 		idx++;
 	}
+	parser.setCurrentIndex(parserIdx);
 	exp.setPattern(QString("[^\\\\]\\%\\*"));
 	int offset=0;
 	QString subStr=parser.joinBody();
+	
 	while (1)
 	{
 		int ps=exp.indexIn(res, offset);

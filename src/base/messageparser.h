@@ -25,6 +25,7 @@ public:
 	QChar getSeparator() const { return separator_; }
 	const QStringList& getTokens() const { return tokens_; }
 	int getCurrentIndex() const { return currentIdx_; }
+	void setCurrentIndex(int currentIndex) { currentIdx_=currentIndex; }
 
 	static bool isMessageAcceptable(gloox::Stanza* st, const QString& ownNick, const QString& pluginName);
 private:
