@@ -86,7 +86,10 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 					else
 						plugin="UNKNOWN";
 					if (req->stanza())
+					{
 						stanza=QString::fromStdString(req->stanza()->body());
+						stanza.replace('\n',' ');
+					}
 					res+=QString("\n%1: %2").arg(plugin).arg(stanza);
 				}
 				reply(s,"Active async requests: "+res);
