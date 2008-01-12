@@ -45,6 +45,7 @@ GlooxWrapper::GlooxWrapper()
 	myClient->registerPresenceHandler(this);
 	// Move this 
 	myClient->registerIqHandler(this,"http://jabber.org/protocol/muc#admin");
+	vcardManager=new gloox::VCardManager(myClient);
 }
 
 GlooxWrapper::~GlooxWrapper()
@@ -148,6 +149,17 @@ bool GlooxWrapper::handleIqID(gloox::Stanza*, int)
 	return true;
 }
 
+
+void GlooxWrapper::handleVCard(const gloox::JID &jid, gloox::VCard *vcard)
+{
+	emit sigVCard(VCardWrapper(jid, vcard)); 
+}
+
+void GlooxWrapper::handleVCardResult(VCardContext context, const gloox::JID &jid,
+		gloox::StanzaError se)
+{
+}
+
 // Thread-safe members
 void GlooxWrapper::disconnect()
 {
@@ -180,3 +192,8 @@ gloox::JID GlooxWrapper::jid()
 	return myClient->jid();
 }
 
+void GlooxWrapper::fetchVCard(const QString& jid) 
+{
+	QMutexLocker locker(&mutex);
+	vcardManager->fetchVCard(gloox::JID(jid.toStdString()),this);
+}

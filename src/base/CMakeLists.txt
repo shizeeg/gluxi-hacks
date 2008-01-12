@@ -18,6 +18,7 @@ set (base_HDR
 	rolelist.h
 	segfault.h
 	messageparser.h
+	vcardwrapper.h
 )
 
 set (base_SRC
@@ -27,6 +28,7 @@ set (base_SRC
 	datastorage.cpp
 	gluxibot.cpp
 	glooxwrapper.cpp
+	vcardwrapper.cpp
 	main.cpp
 	pluginlist.cpp
 	asyncrequest.cpp

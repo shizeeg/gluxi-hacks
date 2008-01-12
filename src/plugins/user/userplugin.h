@@ -4,11 +4,14 @@
 #include "base/baseplugin.h"
 
 #include <gloox/stanza.h>
+#include <gloox/vcardhandler.h>
+
+class VCardWrapper;
 
 /**
 	@author Dmitry Nezhevenko <dion@inhex.net>
 */
-class UserPlugin : public BasePlugin
+class UserPlugin : public BasePlugin 
 {
 	Q_OBJECT
 public:
@@ -20,6 +23,7 @@ public:
 	virtual bool parseMessage(gloox::Stanza* );
 	virtual bool canHandleIq(gloox::Stanza*);
 	virtual bool onIq(gloox::Stanza*);
+	virtual bool onVCard(const VCardWrapper& vcard);
 private:
 	void sendVersion(gloox::Stanza *s);
 };

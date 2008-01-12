@@ -7,6 +7,7 @@
 #include "common.h"
 #include "baseplugin.h"
 #include "rolelist.h"
+#include "vcardwrapper.h"
 
 #include <QtDebug>
 #include <QMetaType>
@@ -26,6 +27,7 @@ GluxiBot::GluxiBot()
 	DataStorage *storage=DataStorage::instance();
 	storage->connect();
 	qRegisterMetaType<MyStanza>("MyStanza");
+	qRegisterMetaType<VCardWrapper>("VCardWrapper");
 	myGloox=new GlooxWrapper();
 	connect(myGloox, SIGNAL(sigConnect()), 
 		this, SLOT(onConnect()),Qt::QueuedConnection);
@@ -37,6 +39,8 @@ GluxiBot::GluxiBot()
 		this, SLOT(handlePresence(const MyStanza&)), Qt::QueuedConnection);
 	connect(myGloox, SIGNAL(sigIq(const MyStanza&)),
 		this, SLOT(handleIq(const MyStanza&)), Qt::QueuedConnection);
+	connect(myGloox, SIGNAL(sigVCard(const VCardWrapper&)),
+			this, SLOT(handleVCard(const VCardWrapper&)), Qt::QueuedConnection);
 	
 	myRoles=new RoleList();
 	myRoles->insert(storage->getString("access/owner"),ROLE_BOTOWNER);
@@ -178,6 +182,18 @@ void GluxiBot::handleIq(const MyStanza& st)
 		assert(plugin);
 		if (plugin->canHandleIq(s))
 			plugin->onIq(s);
+	}
+}
+
+void GluxiBot::handleVCard(const VCardWrapper& vcard)
+{
+	QListIterator<BasePlugin*> it(myPlugins);
+	BasePlugin *plugin;
+	while (it.hasNext())
+	{
+		plugin=it.next();
+		assert(plugin);
+		plugin->onVCard(vcard);
 	}
 }
 

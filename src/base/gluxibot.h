@@ -17,6 +17,7 @@ class GlooxWrapper;
 class AsyncRequestList;
 class MyStanza;
 class RoleList;
+class VCardWrapper;
 
 class gloox::Client;
 class gloox::Stanza;
@@ -66,6 +67,7 @@ private slots:
 	void handleMessage(const MyStanza&);
 	void handlePresence(const MyStanza&);
 	void handleIq(const MyStanza&);
+	void handleVCard(const VCardWrapper& vcard);
 	void onConnect();
 	void onDisconnect();
 };

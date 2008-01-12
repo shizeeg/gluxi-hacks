@@ -1,6 +1,8 @@
 #ifndef BASEPLUGIN_H
 #define BASEPLUGIN_H
 
+#include "vcardwrapper.h"
+
 #include <QObject>
 #include <QStringList>
 
@@ -26,6 +28,7 @@ public:
 	virtual void onDisconnect();
 	virtual bool allMessages() const { return false; };
 	virtual bool onMessage(gloox::Stanza* );
+	virtual bool onVCard(const VCardWrapper& vcard);
 	virtual bool parseMessage(gloox::Stanza*);
  	virtual void onPresence(gloox::Stanza* );
  	virtual bool canHandleMessage(gloox::Stanza* );

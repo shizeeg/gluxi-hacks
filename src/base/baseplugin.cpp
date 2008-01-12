@@ -83,6 +83,11 @@ bool BasePlugin::onMessage(gloox::Stanza* s )
 	return res;
 }
 
+bool BasePlugin::onVCard(const VCardWrapper& vcard)
+{
+	return false;
+}
+
 bool BasePlugin::shouldIgnoreError()
 {
 	bool t=myShouldIgnoreError;
