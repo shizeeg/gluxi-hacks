@@ -14,7 +14,7 @@
 #include <gloox/iqhandler.h>
 #include <gloox/discohandler.h>
 #include <gloox/vcardhandler.h>
-#include <gloox/vcardmanager.h>
+#include "gloox/myvcardmanager.h"
 
 class gloox::Client;
 class gloox::Stanza;
@@ -35,7 +35,7 @@ public:
 	void send(gloox::Stanza* s);
 	void registerIqHandler(const QString& service);
 	void fetchVCard(const QString& jid);
-	gloox::VCardManager* getVCardManager() { return vcardManager; }
+	gloox::MyVCardManager* getVCardManager() { return vcardManager; }
 	std::string getID();
 	gloox::JID jid();
 protected:
@@ -44,7 +44,7 @@ private:
 	QMutex mutex;
 	gloox::Client* myClient;
 	gloox::ConnectionTCPClient* myConnection;
-	gloox::VCardManager* vcardManager;
+	gloox::MyVCardManager* vcardManager;
 	
 	virtual void handlePresence( gloox::Stanza *stanza );
 	virtual bool handleIq(gloox::Stanza*);

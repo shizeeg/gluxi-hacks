@@ -282,7 +282,7 @@ bool UserPlugin::onVCard(const VCardWrapper& vcardWrapper)
 	const gloox::VCard vcard=vcardWrapper.vcard();
 
 	qDebug() << "Got vcard";
-	QString jidStr=QString::fromStdString(jid.bare());
+	QString jidStr=QString::fromStdString(jid.full());
 	QString reqId=QString("vcard_"+jidStr);
 	AsyncRequest* req=bot()->asyncRequests()->byStanzaId(reqId);
 	if (req==0l)

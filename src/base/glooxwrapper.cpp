@@ -45,7 +45,7 @@ GlooxWrapper::GlooxWrapper()
 	myClient->registerPresenceHandler(this);
 	// Move this 
 	myClient->registerIqHandler(this,"http://jabber.org/protocol/muc#admin");
-	vcardManager=new gloox::VCardManager(myClient);
+	vcardManager=new gloox::MyVCardManager(myClient);
 }
 
 GlooxWrapper::~GlooxWrapper()
