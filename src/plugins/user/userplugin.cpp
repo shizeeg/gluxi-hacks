@@ -92,9 +92,10 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 		if (jid.isEmpty())
 			jid=arg;
 		if (jid.isEmpty())
-			jid=QString::fromStdString(s->from().full());
+			jid=QString::fromStdString(s->from().bare());
 		bot()->client()->fetchVCard(jid);
 		gloox::Stanza *sf=new gloox::Stanza(s);
+		qDebug() << "VCard request: " << jid;
 		sf->addAttribute("id", QString("vcard_%1").arg(jid).toStdString());
 		AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
 		bot()->asyncRequests()->append(req);
