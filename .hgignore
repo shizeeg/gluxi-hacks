@@ -6,3 +6,10 @@
 ^tailor.state.old$
 ^tailor.state.journal$
 ^debug/
+~$
+.cproject
+.project
+.settings
+.externalToolBuilders
+
+
