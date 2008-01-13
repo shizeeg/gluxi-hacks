@@ -279,7 +279,7 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 bool UserPlugin::onVCard(const VCardWrapper& vcardWrapper)
 {
 	const gloox::JID jid=vcardWrapper.jid();
-	const gloox::VCard vcard=vcardWrapper.vcard();
+	gloox::VCard vcard=gloox::VCard(vcardWrapper.vcard());
 
 	qDebug() << "Got vcard";
 	QString jidStr=QString::fromStdString(jid.full());
@@ -302,6 +302,23 @@ bool UserPlugin::onVCard(const VCardWrapper& vcardWrapper)
 	QString nickName=QString::fromStdString(vcard.nickname());
 	QString birthday=QString::fromStdString(vcard.bday());
 	QString homepage=QString::fromStdString(vcard.url());
+	QString desc=QString::fromStdString(vcard.desc());
+	QString location;
+	if (!vcard.addresses().empty())
+	{
+		gloox::VCard::Address addr=*(vcard.addresses().begin());
+		QString country=QString::fromStdString(addr.ctry);
+		QString city=QString::fromStdString(addr.locality);
+		if (!country.isEmpty())
+			location=country;
+		if (!city.isEmpty())
+		{
+			if (location.isEmpty())
+				location=city;
+			else
+				location=QString("%1, %2").arg(location).arg(city);
+		}
+	}
 
 	QString photoMime=QString::fromStdString(vcard.photo().type);
 	
@@ -320,8 +337,12 @@ bool UserPlugin::onVCard(const VCardWrapper& vcardWrapper)
 		replyStr+=QString("\nBirthday: %1").arg(birthday);
 	if (!homepage.isEmpty())
 		replyStr+=QString("\nHomepage: %1").arg(homepage);
+	if (!location.isEmpty())
+			replyStr+=QString("\nLocation: %1").arg(location);
 	if (!photoContent.isEmpty())
 		replyStr+=QString("\nPhoto: type: %1, size: %2 bytes").arg(photoMime).arg(photoContent.size());
+	if (!desc.isEmpty())
+		replyStr+=QString("\nAbout: %1").arg(desc);
 	
 	if (replyStr.isEmpty())
 	{
