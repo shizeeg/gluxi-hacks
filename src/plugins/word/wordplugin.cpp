@@ -25,6 +25,11 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 
 	if (cmd=="ADD")
 	{
+		//Reparse Stanza with space as separator
+		MessageParser newParser(s,getMyNick(s),' ');
+		newParser.nextToken();
+		newParser.nextToken(); //cmd
+		arg=newParser.joinBody();
 		QString name=arg.section('=',0,0);
 		QString value=arg.section('=',1);
 		if (name.isEmpty() || value.isEmpty())
