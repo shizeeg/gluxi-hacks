@@ -5,6 +5,7 @@
 
 #include <QMutexLocker>
 #include <QDateTime>
+#include <QStringList>
 
 Logger* Logger::instance_=0;
 
@@ -94,9 +95,13 @@ void Logger::log(QtMsgType type, QString msg)
 		typeStr="FATAL";
 		break;
 	}
-	QString logMsg=QString("[%1] %2: %3").arg(dateTime).arg(typeStr).arg(msg);
-	stream_ << logMsg << endl;
+	QStringList messages=msg.split('\n');
+	foreach(QString message, messages)
+	{
+		QString logMsg=QString("[%1] %2: %3").arg(dateTime).arg(typeStr).arg(message);
+		stream_ << logMsg << endl;
+		fprintf(stderr, "%s\n",logMsg.toLocal8Bit().data());
+	}
 	stream_.flush();
-	fprintf(stderr, "%s\n",logMsg.toLocal8Bit().data());
 }
 

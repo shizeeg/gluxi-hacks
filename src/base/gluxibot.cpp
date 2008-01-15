@@ -113,7 +113,7 @@ void GluxiBot::handleMessage(const MyStanza& st)
 {
 	gloox::Stanza *s=st.stanza();
 
-	std::cout << s->xml() << std::endl << std::endl;
+	qDebug() << s->xml().data();
 
 // TODO: Implement Async message handler by ID if required
 	QListIterator<BasePlugin*> it(myPlugins);
@@ -149,7 +149,8 @@ void GluxiBot::handlePresence(const MyStanza& st)
 {
 	gloox::Stanza *s=st.stanza();
 
-	std::cout << s->xml() << std::endl << std::endl;
+	qDebug() << s->xml().data();
+	
 	BasePlugin *plugin;
 	plugin=pluginByStanzaId(s);
 	if (plugin)
@@ -172,7 +173,7 @@ void GluxiBot::handleIq(const MyStanza& st)
 {
 	gloox::Stanza *s=st.stanza();
 
-	std::cout << s->xml() << std::endl << std::endl;
+	qDebug() << s->xml().data();
 
 	BasePlugin *plugin;
 	plugin=pluginByStanzaId(s);
