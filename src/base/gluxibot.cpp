@@ -8,6 +8,7 @@
 #include "baseplugin.h"
 #include "rolelist.h"
 #include "vcardwrapper.h"
+#include "logger.h"
 
 #include <QtDebug>
 #include <QMetaType>
@@ -25,6 +26,12 @@ GluxiBot::GluxiBot()
 	:QObject()
 {
 	DataStorage *storage=DataStorage::instance();
+	QString logFile=storage->getString("log/file");
+	if (!logFile.isEmpty())
+	{
+		new Logger(logFile);
+	}
+	
 	storage->connect();
 	qRegisterMetaType<MyStanza>("MyStanza");
 	qRegisterMetaType<VCardWrapper>("VCardWrapper");

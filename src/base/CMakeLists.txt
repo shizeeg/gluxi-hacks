@@ -20,6 +20,7 @@ set (base_HDR
 	messageparser.h
 	vcardwrapper.h
 	gloox/myvcardmanager.h
+	logger.h
 )
 
 set (base_SRC
@@ -38,6 +39,7 @@ set (base_SRC
 	messageparser.cpp
 	segfault.c
 	gloox/myvcardmanager.cpp
+	logger.cpp
 )
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
