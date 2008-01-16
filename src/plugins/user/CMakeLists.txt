@@ -9,6 +9,7 @@ set (plugin_HDR
 
 set (plugin_SRC
 	userplugin.cpp
+	image2ascii.cpp
 )
 
 GLUXI_PLUGIN()

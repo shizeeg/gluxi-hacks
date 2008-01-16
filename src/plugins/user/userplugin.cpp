@@ -1,4 +1,5 @@
 #include "userplugin.h"
+#include "image2ascii.h"
 #include "base/common.h"
 #include "base/glooxwrapper.h"
 #include "base/gluxibot.h"
@@ -8,8 +9,10 @@
 #include <gloox/vcardmanager.h>
 #include <string>
 
+#include <QFile>
 #include <QtDebug>
 #include <QTime>
+#include <QImage>
 
 //#include <gloox/client.h>
 
@@ -18,7 +21,7 @@
 UserPlugin::UserPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "VERSION" << "PING" << "DISCO" << "VCARD";
+	commands << "VERSION" << "PING" << "DISCO" << "VCARD" << "PHOTO";
 
 	bot()->client()->registerIqHandler("jabber:iq:version");
 	bot()->client()->registerIqHandler("http://jabber.org/protocol/disco#items");
@@ -41,7 +44,7 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 	MessageParser parser(s, getMyNick(s));
 	parser.nextToken();
 	QString cmd=parser.nextToken().toUpper();
-	QString arg=parser.joinBody();
+	QString arg=parser.nextToken();
 
 	if (cmd=="VERSION" || cmd=="PING")
 	{
@@ -86,7 +89,7 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 		bot()->client()->send(st);
 		return true;
 	}
-	if (cmd=="VCARD")
+	if (cmd=="VCARD" || cmd=="PHOTO")
 	{
 		QString jid=bot()->getJID(s, arg);
 		if (jid.isEmpty())
@@ -98,6 +101,7 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 		qDebug() << "VCard request: " << jid;
 		sf->addAttribute("id", QString("vcard_%1").arg(jid).toStdString());
 		AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
+		req->setName(cmd);
 		bot()->asyncRequests()->append(req);
 		return true;
 	}
@@ -290,67 +294,110 @@ bool UserPlugin::onVCard(const VCardWrapper& vcardWrapper)
 		qDebug() << "No request found for jid: "+jidStr;
 		return false;
 	}
-	
 	if (vcardWrapper.isEmpty())
 	{
 		reply(req->stanza(), "No VCard found");
 		bot()->asyncRequests()->removeAll(req);
 		return true;
 	}
-	
-	QString fullName=QString::fromStdString(vcard.formattedname());
-	QString nickName=QString::fromStdString(vcard.nickname());
-	QString birthday=QString::fromStdString(vcard.bday());
-	QString homepage=QString::fromStdString(vcard.url());
-	QString desc=QString::fromStdString(vcard.desc());
-	QString location;
-	if (!vcard.addresses().empty())
+
+	if (req->name()=="VCARD")
 	{
-		gloox::VCard::Address addr=*(vcard.addresses().begin());
-		QString country=QString::fromStdString(addr.ctry);
-		QString city=QString::fromStdString(addr.locality);
-		if (!country.isEmpty())
-			location=country;
-		if (!city.isEmpty())
+		QString fullName=QString::fromStdString(vcard.formattedname());
+		QString nickName=QString::fromStdString(vcard.nickname());
+		QString birthday=QString::fromStdString(vcard.bday());
+		QString homepage=QString::fromStdString(vcard.url());
+		QString desc=QString::fromStdString(vcard.desc());
+		QString location;
+		if (!vcard.addresses().empty())
 		{
-			if (location.isEmpty())
-				location=city;
-			else
-				location=QString("%1, %2").arg(location).arg(city);
+			gloox::VCard::Address addr=*(vcard.addresses().begin());
+			QString country=QString::fromStdString(addr.ctry);
+			QString city=QString::fromStdString(addr.locality);
+			if (!country.isEmpty())
+				location=country;
+			if (!city.isEmpty())
+			{
+				if (location.isEmpty())
+					location=city;
+				else
+					location=QString("%1, %2").arg(location).arg(city);
+			}
+		}
+
+		QString photoMime=QString::fromStdString(vcard.photo().type);
+
+		if (photoMime.isEmpty())
+			photoMime="N/A";
+
+		std::string photoContentStd=vcard.photo().binval;
+		QByteArray photoContent=QByteArray(photoContentStd.data(),
+				photoContentStd.size());
+
+		QString replyStr;
+		if (!fullName.isEmpty())
+			replyStr+=QString("\nName: %1").arg(fullName);
+		if (!nickName.isEmpty())
+			replyStr+=QString("\nNick: %1").arg(nickName);
+		if (!birthday.isEmpty())
+			replyStr+=QString("\nBirthday: %1").arg(birthday);
+		if (!homepage.isEmpty())
+			replyStr+=QString("\nHomepage: %1").arg(homepage);
+		if (!location.isEmpty())
+			replyStr+=QString("\nLocation: %1").arg(location);
+		if (!photoContent.isEmpty())
+			replyStr+=QString("\nPhoto: type: %1, size: %2 bytes").arg(photoMime).arg(photoContent.size());
+		if (!desc.isEmpty())
+			replyStr+=QString("\nAbout: %1").arg(desc);
+
+		if (replyStr.isEmpty())
+		{
+			reply(req->stanza(), "Empty VCard");
+		}
+		else
+		{
+			reply(req->stanza(), QString("VCard: %1").arg(replyStr));
 		}
 	}
+	else if (req->name()=="PHOTO")
+	{
+		std::string photoContentStd=vcard.photo().binval;
+		QByteArray photoContent=QByteArray(photoContentStd.data(),
+				photoContentStd.size());
+		QFile file("/tmp/out.png");
+		file.open(QIODevice::WriteOnly);
+		file.write(photoContentStd.data(), photoContentStd.size());
+		file.close();
+		QImage image;
+		if (!image.loadFromData(photoContent, "png"))
+		{
+			reply(req->stanza(), "Can't load image");
+			bot()->asyncRequests()->removeAll(req);
+			return true;
+		}
 
-	QString photoMime=QString::fromStdString(vcard.photo().type);
-	
-	if (photoMime.isEmpty())
-		photoMime="N/A";
-	
-	std::string photoContentStd=vcard.photo().binval;
-	QByteArray photoContent=QByteArray(photoContentStd.data(),photoContentStd.size());
-	
-	QString replyStr;
-	if (!fullName.isEmpty())
-		replyStr+=QString("\nName: %1").arg(fullName);
-	if (!nickName.isEmpty())
-		replyStr+=QString("\nNick: %1").arg(nickName);
-	if (!birthday.isEmpty())
-		replyStr+=QString("\nBirthday: %1").arg(birthday);
-	if (!homepage.isEmpty())
-		replyStr+=QString("\nHomepage: %1").arg(homepage);
-	if (!location.isEmpty())
-			replyStr+=QString("\nLocation: %1").arg(location);
-	if (!photoContent.isEmpty())
-		replyStr+=QString("\nPhoto: type: %1, size: %2 bytes").arg(photoMime).arg(photoContent.size());
-	if (!desc.isEmpty())
-		replyStr+=QString("\nAbout: %1").arg(desc);
-	
-	if (replyStr.isEmpty())
-	{
-		reply(req->stanza(), "Empty VCard");
-	}
-	else
-	{
-		reply(req->stanza(), QString("VCard: %1").arg(replyStr));
+		MessageParser parser(req->stanza(), getMyNick(req->stanza()));
+		parser.nextToken();
+		QString cmd=parser.nextToken().toUpper();
+		QString jid=parser.nextToken();
+		QString widthStr=parser.nextToken();
+		QString white=parser.nextToken();
+		QString black=parser.nextToken();
+
+		Image2Ascii img2ascii(image);
+
+		if (!widthStr.isEmpty())
+			img2ascii.setWidth(widthStr.toInt());
+		if (!white.isEmpty() && white.length()<=5)
+			img2ascii.setWhite(white);
+		if (!black.isEmpty() && black.length()<=5)
+			img2ascii.setBlack(black);		
+		
+		QString ascii=img2ascii.ascii();
+		if (ascii.isEmpty())
+			reply(req->stanza(), "Can't convert image to ASCII");
+		else
+			reply(req->stanza(), QString("Photo:\n%1").arg(ascii));
 	}
 	bot()->asyncRequests()->removeAll(req);
 	return true;
