@@ -364,12 +364,12 @@ bool UserPlugin::onVCard(const VCardWrapper& vcardWrapper)
 		std::string photoContentStd=vcard.photo().binval;
 		QByteArray photoContent=QByteArray(photoContentStd.data(),
 				photoContentStd.size());
-		QFile file("/tmp/out.png");
-		file.open(QIODevice::WriteOnly);
-		file.write(photoContentStd.data(), photoContentStd.size());
-		file.close();
+		//QFile file("/tmp/out.png");
+		//file.open(QIODevice::WriteOnly);
+		//file.write(photoContentStd.data(), photoContentStd.size());
+		//file.close();
 		QImage image;
-		if (!image.loadFromData(photoContent, "png"))
+		if (!image.loadFromData(photoContent))
 		{
 			reply(req->stanza(), "Can't load image");
 			bot()->asyncRequests()->removeAll(req);
