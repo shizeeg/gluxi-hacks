@@ -113,7 +113,7 @@ void GluxiBot::handleMessage(const MyStanza& st)
 {
 	gloox::Stanza *s=st.stanza();
 
-	qDebug() << s->xml().data();
+	qDebug() << "[IN ] " << s->xml().data();
 
 // TODO: Implement Async message handler by ID if required
 	QListIterator<BasePlugin*> it(myPlugins);
@@ -149,7 +149,7 @@ void GluxiBot::handlePresence(const MyStanza& st)
 {
 	gloox::Stanza *s=st.stanza();
 
-	qDebug() << s->xml().data();
+	qDebug() << "[IN ] " << s->xml().data();
 	
 	BasePlugin *plugin;
 	plugin=pluginByStanzaId(s);
@@ -173,7 +173,7 @@ void GluxiBot::handleIq(const MyStanza& st)
 {
 	gloox::Stanza *s=st.stanza();
 
-	qDebug() << s->xml().data();
+	qDebug() << "[IN ] " << s->xml().data();
 
 	BasePlugin *plugin;
 	plugin=pluginByStanzaId(s);

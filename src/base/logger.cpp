@@ -26,7 +26,6 @@ Logger::Logger(const QString& fileName)
 	if (instance_==0)
 	{
 		instance_=this;
-		printf("----------------------xzfsdp-gsdgs ------------- \n");
 		qInstallMsgHandler(myMessageOutput);
 		struct sigaction act;
 		memset(&act, 0, sizeof(act));
