@@ -104,7 +104,7 @@ void WWWRequest::run()
 	}
 	QString htmlCharset;
 	if (!tag.isEmpty())
-		htmlCharset=getValue(tag,"charset=([A-Za-z0-9\\-\\_]+)");
+		htmlCharset=getValue(tag,"charset=([A-Za-z0-9\\-\\_]+[^A-Za-z0-9\\-\\_])");
 
 	if (!myExp.isEmpty())
 	{
