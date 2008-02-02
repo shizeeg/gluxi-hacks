@@ -227,58 +227,61 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 
 	qDebug() << "** MUC CMD: " << cmd;
 	
-	if (cmd=="JOIN")
+	if (parser.isForMe())
 	{
-		if (!isFromBotOwner(s))
-			return true;
-		if (arg.indexOf('@')<0 || arg.indexOf('/')>=0)
+		if (cmd=="JOIN")
 		{
-			reply(s, "Conference should be like \"room@server\"");
-			return true;
-		}
-		reply(s, "Ok");
-		join(arg);
-		return true;
-	}
-	if (cmd=="LEAVE")
-	{
-		if (!isFromBotOwner(s, false))
-		{
-			if (isFromConfOwner(s))
-			{
-				if (!arg.isEmpty())
-				{
-					reply(s,
-							"You can only use \"leave\" for default (your) room");
-					return true;
-				}
-			}
-			else
+			if (!isFromBotOwner(s))
 				return true;
-		}
-		if (arg.isEmpty() && conf)
-			arg=conf->name();
-
-		if (arg.indexOf('@')<0 || arg.indexOf('/')>=0)
-		{
-			reply(s, "Conference should be like \"room@server\"");
+			if (arg.indexOf('@')<0 || arg.indexOf('/')>=0)
+			{
+				reply(s, "Conference should be like \"room@server\"");
+				return true;
+			}
+			reply(s, "Ok");
+			join(arg);
 			return true;
 		}
-		reply(s, "Ok");
-		leave(arg);
-		return true;
-	}
-
-	if (cmd=="WHEREAMI")
-	{
-		QStringList confList;
-		for (int i=0; i<conferences.count(); i++)
-			confList << (conferences[i]->name().section('@', 0, 0)+"@");
-		reply(s, QString("Currently I'm spending time at %1").arg(confList.join(", ")));
-		if (!confInProgress.isEmpty())
-			reply(s, QString("Conferences in-progress:\n"
-					+confInProgress.join("\n")));
-		return true;
+		if (cmd=="LEAVE")
+		{
+			if (!isFromBotOwner(s, false))
+			{
+				if (isFromConfOwner(s))
+				{
+					if (!arg.isEmpty())
+					{
+						reply(s,
+								"You can only use \"leave\" for default (your) room");
+						return true;
+					}
+				}
+				else
+					return true;
+			}
+			if (arg.isEmpty() && conf)
+				arg=conf->name();
+	
+			if (arg.indexOf('@')<0 || arg.indexOf('/')>=0)
+			{
+				reply(s, "Conference should be like \"room@server\"");
+				return true;
+			}
+			reply(s, "Ok");
+			leave(arg);
+			return true;
+		}
+	
+		if (cmd=="WHEREAMI")
+		{
+			QStringList confList;
+			for (int i=0; i<conferences.count(); i++)
+				confList << (conferences[i]->name().section('@', 0, 0)+"@");
+			reply(s, QString("Currently I'm spending time at %1").arg(confList.join(", ")));
+			if (!confInProgress.isEmpty())
+				reply(s, QString("Conferences in-progress:\n"
+						+confInProgress.join("\n")));
+			return true;
+		}
 	}
 
 	if (!conf)
@@ -294,13 +297,13 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	}
 	nick->updateLastActivity();
 	nick->commit();
-
-	if (msgPrefix!=prefix())
+	
+	if (msgPrefix!=prefix() || !parser.isForMe())
 	{
 		myShouldIgnoreError=1;
 		return false;
 	}
-
+	
 	if (cmd=="HERE")
 	{
 		QStringList nickList;
