@@ -6,6 +6,7 @@
 ^tailor.state.old$
 ^tailor.state.journal$
 ^debug/
+^release/
 ~$
 .cproject
 .project
