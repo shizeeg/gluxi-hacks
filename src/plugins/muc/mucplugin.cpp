@@ -352,6 +352,13 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	{
 		if (!isFromConfModerator(s))
 			return true;
+		
+		if (cmd=="MODERATOR")
+		{
+			if (getRole(s)<ROLE_ADMIN)
+				return true;
+		}
+		
 		QString target;
 		QString reason;
 		int ps=arg.indexOf('|');
