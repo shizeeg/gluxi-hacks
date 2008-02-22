@@ -103,8 +103,12 @@ void WWWRequest::run()
 		tag=getValue(res,"<meta[^>]+content=\\\"([^\\\"]+)\\\"[^>]+http-equiv=[\\\"]{0,1}Content-Type[\\\"]{0,1}[^>]*>");
 	}
 	QString htmlCharset;
-	if (!tag.isEmpty())
+	if (!tag.isEmpty()) {
 		htmlCharset=getValue(tag,"charset=([A-Za-z0-9\\-\\_]+[^A-Za-z0-9\\-\\_])");
+		if (htmlCharset.isEmpty()) {
+			htmlCharset=getValue(tag,"charset=([A-Za-z0-9\\-\\_]+)$");
+		}
+	}
 
 	if (!myExp.isEmpty())
 	{
