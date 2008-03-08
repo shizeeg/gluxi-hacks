@@ -96,19 +96,21 @@ void WWWRequest::run()
 		enc="Windows-1251";
 
 	// No recode if we have codepage in META
-	QString tag=getValue(res,"<meta[^>]+http-equiv=[\\\"]{0,1}Content-Type[\\\"]{0,1}"
-		"[^>]+content=\\\"([^\\\"]+)\\\"[^>]*>");
+	QString tag=getValue(res,"<meta[^>]+http-equiv=[\\\"']{0,1}Content-Type[\\\"']{0,1}"
+		"[^>]+content=[\\\"']([^\\\"']+)[\\\"'][^>]*>");
 	if (tag.isEmpty())
 	{
-		tag=getValue(res,"<meta[^>]+content=\\\"([^\\\"]+)\\\"[^>]+http-equiv=[\\\"]{0,1}Content-Type[\\\"]{0,1}[^>]*>");
+		tag=getValue(res,"<meta[^>]+content=[\\\"']([^\\\"']+)\\\"[^>]+http-equiv=[\\\"']{0,1}Content-Type[\\\"']{0,1}[^>]*>");
 	}
 	QString htmlCharset;
 	if (!tag.isEmpty()) {
 		htmlCharset=getValue(tag,"charset=([A-Za-z0-9\\-\\_]+[^A-Za-z0-9\\-\\_])");
-		if (htmlCharset.isEmpty()) {
+		if (htmlCharset.isEmpty())
+		{
 			htmlCharset=getValue(tag,"charset=([A-Za-z0-9\\-\\_]+)$");
 		}
 	}
+	qDebug() << "HTML Charset: " << htmlCharset;
 
 	if (!myExp.isEmpty())
 	{
