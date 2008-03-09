@@ -174,8 +174,6 @@ void BasePlugin::reply(gloox::Stanza* to, const QString& body, bool forcePrivate
 	gloox::Stanza *st=gloox::Stanza::createMessageStanza(gloox::JID(dest), msg.toStdString());
 
 	st->addAttribute("type",isGroupChat(to) && !forcePrivate ? "groupchat" : "chat");
-
-	qDebug() << "[OUT] " << st->xml().data();
 	bot()->client()->send(st);
 }
 

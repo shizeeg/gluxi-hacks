@@ -171,6 +171,7 @@ void GlooxWrapper::disconnect()
 void GlooxWrapper::send(gloox::Stanza* s)
 {
 	QMutexLocker locker(&mutex);
+	qDebug() << "[OUT] " << s->xml().data();
 	myClient->send(s);
 }
 
