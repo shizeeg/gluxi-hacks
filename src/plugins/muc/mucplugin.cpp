@@ -1101,12 +1101,6 @@ void MucPlugin::sendMessage(Conference *conf, const QString& msg)
 
 void MucPlugin::onQuit(const QString& reason)
 {
-	int cnt=conferences.count();
-	for (int i=0; i<cnt; i++)
-	{
-		Conference *conf=conferences[i];
-		sendMessage(conf, QString("Shutting down (%1)").arg(reason));
-	}
 }
 
 QRegExp MucPlugin::getConfExp(const QString& from)

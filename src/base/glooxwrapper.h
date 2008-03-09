@@ -35,6 +35,7 @@ public:
 	void send(gloox::Stanza* s);
 	void registerIqHandler(const QString& service);
 	void fetchVCard(const QString& jid);
+	void setPresence(gloox::Presence presence, const QString& status, int priority);
 	gloox::MyVCardManager* getVCardManager() { return vcardManager; }
 	std::string getID();
 	gloox::JID jid();

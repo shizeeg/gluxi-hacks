@@ -90,8 +90,7 @@ void GlooxWrapper::run()
 			}
 			mutex.unlock();
 		}
-		qDebug() << "GlooxWrapper disconnected. Waiting 30 secs";
-		sleep(10);
+		break;
 	}
 	QCoreApplication::exit(0);
 }
@@ -197,4 +196,10 @@ void GlooxWrapper::fetchVCard(const QString& jid)
 {
 	QMutexLocker locker(&mutex);
 	vcardManager->fetchVCard(gloox::JID(jid.toStdString()),this);
+}
+
+void GlooxWrapper::setPresence(gloox::Presence presence, const QString& status,
+		int priority)
+{
+       myClient->setPresence(presence, priority, status.toStdString());
 }

@@ -280,6 +280,7 @@ void GluxiBot::onQuit(const QString& reason)
 		assert(plugin);
 		plugin->onQuit(reason);
 	}
+	myGloox->setPresence(gloox::PresenceUnavailable, reason, 0);
 	myGloox->disconnect();
 }
 
