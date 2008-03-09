@@ -44,6 +44,8 @@ private:
 	bool isFromConfOwner(gloox::Stanza* s);
 	void setRole(gloox::Stanza* s, Nick*, const QString& role, const QString& reason=QString::null);
 	void setRole(Conference* conf, Nick*, const QString& role, const QString& reason=QString::null);
+	void setAffiliation(gloox::Stanza* s, Nick*, const QString& affiliation, const QString& reason=QString::null);
+	void setAffiliation(Conference* conf, const QString& jid, const QString& affiliation, const QString& reason=QString::null);
 	QString getIqError(gloox::Stanza* s);
 	bool aFind(AList* list, Nick *n);
 	// Advanced commands

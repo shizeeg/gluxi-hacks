@@ -22,7 +22,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
 	commands << "WHEREAMI" << "NICK" << "IDLE" << "JOIN" << "LEAVE" << "KICK"
-			<< "VISITOR" << "PARTICIPANT" << "MODERATOR";
+			<< "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN" << "BANJID";
 	commands << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND" << "SEEN"
 			<< "CLIENTS" << "SETNICK";
 	commands << "HERE";
@@ -212,8 +212,8 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 bool MucPlugin::parseMessage(gloox::Stanza* s)
 {
 	if (isOfflineMessage(s))
-		return true		;
-	
+		return true;
+
 	MessageParser parser(s, getMyNick(s));
 	QString msgPrefix=parser.nextToken().toUpper();
 	QString cmd=parser.nextToken().toUpper();
@@ -226,7 +226,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	// conf can be nil here!!!
 
 	qDebug() << "** MUC CMD: " << cmd;
-	
+
 	if (parser.isForMe())
 	{
 		if (cmd=="JOIN")
@@ -260,7 +260,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 			}
 			if (arg.isEmpty() && conf)
 				arg=conf->name();
-	
+
 			if (arg.indexOf('@')<0 || arg.indexOf('/')>=0)
 			{
 				reply(s, "Conference should be like \"room@server\"");
@@ -270,13 +270,15 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 			leave(arg);
 			return true;
 		}
-	
+
 		if (cmd=="WHEREAMI")
 		{
 			QStringList confList;
 			for (int i=0; i<conferences.count(); i++)
 				confList << (conferences[i]->name().section('@', 0, 0)+"@");
-			reply(s, QString("Currently I'm spending time at %1").arg(confList.join(", ")));
+			reply(
+					s,
+					QString("Currently I'm spending time at %1").arg(confList.join(", ")));
 			if (!confInProgress.isEmpty())
 				reply(s, QString("Conferences in-progress:\n"
 						+confInProgress.join("\n")));
@@ -297,13 +299,13 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	}
 	nick->updateLastActivity();
 	nick->commit();
-	
+
 	if (msgPrefix!=prefix() || !parser.isForMe())
 	{
 		myShouldIgnoreError=1;
 		return false;
 	}
-	
+
 	if (cmd=="HERE")
 	{
 		QStringList nickList;
@@ -352,13 +354,13 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	{
 		if (!isFromConfModerator(s))
 			return true;
-		
+
 		if (cmd=="MODERATOR")
 		{
 			if (getRole(s)<ROLE_ADMIN)
 				return true;
 		}
-		
+
 		QString target;
 		QString reason;
 		int ps=arg.indexOf('|');
@@ -384,6 +386,43 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 			setRole(s, n, "participant", reason);
 		if (cmd=="MODERATOR")
 			setRole(s, n, "moderator", reason);
+		return true;
+	}
+
+	if (cmd=="BAN")
+	{
+		if (getRole(s) < ROLE_ADMIN)
+		{
+			reply(s, "You have no rights to ban. Sorry");
+			return true;
+		}
+		Nick *nick=conf->nicks()->byName(arg);
+		if (!nick)
+		{
+			reply(s, "No nick found: "+arg);
+			return true;
+		}
+		QString reason=parser.nextToken();
+		setAffiliation(conf, nick->jid(), "outcast", reason);
+		return true;
+	}
+
+	if (cmd=="BANJID")
+	{
+		if (getRole(s) < ROLE_ADMIN)
+		{
+			reply(s, "You have no rights to ban. Sorry");
+			return true;
+		}
+		QString jid=arg;
+		if (jid.isEmpty())
+		{
+			reply(s, "No JID specified");
+			return true;
+		}
+		QString reason=parser.nextToken();
+		setAffiliation(conf, jid, "outcast", reason);
+		reply(s, "done");
 		return true;
 	}
 
@@ -526,7 +565,7 @@ void MucPlugin::setRole(gloox::Stanza* s, Nick* n, const QString& role,
 void MucPlugin::setRole(Conference* conf, Nick* n, const QString& role,
 		const QString& reason)
 {
-	if (!conf)
+	if (!conf || !n)
 		return;
 
 	gloox::Tag *tag=new gloox::Tag("item");
@@ -538,7 +577,35 @@ void MucPlugin::setRole(Conference* conf, Nick* n, const QString& role,
 
 	gloox::Stanza *st=gloox::Stanza::createIqStanza(conf->name().toStdString(), "someID", gloox::StanzaIqSet,
 			"http://jabber.org/protocol/muc#admin", tag);
-	std::cout << st->xml() << std::endl << std::endl;
+	bot()->client()->send(st);
+}
+
+void MucPlugin::setAffiliation(gloox::Stanza* s, Nick* n,
+		const QString& affiliation, const QString& reason)
+{
+	setAffiliation(getConf(s), n->jid(), affiliation, reason);
+}
+
+void MucPlugin::setAffiliation(Conference* conf, const QString& jid,
+		const QString& affiliation, const QString& reason)
+{
+	if (!conf || jid.isEmpty())
+		return;
+
+	qDebug() << jid;
+	gloox::JID glJid(jid.toStdString());
+	QString jidStr=QString::fromStdString(glJid.bare());
+	qDebug() << jidStr;
+	
+	gloox::Tag *tag=new gloox::Tag("item");
+	tag->addAttribute("jid", jidStr.toStdString());
+	tag->addAttribute("affiliation", affiliation.toStdString());
+
+	gloox::Tag *reas=new gloox::Tag("reason",reason.toStdString());
+	tag->addChild(reas);
+
+	gloox::Stanza *st=gloox::Stanza::createIqStanza(conf->name().toStdString(), "someID", gloox::StanzaIqSet,
+			"http://jabber.org/protocol/muc#admin", tag);
 	bot()->client()->send(st);
 }
 
