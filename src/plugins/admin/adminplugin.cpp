@@ -4,6 +4,7 @@
 #include "base/asyncrequest.h"
 #include "base/rolelist.h"
 #include "base/messageparser.h"
+#include "base/glooxwrapper.h"
 
 #include <gloox/client.h>
 #include <gloox/stanza.h>
@@ -13,7 +14,7 @@
 AdminPlugin::AdminPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
-	commands << "QUIT" << "ROLES" << "ASYNCCOUNT" << "ASYNCLIST";
+	commands << "QUIT" << "ROLES" << "ASYNCCOUNT" << "ASYNCLIST" << "PRESENCE";
 }
 
 
@@ -97,6 +98,35 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 		}
 		else
 			reply(s,"Only owner can do this");
+		return true;
+	}
+	
+	if (cmd=="PRESENCE")
+	{
+		if (!isFromBotOwner(s))
+		{
+			reply(s,"Only owner can do this");
+			return true;
+		}
+		QString pr=parser.nextToken().toUpper();
+		gloox::Presence presence;
+		if (pr=="AVAILABLE")
+			presence=gloox::PresenceAvailable;
+		else if (pr=="AWAY")
+			presence=gloox::PresenceAway;
+		else if (pr=="XA")
+			presence=gloox::PresenceXa;
+		else if (pr=="DND")
+			presence=gloox::PresenceDnd;
+		else if (pr=="CHAT")
+			presence=gloox::PresenceChat;
+		else
+		{
+			reply(s,"Available presences: available, away, xa, dnd, chat");
+			return true;
+		}
+		QString status=parser.nextToken();
+		bot()->client()->setPresence(presence, status, bot()->getPriority());
 		return true;
 	}
 

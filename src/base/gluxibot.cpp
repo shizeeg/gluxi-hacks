@@ -294,3 +294,7 @@ BasePlugin* GluxiBot::pluginByStanzaId(gloox::Stanza* s)
 	return req->plugin();
 }
 
+int GluxiBot::getPriority()
+{
+	return DataStorage::instance()->getInt("account/priority");
+}
