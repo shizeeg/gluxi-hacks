@@ -22,7 +22,8 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
 	commands << "WHEREAMI" << "NICK" << "IDLE" << "JOIN" << "LEAVE" << "KICK"
-			<< "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN" << "BANJID";
+			<< "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN" << "BANJID"
+			<< "NONE" << "MEMBER" << "ADMIN" << "OWNER";
 	commands << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND" << "SEEN"
 			<< "CLIENTS" << "SETNICK";
 	commands << "HERE";
@@ -389,11 +390,11 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		return true;
 	}
 
-	if (cmd=="BAN")
+	if (cmd=="BAN" || cmd=="NONE" || cmd=="MEMBER" || cmd=="ADMIN" || cmd=="OWNER")
 	{
 		if (getRole(s) < ROLE_ADMIN)
 		{
-			reply(s, "You have no rights to ban. Sorry");
+			reply(s, "You have no rights to change affiliation. Sorry");
 			return true;
 		}
 		Nick *nick=conf->nicks()->byName(arg);
@@ -403,7 +404,9 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 			return true;
 		}
 		QString reason=parser.nextToken();
-		setAffiliation(conf, nick->jid(), "outcast", reason);
+		QString affiliation=affiliationByCommand(cmd);		
+		
+		setAffiliation(conf, nick->jid(), affiliation, reason);
 		return true;
 	}
 
@@ -1116,3 +1119,15 @@ QRegExp MucPlugin::getConfExp(const QString& from)
 	return exp;
 }
 
+QString MucPlugin::affiliationByCommand(const QString& cmd)
+{
+	if (cmd=="BAN")
+		return "outcast";
+	if (cmd=="ADMIN")
+		return "admin";
+	if (cmd=="MEMBER")
+		return "member";
+	if (cmd=="OWNER")
+		return "owner";
+	return "none";
+}
