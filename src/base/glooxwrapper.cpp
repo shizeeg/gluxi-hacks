@@ -203,3 +203,9 @@ void GlooxWrapper::setPresence(gloox::Presence presence, const QString& status,
 {
        myClient->setPresence(presence, priority, status.toStdString());
 }
+
+void GlooxWrapper::setPresence(const QString& jid, gloox::Presence presence, const QString& status)
+{
+	gloox::Stanza* st=gloox::Stanza::createPresenceStanza(gloox::JID(jid.toStdString()),status.toStdString(),presence);
+	send(st);
+}

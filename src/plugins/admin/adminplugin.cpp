@@ -109,18 +109,8 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 			return true;
 		}
 		QString pr=parser.nextToken().toUpper();
-		gloox::Presence presence;
-		if (pr=="AVAILABLE")
-			presence=gloox::PresenceAvailable;
-		else if (pr=="AWAY")
-			presence=gloox::PresenceAway;
-		else if (pr=="XA")
-			presence=gloox::PresenceXa;
-		else if (pr=="DND")
-			presence=gloox::PresenceDnd;
-		else if (pr=="CHAT")
-			presence=gloox::PresenceChat;
-		else
+		gloox::Presence presence=presenceFromString(pr);
+		if (presence==gloox::PresenceUnknown)
 		{
 			reply(s,"Available presences: available, away, xa, dnd, chat");
 			return true;
@@ -130,5 +120,47 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 		return true;
 	}
 
+	if (cmd=="PRESENCEJID")
+	{
+		if (!isFromBotOwner(s))
+		{
+			reply(s, "Only owner can do this");
+			return true;
+		}
+
+		QString target=parser.nextToken();
+
+		QString pr=parser.nextToken().toUpper();
+		gloox::Presence presence=presenceFromString(pr);
+		if (presence==gloox::PresenceUnknown)
+		{
+			reply(s, "Syntax: presencejid JID PRESENCE STATUS.\n"
+					"Available presences: available, away, xa, dnd, chat");
+			return true;
+		}
+		
+		QString status=parser.nextToken();
+		bot()->client()->setPresence(target, presence, status);
+		return true;
+	}
+	
 	return false;
+ }
+
+gloox::Presence AdminPlugin::presenceFromString(const QString& pr)
+{
+	gloox::Presence presence;
+	if (pr=="AVAILABLE")
+		presence=gloox::PresenceAvailable;
+	else if (pr=="AWAY")
+		presence=gloox::PresenceAway;
+	else if (pr=="XA")
+		presence=gloox::PresenceXa;
+	else if (pr=="DND")
+		presence=gloox::PresenceDnd;
+	else if (pr=="CHAT")
+		presence=gloox::PresenceChat;
+	else
+		presence==gloox::PresenceUnknown;
+	return presence;
 }

@@ -3,6 +3,8 @@
 
 #include "base/baseplugin.h"
 
+#include <gloox/stanza.h>
+
 class AdminPlugin : public BasePlugin
 {
 	Q_OBJECT
@@ -14,6 +16,8 @@ public:
 	virtual QString help() const { return "This plugin contains bot administrator tools"; };
 	virtual QString description() const { return "Bot administrator tools";};
 	virtual bool parseMessage(gloox::Stanza* );
+private:
+	gloox::Presence presenceFromString(const QString& pr);
 };
 
 #endif
