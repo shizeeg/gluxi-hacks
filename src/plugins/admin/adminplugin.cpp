@@ -14,7 +14,7 @@
 AdminPlugin::AdminPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
-	commands << "QUIT" << "ROLES" << "ASYNCCOUNT" << "ASYNCLIST" << "PRESENCE";
+	commands << "QUIT" << "ROLES" << "ASYNCCOUNT" << "ASYNCLIST" << "PRESENCE" << "PRESENCEJID";
 }
 
 

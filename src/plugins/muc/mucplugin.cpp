@@ -190,12 +190,12 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 				QString newNick=getItem(s, "nick");
 				qDebug() << "Renaming done: "+newNick;
 				conf->setNick(newNick);
+				conf->nicks()->remove(n);
 			}
 			else
 			{
 				qDebug() <<"!!! I'm kicked/banned";
 				conferences.remove(conf);
-				return;
 			}
 		}
 		else
