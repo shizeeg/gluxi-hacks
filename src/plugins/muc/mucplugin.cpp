@@ -22,7 +22,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
 	commands << "WHEREAMI" << "NICK" << "IDLE" << "JOIN" << "LEAVE" << "KICK"
-			<< "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN" << "BANJID" 
+			<< "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN" << "BANJID"
 			<< "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
 	commands << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND" << "SEEN"
 			<< "CLIENTS" << "SETNICK";
@@ -174,9 +174,20 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 	{
 		if (n->nick()==conf->nick())
 		{
-			qDebug() <<"!!! I'm kicked/banned";
-			conferences.remove(conf);
-			return;
+			//Check for possible renaming
+			int status=getStatus(s);
+			if (status==303)
+			{
+				QString newNick=getItem(s, "nick");
+				qDebug() << "Renaming done: "+newNick;
+				conf->setNick(newNick);
+			}
+			else
+			{
+				qDebug() <<"!!! I'm kicked/banned";
+				conferences.remove(conf);
+				return;
+			}
 		}
 		else
 		{
@@ -390,7 +401,8 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		return true;
 	}
 
-	if (cmd=="BAN" || cmd=="NONE" || cmd=="MEMBER" || cmd=="ADMIN" || cmd=="OWNER")
+	if (cmd=="BAN" || cmd=="NONE" || cmd=="MEMBER" || cmd=="ADMIN" || cmd
+			=="OWNER")
 	{
 		if (getRole(s) < ROLE_ADMIN)
 		{
@@ -404,8 +416,8 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 			return true;
 		}
 		QString reason=parser.nextToken();
-		QString affiliation=affiliationByCommand(cmd);		
-		
+		QString affiliation=affiliationByCommand(cmd);
+
 		setAffiliation(conf, nick->jid(), affiliation, reason);
 		return true;
 	}
@@ -451,8 +463,8 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	{
 		if (isFromConfOwner(s))
 		{
-			conf->setNick(arg);
-
+			//Own nick will be changed after ACK presence
+			//conf->setNick(arg);
 			gloox::Stanza *st=
 					gloox::Stanza::createPresenceStanza(gloox::JID(QString(conf->name()+"/"+arg).toStdString()));
 
@@ -600,7 +612,7 @@ void MucPlugin::setAffiliation(Conference* conf, const QString& jid,
 	gloox::JID glJid(jid.toStdString());
 	QString jidStr=QString::fromStdString(glJid.bare());
 	qDebug() << jidStr;
-	
+
 	gloox::Tag *tag=new gloox::Tag("item");
 	tag->addAttribute("jid", jidStr.toStdString());
 	tag->addAttribute("affiliation", affiliation.toStdString());
@@ -717,6 +729,26 @@ QString MucPlugin::getItem(gloox::Stanza* s, const QString& name)
 	return QString::fromStdString(res);
 }
 
+int MucPlugin::getStatus(gloox::Stanza* s)
+{
+	std::string res;
+	if (s->hasChild("x", "xmlns", "http://jabber.org/protocol/muc#user"))
+	{
+		gloox::Tag *tg1=s->findChild("x", "xmlns",
+				"http://jabber.org/protocol/muc#user");
+		if (!tg1)
+			return -1;
+		if (tg1->hasChild("status", "code"))
+		{
+			gloox::Tag *tg2=tg1->findChild("status", "code");
+			if (!tg2)
+				return -1;
+			res=tg2->findAttribute("code");
+		}
+	}
+	return QString::fromStdString(res).toInt();
+}
+
 bool MucPlugin::canHandleIq(gloox::Stanza* /* s */)
 {
 	/*	std::cout << "!!!!! " << s->xml() << std::endl;
@@ -753,7 +785,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	Conference* conf=getConf(s);
 	QString arg=parser.nextToken().toUpper();
 	QString arg2=parser.nextToken();
-	
+
 	QString nickName=QString::fromStdString(s->from().resource());
 
 	AList* alist=0;
