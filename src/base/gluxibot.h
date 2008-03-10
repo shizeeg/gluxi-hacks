@@ -55,6 +55,7 @@ public:
 	QString JIDtoNick(const QString& jid);
 	void onQuit(const QString& reason);
 	int getPriority();
+	QString getMyNick(gloox::Stanza* s);
 private:
 	GlooxWrapper *myGloox;
 

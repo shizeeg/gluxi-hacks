@@ -43,6 +43,7 @@ public:
 	virtual void onQuit(const QString& reason);			// OnQuit
 	void reply(gloox::Stanza*, const QString&, bool forcePrivate=false);
 	virtual QString getMyNick(gloox::Stanza* s);
+	virtual QString resolveMyNick(gloox::Stanza* s);
 protected:
 	int pluginId;
 	bool myShouldIgnoreError;

@@ -126,12 +126,17 @@ bool BasePlugin::canHandleMessage(gloox::Stanza* s)
 		return false;
 	if (allMessages())
 		return true;
-	return (MessageParser::isMessageAcceptable(s, getMyNick(s), prefix()));
+	return (MessageParser::isMessageAcceptable(s, bot()->getMyNick(s), prefix()));
 }
 
-QString BasePlugin::getMyNick(gloox::Stanza*)
+QString BasePlugin::getMyNick(gloox::Stanza* s)
 {
-	return QString::fromStdString(bot()->client()->jid().username());
+	return bot()->getMyNick(s);
+}
+
+QString BasePlugin::resolveMyNick(gloox::Stanza* s)
+{
+	return QString::null;
 }
 
 bool BasePlugin::isGroupChat(gloox::Stanza* s)

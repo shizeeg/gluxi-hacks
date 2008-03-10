@@ -82,6 +82,15 @@ QString MucPlugin::getMyNick(gloox::Stanza* s)
 	return conf->nick();
 }
 
+
+QString MucPlugin::resolveMyNick(gloox::Stanza* s)
+{
+	Conference *conf=getConf(s);
+	if (!conf)
+		return QString::null;
+	return conf->nick();
+}
+
 bool MucPlugin::canHandleMessage(gloox::Stanza* s)
 {
 	// 	std::cout << s->xml() << std::endl;

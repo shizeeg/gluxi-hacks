@@ -284,6 +284,22 @@ void GluxiBot::onQuit(const QString& reason)
 	myGloox->disconnect();
 }
 
+QString GluxiBot::getMyNick(gloox::Stanza* s)
+{
+	QListIterator<BasePlugin*> it(myPlugins);
+	BasePlugin *plugin;
+	while (it.hasNext())
+	{
+		plugin=it.next();
+		assert(plugin);
+		QString res=plugin->resolveMyNick(s);
+		if (!res.isEmpty())
+			return res;
+	}
+	
+	return QString::fromStdString(client()->jid().username());
+}
+
 BasePlugin* GluxiBot::pluginByStanzaId(gloox::Stanza* s)
 {
 	QString id=QString::fromStdString(s->findAttribute("id"));
