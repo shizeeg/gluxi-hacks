@@ -57,6 +57,7 @@ private:
 	QRegExp getConfExp(const QString&);
 	QString affiliationByCommand(const QString& cmd);
 	int getStatus(gloox::Stanza* s);
+	bool warnImOwner(gloox::Stanza* s);
 };
 
 #endif

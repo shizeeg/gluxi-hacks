@@ -413,6 +413,9 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	if (cmd=="BAN" || cmd=="NONE" || cmd=="MEMBER" || cmd=="ADMIN" || cmd
 			=="OWNER")
 	{
+		if (warnImOwner(s))
+			return true;
+		
 		if (getRole(s) < ROLE_ADMIN)
 		{
 			reply(s, "You have no rights to edit affiliation. Sorry");
@@ -433,6 +436,9 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 
 	if (cmd=="BANJID" || cmd=="UNBAN")
 	{
+		if (warnImOwner(s))
+				return true;
+		
 		if (getRole(s) < ROLE_ADMIN)
 		{
 			reply(s, "You have no rights to edit affiliation. Sorry");
@@ -1166,4 +1172,20 @@ QString MucPlugin::affiliationByCommand(const QString& cmd)
 	if (cmd=="OWNER")
 		return "owner";
 	return "none";
+}
+
+bool MucPlugin::warnImOwner(gloox::Stanza* s)
+{
+	QString myNick=getMyNick(s);
+	Nick* nick=getNick(s, myNick);
+	if (!nick)
+		return false;
+	
+	if (nick->affiliation().toUpper() == "OWNER")
+	{
+		reply(s, "I'm conference owner. Affiliation editor is disabled for security purposes");
+		return true;
+	}
+	
+	return false;
 }
