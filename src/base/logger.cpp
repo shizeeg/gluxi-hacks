@@ -1,5 +1,6 @@
 #include "logger.h"
 
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -31,7 +32,7 @@ Logger::Logger(const QString& fileName)
 		memset(&act, 0, sizeof(act));
 		act.sa_handler=onHUP;
 		act.sa_flags=SA_RESTART;
-		sigaction(SIGHUP, &act, NULL);
+		::sigaction(SIGHUP, &act, NULL);
 	}
 	fileName_=fileName;
 	hup_=false;
