@@ -9,7 +9,7 @@
 WordPlugin::WordPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "ADD" << "COUNT" << "CLEAR" << "SHOW" << "SHOWPRIV" << "DEL";
+	commands << "ADD" << "COUNT" << "CLEAR" << "SHOW" << "SHOWPRIV" << "SHOWJID" << "DEL";
 }
 
 WordPlugin::~WordPlugin()
@@ -77,7 +77,6 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 			return true;
 		}
 
-		qDebug() << "DEST=" << dest;
 		QString jid=bot()->getJID(s, dest);
 		if (jid.isEmpty())
 		{
@@ -100,6 +99,38 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 		return true;
 	}
 
+	if (cmd=="SHOWJID")
+	{
+		QString dest=parser.nextToken();
+		QString word=parser.nextToken();
+
+		if (dest.isEmpty() || word.isEmpty())
+		{
+			reply(s, "Syntax: SHOWJID <JID> <WORD>");
+			return true;
+		}
+		if (getRole(s)<ROLE_MODERATOR)
+		{
+			reply(s, "You should be at least moderator to do this");
+			return true;
+		}
+
+		QString nick;
+		QString value=words.get(bot()->getStorage(s), word, &nick);
+		if (value.isEmpty())
+		{
+			reply(s, "I don't know");
+			return true;
+		}
+		reply(s, "Ok");
+		s->addAttribute("from", dest.toStdString());
+		s->finalize();
+		
+		QString toSay=QString("%1 says that %2 = %3").arg(nick).arg(word).arg(value);
+		reply(s, toSay, true);
+		return true;
+	}
+	
 	if (cmd=="SHOWALL")
 	{
 		QMap<QString,QString> all=words.getAll(bot()->getStorage(s), arg);
