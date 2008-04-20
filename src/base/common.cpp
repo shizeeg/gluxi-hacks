@@ -158,3 +158,17 @@ QString removeHtml(const QString& s)
 	return removeExtraSpaces(res);
 }
 
+bool isBareJidValid(const QString& jid)
+{
+	QString user=jid.section('@',0,-2);
+	QString server=jid.section('@',-1,-1);
+	qDebug() << "user: " << user << "; server: " << server; 
+	if (!isServerValid(server))
+		return false;
+	return (user.indexOf(' ')<0);
+}
+
+bool isServerValid(const QString& server) {
+	QRegExp exp("[A-Za-z0-9\\-_\\.]+\\.[A-Za-z0-9\\-_\\.]+");
+	return exp.exactMatch(server);
+}

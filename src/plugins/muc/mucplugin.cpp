@@ -450,6 +450,13 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 			reply(s, "No JID specified");
 			return true;
 		}
+		
+		if (!isBareJidValid(jid) && !isServerValid(jid))
+		{
+			reply(s,"JID is not valid");
+			return true;
+		}
+		
 		QString reason=parser.nextToken();
 		QString affiliation=affiliationByCommand(cmd);
 		setAffiliation(conf, jid, affiliation, reason);
