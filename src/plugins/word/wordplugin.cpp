@@ -186,8 +186,15 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 
 		if (cmd=="CLEAR")
 		{
-			words.clear(bot()->getStorage(s));
-			reply(s, "Ok");
+			if (getRole(s)<ROLE_OWNER)
+			{
+				reply(s,"Only owner can do this");
+			} 
+			else 
+			{
+				words.clear(bot()->getStorage(s));
+				reply(s, "Ok");
+			}
 			return true;
 		}
 
