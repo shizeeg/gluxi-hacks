@@ -39,7 +39,7 @@ Jid::~Jid()
 void Jid::loadJid()
 {
 	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("SELECT id FROM conference_jids WHERE conference_id = ? AND jid = ?");
+		->prepareQuery("SELECT id,created FROM conference_jids WHERE conference_id = ? AND jid = ?");
 	qDebug() << myParent->conference()->id() << myJid;
 	query.addBindValue(myParent->conference()->id());
 	query.addBindValue(myJid);
@@ -51,6 +51,7 @@ void Jid::loadJid()
 	if (query.next())
 	{
 		myId=query.value(0).toInt();
+		myCreated=query.value(1).toDateTime();
 	}
 	else
 	{

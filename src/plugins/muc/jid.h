@@ -2,6 +2,7 @@
 #define JID_H
 
 #include <QString>
+#include <QDateTime>
 
 /**
 	@author Dmitry Nezhevenko <dion@inhex.net>
@@ -17,6 +18,7 @@ public:
 	int id() const { return myId; };
 	QString jid() const { return myJid; };
 	void setFullJid(const QString& );
+	QDateTime created() const { return myCreated; };
 	void commit();
 	void remove();
 	static void removeTemporary(Conference *conf=0);
@@ -26,6 +28,7 @@ private:
 	int myId;
 	QString myJid;
 	QString myResource;
+	QDateTime myCreated;
 	void loadJid();
 };
 

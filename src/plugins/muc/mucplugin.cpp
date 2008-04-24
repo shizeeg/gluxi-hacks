@@ -2,6 +2,7 @@
 #include "conference.h"
 #include "nicklist.h"
 #include "alist.h"
+#include "jid.h"
 
 #include "base/common.h"
 #include "base/gluxibot.h"
@@ -216,7 +217,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		n->commit();
 
 		QString confJid=QString::fromStdString(s->from().full());
-		bot()->roles()->insert(confJid, n->jid().section('/', 0, 0));
+		bot()->roles()->insert(confJid, n->jidStr().section('/', 0, 0));
 		bot()->roles()->update(confJid, RoleList::calc(n->role(), n->affiliation()));
 		/*		if (!confJid.isEmpty())
 		 {
@@ -343,16 +344,28 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		Nick *n=getNickVerbose(s, arg);
 		if (!n)
 			return true;
-		reply(
-				s,
-				QString("Nick \"%1\": Affiliation: %2; Role: %3; Joined: %4; Idle: %5; Status: %6 (%7)")
-				.arg(n->nick())
-				.arg(n->affiliation())
-				.arg(n->role())
-				.arg(n->joined().toString(Qt::LocaleDate))
-				.arg(secsToString(n->lastActivity().secsTo(QDateTime::currentDateTime())))
-				.arg(n->show())
-				.arg(n->status()) );
+		Jid* jid=n->jid();
+		
+		QString jidCreated;
+		if (jid)
+		{
+			jidCreated=jid->created().toString(Qt::LocaleDate);
+		} 
+		else
+		{
+			jidCreated="unknown";
+		}
+			
+		QString nickInfo=QString("Nick \"%1\": Affiliation: %2; Role: %3; Registered: %4; Joined: %5; Idle: %6; Status: %7 (%8)")
+		.arg(n->nick())
+		.arg(n->affiliation())
+		.arg(n->role())
+		.arg(jidCreated)
+		.arg(n->joined().toString(Qt::LocaleDate))
+		.arg(secsToString(n->lastActivity().secsTo(QDateTime::currentDateTime())))
+		.arg(n->show())
+		.arg(n->status());
+		reply(s, nickInfo);
 		return true;
 	}
 
@@ -430,7 +443,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		QString reason=parser.nextToken();
 		QString affiliation=affiliationByCommand(cmd);
 
-		setAffiliation(conf, nick->jid(), affiliation, reason);
+		setAffiliation(conf, nick->jidStr(), affiliation, reason);
 		return true;
 	}
 
@@ -621,7 +634,7 @@ void MucPlugin::setRole(Conference* conf, Nick* n, const QString& role,
 void MucPlugin::setAffiliation(gloox::Stanza* s, Nick* n,
 		const QString& affiliation, const QString& reason)
 {
-	setAffiliation(getConf(s), n->jid(), affiliation, reason);
+	setAffiliation(getConf(s), n->jidStr(), affiliation, reason);
 }
 
 void MucPlugin::setAffiliation(Conference* conf, const QString& jid,
@@ -980,8 +993,8 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		{
 			qDebug() << args;
 			Nick *n=conf->nicks()->byName(args);
-			if (n && !n->jid().isEmpty())
-				arg2=n->jid().section('/', 0, 0);
+			if (n && !n->jidStr().isEmpty())
+				arg2=n->jidStr().section('/', 0, 0);
 			else
 			{
 				reply(s, "JID or nick is not valid: "+args);
@@ -1020,7 +1033,7 @@ bool MucPlugin::aFind(AList* list, Nick* nick)
 {
 	int cnt=list->count();
 	QString line;
-	QString uJid=nick->jid().toUpper().section('/', 0, 0);
+	QString uJid=nick->jidStr().toUpper().section('/', 0, 0);
 	QString uNick=nick->nick().toUpper();
 
 	bool nickOnly;
@@ -1127,8 +1140,7 @@ QString MucPlugin::getJID(gloox::Stanza*s, const QString& n)
 		return QString::null;
 		Conference *conf=nick->conference();
 		if (!conf)
-		return QString::null;
-
+			return QString::null;
 		return QString("%1/%2").arg(conf->name()).arg(nick->nick());
 	}
 

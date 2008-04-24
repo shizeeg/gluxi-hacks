@@ -12,7 +12,7 @@ public:
     Nick(Conference* parent, const QString& nick, const QString& jid=QString::null);
     ~Nick();
 
-	QString jid() const { return myJidS; };
+	QString jidStr() const { return myJidS; };
 	QString nick() const { return myNick; };
 	QString affiliation() const { return myAffiliation; };
 	QString role() const { return myRole; };
@@ -21,6 +21,7 @@ public:
 	QString show() const { return myShow; };
 	QString status() const { return myStatus; };
 	Conference* conference() const { return myParent; };
+	Jid* jid() const { return myJid; };
 
 	void setJid(const QString& jid);
 	void setNick(const QString& nick);
