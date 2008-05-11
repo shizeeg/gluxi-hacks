@@ -22,7 +22,7 @@
 MucPlugin::MucPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "WHEREAMI" << "NICK" << "IDLE" << "JOIN" << "LEAVE" << "KICK"
+	commands << "WHEREAMI" << "NICK" << "IDLE" << "KNOWN" << "JOIN" << "LEAVE" << "KICK"
 			<< "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN" << "BANJID"
 			<< "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
 	commands << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND" << "SEEN"
@@ -411,6 +411,16 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	if (cmd=="SEEN")
 	{
 		reply(s, conf->seen(arg));
+		return true;
+	}
+	
+	if (cmd=="KNOWN")
+	{
+		Nick *n=getNickVerbose(s, arg);
+		if (!n)
+			return true;
+		QStringList knownList=n->similarNicks();
+		reply(s,QString("\"%1\" is known here as: %2").arg(n->nick()).arg(knownList.join(", ")));
 		return true;
 	}
 

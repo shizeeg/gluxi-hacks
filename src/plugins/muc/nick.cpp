@@ -98,6 +98,25 @@ void Nick::commit()
 	query.exec();
 }
 
+QStringList Nick::similarNicks()
+{
+	QSqlQuery query=DataStorage::instance()
+			->prepareQuery("SELECT nick FROM conference_nicks WHERE conference_id=? and jid=? order by lastaction desc LIMIT 100");
+	query.addBindValue(myParent->id());
+	query.addBindValue(myJid->id());
+	if (!query.exec())
+	{
+		qDebug() << "Nick: " << QSqlDatabase::database().lastError().text();
+		return QStringList();
+	}
+	QStringList res;
+	while (query.next())
+	{
+		res.append(query.value(0).toString());
+	}
+	return res;
+}
+
 void Nick::setAllOffline (Conference* conf)
 {
 	QSqlQuery query=DataStorage::instance()

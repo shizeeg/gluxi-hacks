@@ -23,6 +23,8 @@ public:
 	Conference* conference() const { return myParent; };
 	Jid* jid() const { return myJid; };
 
+	QStringList similarNicks();
+	
 	void setJid(const QString& jid);
 	void setNick(const QString& nick);
 	void setAffiliation(const QString& affiliation) { myAffiliation=affiliation; };
