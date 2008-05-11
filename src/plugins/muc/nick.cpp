@@ -19,9 +19,10 @@ Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 	myJid=new Jid(this, jid);
 
 	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("SELECT id FROM conference_nicks WHERE conference_id = ? AND nick = ?");
+		->prepareQuery("SELECT id FROM conference_nicks WHERE conference_id = ? AND nick = ? AND jid = ?");
 	query.addBindValue(myParent->id());
 	query.addBindValue(myNick);
+	query.addBindValue(myJid->id());
 	if (!query.exec())
 	{
 		qDebug() << "Nick::Nick: " << QSqlDatabase::database().lastError().text();
