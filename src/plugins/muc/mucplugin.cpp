@@ -113,6 +113,14 @@ bool MucPlugin::canHandleMessage(gloox::Stanza* s)
 		QString cmd=parser.nextToken().toUpper();
 		if (cmd=="JOIN" || cmd=="LEAVE" || cmd=="WHEREAMI")
 			return true;
+		
+		// Possible captcha request from conference server
+		QString from=QString::fromStdString(s->from().full());
+		if (from.indexOf('@')<0 && from.indexOf('/') < 0)
+		{
+			return true;
+		}
+		
 		return false;
 	}
 	Nick *n=getNick(s);
@@ -251,6 +259,28 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 
 	if (parser.isForMe())
 	{
+		
+		if (conf==0 && nickName.isEmpty()) 
+		{
+			QString from=QString::fromStdString(s->from().full()).toLower();
+			if (from.indexOf('@')<0 && from.indexOf('/') < 0)
+			{
+				from=QString("@%1/").arg(from);
+				for (QStringList::iterator it=confInProgress.begin(); it!=confInProgress.end(); ++it)
+				{
+					QString confName=*it;
+					if (confName.toLower().indexOf(from)>0)
+					{
+						//Captcha request
+						gloox::JID ownerJid(DataStorage::instance()->getStdString("access/owner"));
+						gloox::Stanza *outgoing=gloox::Stanza::createMessageStanza(ownerJid,s->body());
+						bot()->client()->send(outgoing);
+						return true;
+					}
+				}
+			}
+		}
+		
 		if (cmd=="JOIN")
 		{
 			if (!isFromBotOwner(s))
