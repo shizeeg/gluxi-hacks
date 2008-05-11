@@ -128,10 +128,11 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 	AsyncRequest* req=bot()->asyncRequests()->byStanza(s);
 	if (s->subtype()==gloox::StanzaIqGet)
 	{
-		if (xmlns=="jabber:iq:version")
+		if (s->type()!=gloox::StanzaIqResult && xmlns=="jabber:iq:version")
 		{
 			//We should send our version
 			sendVersion(s);
+			return true;
 		}
 		if (xmlns=="http://jabber.org/protocol/disco#items")
 		{
