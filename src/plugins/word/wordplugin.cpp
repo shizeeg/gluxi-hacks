@@ -9,7 +9,7 @@
 WordPlugin::WordPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "ADD" << "COUNT" << "CLEAR" << "SHOW" << "SHOWPRIV" << "SHOWJID" << "DEL";
+	commands << "ADD" << "COUNT" << "NAMES" << "CLEAR" << "SHOW" << "SHOWPRIV" << "SHOWJID" << "DEL";
 }
 
 WordPlugin::~WordPlugin()
@@ -26,6 +26,16 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 	if (cmd=="COUNT")
 	{
 		reply(s, QString("Currently I know %1 words").arg(words.count(bot()->getStorage(s))));
+		return true;
+	}
+	
+	if (cmd=="NAMES")
+	{
+		QStringList list=words.getNames(bot()->getStorage(s));
+		if (list.isEmpty())
+			reply(s,"I don't know any words");
+		else
+			reply(s, QString("I know followed words: %1").arg(list.join(", ")));
 		return true;
 	}
 

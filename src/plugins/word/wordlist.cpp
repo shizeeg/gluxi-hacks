@@ -115,7 +115,7 @@ int WordList::count(const QList<int>& storage)
 	if (storage.count()!=2)
 		return 0;
 	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("SELECT COUNT(DISTINCTROW name) FROM words WHERE plugin=? AND storage=?");
+		->prepareQuery("SELECT COUNT(*) FROM (SELECT name FROM words WHERE plugin=1 AND storage=1 GROUP BY NAME) AS ul");
 	query.addBindValue(storage[0]);
 	query.addBindValue(storage[1]);
 	query.exec();
@@ -137,3 +137,18 @@ bool WordList::remove(const QList<int>& storage, const QString& name)
 	return query.numRowsAffected();
 }
 
+QStringList WordList::getNames(const QList<int>& storage)
+{
+	if (storage.count()!=2)
+		return QStringList();
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("select name from words where plugin=? and storage=? group by name ORDER BY name");
+	query.addBindValue(storage[0]);
+	query.addBindValue(storage[1]);
+	if (!query.exec())
+		return QStringList();
+	QStringList res;
+	while (query.next())
+		res.append(query.value(0).toString());
+	return res;
+}

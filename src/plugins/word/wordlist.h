@@ -16,6 +16,7 @@ public:
 	void clear(const QList<int>& storage);
 	int count(const QList<int>& storage);
 	bool remove(const QList<int>& storage, const QString& name);
+	QStringList getNames(const QList<int>& storage);
 };
 
 #endif
