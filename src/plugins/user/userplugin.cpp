@@ -5,6 +5,7 @@
 #include "base/gluxibot.h"
 #include "base/asyncrequestlist.h"
 #include "base/messageparser.h"
+#include "base/gluxi_version.h"
 
 #include <gloox/vcardmanager.h>
 #include <string>
@@ -116,7 +117,7 @@ void UserPlugin::sendVersion(gloox:: Stanza* s)
 	gloox::Tag* tag=st->findChild("query");
 	assert(tag);
 	tag->addChild(new gloox::Tag("name","GluxiBot"));
-	tag->addChild(new gloox::Tag("version","SVN"));
+	tag->addChild(new gloox::Tag("version",getGluxiVersion()));
 	tag->addChild(new gloox::Tag("os",version().toStdString()));
 	qDebug() << QString::fromStdString(st->xml());
 	bot()->client()->send(st);

@@ -21,6 +21,7 @@ set (base_HDR
 	vcardwrapper.h
 	gloox/myvcardmanager.h
 	logger.h
+	gluxi_version.h
 )
 
 set (base_SRC
@@ -40,6 +41,7 @@ set (base_SRC
 	segfault.c
 	gloox/myvcardmanager.cpp
 	logger.cpp
+	${HG_VERSION_FILE}
 )
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
@@ -47,6 +49,13 @@ SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 QT4_WRAP_CPP(base_SRC_MOC ${base_HDR_MOC})
 
 GLUXI_CREATE_LOADER(loader_SRC GLUXI_PLUGINS)
+
+ADD_CUSTOM_COMMAND(
+	OUTPUT ${HG_VERSION_FILE}
+	COMMAND ${HG_VERSION_GENERATOR} ${HG_VERSION_FILE}
+	DEPENDS ${HG_VERSION_DEPENDS}
+)
+
 
 ADD_EXECUTABLE(gluxi ${base_SRC} ${base_SRC_MOC} ${loader_SRC})
 
