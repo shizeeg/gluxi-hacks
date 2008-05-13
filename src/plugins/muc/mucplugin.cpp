@@ -190,6 +190,8 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 	}
 	if (role=="none" || type=="unavailable")
 	{
+		n->updateLastActivity();
+		n->commit();
 		if (n->nick()==conf->nick())
 		{
 			//Check for possible renaming
