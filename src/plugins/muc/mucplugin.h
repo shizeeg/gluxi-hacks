@@ -32,6 +32,7 @@ public:
 	virtual QString resolveMyNick(gloox::Stanza* s); 
 	virtual void onQuit(const QString& reason);
 private:
+	bool lazyOffline;
 	ConferenceList conferences;
 	QStringList confInProgress;
 	QString getItem(gloox::Stanza*, const QString& name);

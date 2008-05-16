@@ -30,6 +30,22 @@ Jid::Jid(Nick *parent, const QString& jid)
 	loadJid();
 }
 
+Jid::Jid(Nick* parent, int id)
+{
+	myParent=parent;
+	myId=id;
+	QSqlQuery query=DataStorage::instance()
+			->prepareQuery("SELECT jid,created FROM conference_jids WHERE conference_id = ? AND id = ?");
+	query.addBindValue(parent->conference()->id());
+	query.addBindValue(id);
+	if (!query.exec() || !query.next())
+	{
+		qDebug() << "Unable to load JID id=" << id;
+		return;
+	}
+	myJid=query.value(0).toString();
+	myCreated=query.value(1).toDateTime();
+}
 
 Jid::~Jid()
 {
@@ -67,7 +83,7 @@ void Jid::loadJid()
 		{
 			qDebug() << "[JID] " << QSqlDatabase::database().lastError().text();
 		}
-		myId=query.lastInsertId().toInt();
+		myId=query.lastInsertId().toInt();			 
 	}
 
 }
