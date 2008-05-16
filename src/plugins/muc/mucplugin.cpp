@@ -201,11 +201,11 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 	Nick *n=getNick(s);
 	if (lazyOffline && n && n->validateRequired())
 	{
-		n->setValidateRequired(false);
 		QString jid=getItem(s, "jid").section('/',0,0);
 		if (n->jidStr()!=jid)
 		{
 			qDebug() << QString("[%1] Nick \"%2\" changed JID: %3 -> %4").arg(conf->name()).arg(n->nick()).arg(n->jidStr()).arg(jid);
+			n->setValidateRequired(false);
 			n->updateLastActivity();
 			n->commit();
 			bot()->roles()->remove(QString::fromStdString(s->from().full()));
