@@ -53,6 +53,21 @@ Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 		query.addBindValue(QDateTime::currentDateTime());
 		query.exec();
 		myId=query.lastInsertId().toInt();
+		if (myId==0)
+		{
+			// lastInsertId don't work. Probably postgreSQL
+			query=DataStorage::instance()
+				->prepareQuery("SELECT id FROM conference_nicks WHERE conference_id = ? AND nick = ? AND jid = ?");
+			query.addBindValue(myParent->id());
+			query.addBindValue(myNick);
+			query.addBindValue(myJid->id());
+			if (!query.exec() || !query.next()) 
+			{
+				qDebug() << "[NICK] " << QSqlDatabase::database().lastError().text();
+				return;
+			}
+			myId=query.value(0).toInt();
+		}
 	}
 }
 
