@@ -226,7 +226,7 @@ void Conference::loadOnlineNicks()
 
 void Conference::cleanNonValidNicks()
 {
-	NickList removeList;
+	QList<Nick*> removeList;
 	for (NickList::iterator it=myNicks.begin(); it!=myNicks.end(); ++it)
 	{
 		Nick* nick=*it;
@@ -235,7 +235,8 @@ void Conference::cleanNonValidNicks()
 	}
 	foreach(Nick* nick , removeList)
 	{
+		nick->setValidateRequired(false);
 		myNicks.remove(nick);
 	}
-	myNicks.justClear();
+	removeList.clear();
 }

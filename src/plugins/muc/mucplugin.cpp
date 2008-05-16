@@ -201,6 +201,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 	Nick *n=getNick(s);
 	if (lazyOffline && n && n->validateRequired())
 	{
+		n->setValidateRequired(false);
 		QString jid=getItem(s, "jid").section('/',0,0);
 		if (n->jidStr()!=jid)
 		{
