@@ -23,6 +23,16 @@ void ConferenceList::clear()
 		delete takeAt(0);
 }
 
+void ConferenceList::lazyClear()
+{
+	while (count())
+	{
+		Conference* conference=takeAt(0);
+		conference->setLazyLeave(true);
+		delete conference;
+	}
+}
+
 Conference* ConferenceList::byName(const QString& name)
 {
 	int cnt=count();

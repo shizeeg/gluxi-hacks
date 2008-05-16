@@ -12,14 +12,16 @@
 Conference::Conference()
 {
 	qDebug() << "new Conference";
+	myLazyLeave=false;
+	myValidated=false;
 }
 
-Conference::Conference(const QString& name, const QString& nick)
+Conference::Conference(const QString& name, const QString& nick, bool lazyLeave)
 {
 	myName=name;
 	myNick=nick;
-	qDebug() << myName;
-	qDebug() << myNick;
+	myLazyLeave=lazyLeave;
+	myValidated=false;
 	QSqlQuery query=DataStorage::instance()
 		->prepareQuery("SELECT id, name FROM conferences WHERE name = ?");
 	query.addBindValue(myName);
@@ -72,7 +74,8 @@ Conference::Conference(const QString& name, const QString& nick)
 		query.addBindValue(QDateTime::currentDateTime());
 		query.addBindValue(myId);
 	}
-	Nick::setAllOffline(this);
+	if (!lazyLeave)
+		Nick::setAllOffline(this);
 	myKick=new AList(this,ALIST_KICK);
 	myVisitor=new AList(this, ALIST_VISITOR);
 	myModerator=new AList(this, ALIST_MODERATOR);
@@ -81,10 +84,17 @@ Conference::Conference(const QString& name, const QString& nick)
 Conference::~Conference()
 {
 	qDebug() << "~Conference";
-	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("UPDATE conferences SET online = false WHERE id = ?");
-	query.addBindValue(myId);
-	query.exec();
+	if (!myLazyLeave)
+	{
+		QSqlQuery query=DataStorage::instance()
+			->prepareQuery("UPDATE conferences SET online = false WHERE id = ?");
+		query.addBindValue(myId);
+		query.exec();
+	}
+	else
+	{
+		myNicks.lazyClear();
+	}
 	delete myKick;
 	delete myVisitor;
 	delete myModerator;
@@ -191,3 +201,41 @@ void Conference::setNick(const QString& nick)
 	query.exec();
 }
 
+void Conference::setLazyLeave(bool value)
+{
+	myLazyLeave=value;
+}
+
+void Conference::loadOnlineNicks()
+{
+	QSqlQuery query=DataStorage::instance()
+			->prepareQuery("SELECT id FROM conference_nicks where conference_id=? AND online=? ORDER by joined");
+	query.addBindValue(myId);
+	query.addBindValue(true);
+	if (!query.exec())
+	{
+		qDebug() << "Conference: Unable to load online nicks";
+	}
+	while (query.next())
+	{
+		Nick* nick=new Nick(this, query.value(0).toInt());
+		nick->setValidateRequired(true);
+		myNicks.append(nick);
+	}
+}
+
+void Conference::cleanNonValidNicks()
+{
+	NickList removeList;
+	for (NickList::iterator it=myNicks.begin(); it!=myNicks.end(); ++it)
+	{
+		Nick* nick=*it;
+		if (nick->validateRequired())
+			removeList.append(nick);
+	}
+	foreach(Nick* nick , removeList)
+	{
+		myNicks.remove(nick);
+	}
+	myNicks.justClear();
+}

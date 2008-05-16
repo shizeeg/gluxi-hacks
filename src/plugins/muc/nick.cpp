@@ -11,8 +11,10 @@
 
 Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 {
+	myValidateRequired=false;
 	myParent=parent;
 	myNick=nick;
+	myLazyLeave=false;
 	myJoined=QDateTime::currentDateTime();
 	qDebug() << "[NICK] created: " << myNick;
 
@@ -72,14 +74,50 @@ Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 }
 
 
+Nick::Nick(Conference* parent, int id)
+{
+	myParent=parent;
+	myLazyLeave=false;
+	myId=id;
+	myValidateRequired=false;
+		
+	
+	QSqlQuery query=DataStorage::instance()
+			->prepareQuery("SELECT nick, jid, joined, lastaction FROM conference_nicks WHERE conference_id = ? AND id = ?");
+	query.addBindValue(parent->id());
+	query.addBindValue(id);
+	if (!query.exec())
+	{
+		qDebug() << "Nick: " << QSqlDatabase::database().lastError().text();
+		return;
+	}
+	if (!query.next())
+	{
+		qDebug() << "Nick: Unable to load nick with id=" << id;
+		return;
+	}
+	myNick=query.value(0).toString();
+	myJid=new Jid(this, query.value(1).toInt());
+	myJidS=myJid->jid();
+	myJoined=query.value(2).toDateTime();
+	myLastActivity=query.value(3).toDateTime();
+}
+
 Nick::~Nick()
 {
-	qDebug() << "[NICK] destroyed: " << myNick;
-	delete myJid;
-	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("UPDATE conference_nicks SET online=false WHERE id=?");
-	query.addBindValue(myId);
-	query.exec();
+	if (!myLazyLeave)
+	{
+		qDebug() << "[NICK] destroyed: " << myNick;
+		delete myJid;
+		QSqlQuery query=DataStorage::instance()
+			->prepareQuery("UPDATE conference_nicks SET online=false WHERE id=?");
+		query.addBindValue(myId);
+		query.exec();
+	}
+	else
+	{
+		delete myJid;
+	}
 }
 
 void Nick::setNick(const QString& nick)
@@ -92,7 +130,10 @@ void Nick::setNick(const QString& nick)
 void Nick::updateLastActivity()
 {
 	qDebug() << "[NICK] Activity updated: " << myNick;
-	myLastActivity=QDateTime::currentDateTime();
+	if (myValidateRequired)
+		myValidateRequired=false;
+	else
+		myLastActivity=QDateTime::currentDateTime();
 // 	commit();
 };
 

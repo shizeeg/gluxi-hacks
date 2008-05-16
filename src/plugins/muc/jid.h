@@ -14,6 +14,7 @@ class Conference;
 class Jid{
 public:
 	Jid(Nick *parent, const QString& fullJid=QString::null);
+	Jid(Nick *parent, int id);
     	~Jid();
 	int id() const { return myId; };
 	QString jid() const { return myJid; };

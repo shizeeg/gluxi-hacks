@@ -14,6 +14,8 @@ public:
 	NickList();
 	~NickList();
 	void clear();
+	void justClear();
+	void lazyClear();
 	void remove(Nick* nick);
 	Nick *byName(const QString&);
 };

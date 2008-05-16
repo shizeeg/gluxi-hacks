@@ -29,6 +29,21 @@ void NickList::clear()
 		delete takeAt(0);
 }
 
+void NickList::justClear()
+{
+	QList<Nick*>::clear();
+}
+
+void NickList::lazyClear()
+{
+	while (count())
+	{
+		Nick* nick=takeAt(0);
+		nick->setLazyLeave(true);
+		delete nick;
+	}
+}
+
 Nick* NickList::byName(const QString& name)
 {
 	int cnt=count();

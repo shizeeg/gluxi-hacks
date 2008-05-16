@@ -29,6 +29,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 			<< "CLIENTS" << "SETNICK";
 	commands << "HERE";
 	pluginId=1;
+	lazyOffline=DataStorage::instance()->getInt("muc/lazyoffline");
 }
 
 MucPlugin::~MucPlugin()
@@ -47,7 +48,10 @@ void MucPlugin::onDisconnect()
 {
 	qDebug() << "MucPlugin: cleaning for onDisconnect()";
 	confInProgress.clear();
-	conferences.clear();
+	if (lazyOffline)
+		conferences.lazyClear();
+	else
+		conferences.clear();
 }
 
 bool MucPlugin::canHandlePresence(gloox::Stanza* s)
@@ -97,7 +101,18 @@ bool MucPlugin::canHandleMessage(gloox::Stanza* s)
 	// 	std::cout << s->xml() << std::endl;
 	if (isOfflineMessage(s))
 	{
-		qDebug() << "MUC: offline message ignored";
+		if (lazyOffline)
+		{
+			Conference *conf=getConf(s);
+			if (conf!=0)
+			{
+				if (!conf->validated())
+				{
+					conf->cleanNonValidNicks();
+					conf->setValidated(true);
+				}
+			}
+		}
 		return false;
 	}
 	if (allMessages())
@@ -171,15 +186,34 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		}
 		confFull=confInProgress[ps];;
 
-		conf=new Conference(confFull.section('/',0,0),confFull.section('/',1,1));
+		conf=new Conference(confFull.section('/',0,0),confFull.section('/',1,1), lazyOffline);
 		qDebug() << conf->name();
 		conferences.append(conf);
 		qDebug() << confInProgress;
 		confInProgress.removeAt(ps);
-		// 		return;
+		
+		if (lazyOffline)
+		{
+			conf->loadOnlineNicks();
+		}
 	}
 
 	Nick *n=getNick(s);
+	if (lazyOffline && n && n->validateRequired())
+	{
+		QString jid=getItem(s, "jid").section('/',0,0);
+		if (n->jidStr()!=jid)
+		{
+			qDebug() << QString("[%1] Nick \"%2\" changed JID: %3 -> %4").arg(conf->name()).arg(n->nick()).arg(n->jidStr()).arg(jid);
+			n->updateLastActivity();
+			n->commit();
+			bot()->roles()->remove(QString::fromStdString(s->from().full()));
+			conf->nicks()->remove(n);
+			n=0;
+		}
+			
+	}
+	
 	if (!n)
 	{
 		qDebug() << "MUC::handlePresence: new Nick";

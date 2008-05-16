@@ -9,6 +9,7 @@ public:
 	ConferenceList();
 	~ConferenceList();
 	void clear();
+	void lazyClear();
 	void remove(Conference* conf);
 	Conference *byName(const QString&);
 };
