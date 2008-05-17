@@ -146,7 +146,7 @@ QString Conference::seen(const QString&n)
 			.arg(secsToString(nick->joined().secsTo(QDateTime::currentDateTime())));
 	}
 	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("SELECT jid FROM conference_nicks WHERE conference_id=? AND nick=?");
+		->prepareQuery("SELECT jid FROM conference_nicks WHERE conference_id=? AND nick=? ORDER BY lastaction DESC LIMIT 1");
 	query.addBindValue(myId);
 	query.addBindValue(n);
 	if (query.exec() && query.next())
