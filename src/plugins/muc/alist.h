@@ -8,25 +8,32 @@
 #define ALIST_MODERATOR 3
 #define ALIST_BAN 4
 
+class AListItem;
+
 class Conference;
 class QDateTime;
+class QSqlQuery;
 
-class AList: public QStringList
+class AList: private QList<AListItem*>
 {
 public:
 	AList(Conference *conf, int type);
 	bool removeExpired();
 // 	QString at(int idx);
 	void removeAt(int idx);
-	int removeAll(const QString& s);
-	void append(const QString&s);
-	void append(const QString&s, const QDateTime& expire);
+	void append(const AListItem& item);
 	void removeItems();
 	QString toString();
+	void clear();
+	int count();
+	int indexOf(const AListItem& other);
+	AListItem* at(int idx);
 private:
 	Conference *myParent;
 	int myType;
 	void load();
+	void convertUnknown();
+	static AListItem* itemFromQuery(QSqlQuery& query);
 };
 
 #endif

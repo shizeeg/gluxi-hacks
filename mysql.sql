@@ -34,11 +34,16 @@ CREATE TABLE `aliases` (
 
 DROP TABLE IF EXISTS `conference_alists`;
 CREATE TABLE `conference_alists` (
+  `id` int(10) unsigned NOT NULL auto_increment,
   `conference_id` int(11) NOT NULL,
   `list` tinyint(1) NOT NULL,
+  `matcher` tinyint(4) NOT NULL DEFAULT '0',
+  `regexp` tinyint(1) NOT NULL DEFAULT '0',
   `value` varchar(50) collate utf8_bin NOT NULL,
+  `reason` varchar(100) collate utf8_bin NULL,
   `expire` datetime default NULL,
-  PRIMARY KEY  (`conference_id`,`list`,`value`)
+  PRIMARY KEY (id),
+  UNIQUE KEY  (`conference_id`,`list`,`matcher`, `regexp`, `value`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --

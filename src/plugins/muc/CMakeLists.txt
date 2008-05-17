@@ -6,6 +6,7 @@ set (plugin_HDR_MOC
 
 set (plugin_HDR
 	alist.h
+	alistitem.h
 	conference.h
 	conferencelist.h
 	jid.h
@@ -15,6 +16,7 @@ set (plugin_HDR
 
 set (plugin_SRC
 	alist.cpp
+	alistitem.cpp
 	conference.cpp
 	conferencelist.cpp
 	jid.cpp

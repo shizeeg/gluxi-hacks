@@ -2,6 +2,7 @@
 #include "conference.h"
 #include "nicklist.h"
 #include "alist.h"
+#include "alistitem.h"
 #include "jid.h"
 
 #include "base/common.h"
@@ -22,11 +23,11 @@
 MucPlugin::MucPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "WHEREAMI" << "NICK" << "IDLE" << "KNOWN" << "JOIN" << "LEAVE" << "KICK"
-			<< "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN" << "BANJID"
-			<< "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
-	commands << "ABAN" << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND" << "SEEN"
-			<< "CLIENTS" << "SETNICK";
+	commands << "WHEREAMI" << "NICK" << "IDLE" << "KNOWN" << "JOIN" << "LEAVE"
+			<< "KICK" << "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN"
+			<< "BANJID" << "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
+	commands << "ABAN" << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND"
+			<< "SEEN" << "CLIENTS" << "SETNICK";
 	commands << "HERE";
 	pluginId=1;
 	lazyOffline=DataStorage::instance()->getInt("muc/lazyoffline");
@@ -84,14 +85,13 @@ QString MucPlugin::getMyNick(gloox::Stanza* s)
 	return conf->nick();
 }
 
-
 QString MucPlugin::resolveMyNick(gloox::Stanza* s)
 {
 	Conference *conf=getConf(s);
 	if (!conf)
 		return QString::null;
-	return conf->nick();
-}
+		return conf->nick();
+	}
 
 bool MucPlugin::canHandleMessage(gloox::Stanza* s)
 {
@@ -125,14 +125,14 @@ bool MucPlugin::canHandleMessage(gloox::Stanza* s)
 		QString cmd=parser.nextToken().toUpper();
 		if (cmd=="JOIN" || cmd=="LEAVE" || cmd=="WHEREAMI")
 			return true;
-		
+
 		// Possible captcha request from conference server
 		QString from=QString::fromStdString(s->from().full());
 		if (from.indexOf('@')<0 && from.indexOf('/') < 0)
 		{
 			return true;
 		}
-		
+
 		return false;
 	}
 	Nick *n=getNick(s);
@@ -188,7 +188,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		conferences.append(conf);
 		qDebug() << confInProgress;
 		confInProgress.removeAt(ps);
-		
+
 		if (lazyOffline)
 		{
 			conf->loadOnlineNicks();
@@ -198,7 +198,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 	Nick *n=getNick(s);
 	if (lazyOffline && n && n->validateRequired())
 	{
-		QString jid=getItem(s, "jid").section('/',0,0);
+		QString jid=getItem(s, "jid").section('/', 0, 0);
 		if (n->jidStr()!=jid)
 		{
 			qDebug() << QString("[%1] Nick \"%2\" changed JID: %3 -> %4").arg(conf->name()).arg(n->nick()).arg(n->jidStr()).arg(jid);
@@ -209,9 +209,9 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 			conf->nicks()->remove(n);
 			n=0;
 		}
-			
+
 	}
-	
+
 	if (!n)
 	{
 		qDebug() << "MUC::handlePresence: new Nick";
@@ -289,28 +289,31 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 
 	if (parser.isForMe())
 	{
-		
-		if (conf==0 && nickName.isEmpty()) 
+
+		if (conf==0 && nickName.isEmpty())
 		{
 			QString from=QString::fromStdString(s->from().full()).toLower();
 			if (from.indexOf('@')<0 && from.indexOf('/') < 0)
 			{
 				from=QString("@%1/").arg(from);
-				for (QStringList::iterator it=confInProgress.begin(); it!=confInProgress.end(); ++it)
+				for (QStringList::iterator it=confInProgress.begin(); it
+						!=confInProgress.end(); ++it)
 				{
 					QString confName=*it;
 					if (confName.toLower().indexOf(from)>0)
 					{
 						//Captcha request
 						gloox::JID ownerJid(DataStorage::instance()->getStdString("access/owner"));
-						gloox::Stanza *outgoing=gloox::Stanza::createMessageStanza(ownerJid,s->body());
+						gloox::Stanza *outgoing=
+								gloox::Stanza::createMessageStanza(ownerJid,
+										s->body());
 						bot()->client()->send(outgoing);
 						return true;
 					}
 				}
 			}
 		}
-		
+
 		if (cmd=="JOIN")
 		{
 			if (!isFromBotOwner(s))
@@ -381,7 +384,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	}
 	nick->updateLastActivity();
 	nick->commit();
-	
+
 	checkMember(s, conf, nick);
 
 	if (msgPrefix!=prefix() || !parser.isForMe())
@@ -407,26 +410,28 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		if (!n)
 			return true;
 		Jid* jid=n->jid();
-		
+
 		QString jidCreated;
 		if (jid)
 		{
 			jidCreated=jid->created().toString(Qt::LocaleDate);
-		} 
+		}
 		else
 		{
 			jidCreated="unknown";
 		}
-			
-		QString nickInfo=QString("Nick \"%1\": Affiliation: %2; Role: %3; Registered: %4; Joined: %5; Idle: %6; Status: %7 (%8)")
-		.arg(n->nick())
-		.arg(n->affiliation())
-		.arg(n->role())
-		.arg(jidCreated)
-		.arg(n->joined().toString(Qt::LocaleDate))
-		.arg(secsToString(n->lastActivity().secsTo(QDateTime::currentDateTime())))
-		.arg(n->show())
-		.arg(n->status());
+
+		QString
+				nickInfo=
+						QString("Nick \"%1\": Affiliation: %2; Role: %3; Registered: %4; Joined: %5; Idle: %6; Status: %7 (%8)")
+						.arg(n->nick())
+						.arg(n->affiliation())
+						.arg(n->role())
+						.arg(jidCreated)
+						.arg(n->joined().toString(Qt::LocaleDate))
+						.arg(secsToString(n->lastActivity().secsTo(QDateTime::currentDateTime())))
+						.arg(n->show())
+						.arg(n->status());
 		reply(s, nickInfo);
 		return true;
 	}
@@ -445,14 +450,14 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		reply(s, conf->seen(arg));
 		return true;
 	}
-	
+
 	if (cmd=="KNOWN")
 	{
 		Nick *n=getNickVerbose(s, arg);
 		if (!n)
 			return true;
 		QStringList knownList=n->similarNicks();
-		reply(s,QString("\"%1\" is known here as: %2").arg(n->nick()).arg(knownList.join(", ")));
+		reply(s, QString("\"%1\" is known here as: %2").arg(n->nick()).arg(knownList.join(", ")));
 		return true;
 	}
 
@@ -500,7 +505,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	{
 		if (warnImOwner(s))
 			return true;
-		
+
 		if (getRole(s) < ROLE_ADMIN)
 		{
 			reply(s, "You have no rights to edit affiliation. Sorry");
@@ -522,8 +527,8 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	if (cmd=="BANJID" || cmd=="UNBAN")
 	{
 		if (warnImOwner(s))
-				return true;
-		
+			return true;
+
 		if (getRole(s) < ROLE_ADMIN)
 		{
 			reply(s, "You have no rights to edit affiliation. Sorry");
@@ -535,13 +540,13 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 			reply(s, "No JID specified");
 			return true;
 		}
-		
+
 		if (!isBareJidValid(jid) && !isServerValid(jid))
 		{
-			reply(s,"JID is not valid");
+			reply(s, "JID is not valid");
 			return true;
 		}
-		
+
 		QString reason=parser.nextToken();
 		QString affiliation=affiliationByCommand(cmd);
 		setAffiliation(conf, jid, affiliation, reason);
@@ -549,8 +554,8 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		return true;
 	}
 
-	if (cmd=="ABAN" || cmd=="AKICK" || cmd=="AVISITOR" || cmd=="AMODERATOR" || cmd=="AEDIT"
-			|| cmd=="AFIND")
+	if (cmd=="ABAN" || cmd=="AKICK" || cmd=="AVISITOR" || cmd=="AMODERATOR"
+			|| cmd=="AEDIT" || cmd=="AFIND")
 	{
 		if (!isFromConfAdmin(s))
 			return true;
@@ -911,7 +916,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 			return true;
 		}
 
-		if (aFind(conf->aban(),n, 0L))
+		if (aFind(conf->aban(), n, 0L))
 			answer+=QString("\"%1\" is in aban list\n").arg(arg2.toLower());
 		if (aFind(conf->akick(), n, 0L))
 			answer+=QString("\"%1\" is in akick list\n").arg(arg2.toLower());
@@ -928,7 +933,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	}
 
 	if (arg=="ABAN")
-			alist=conf->aban();
+		alist=conf->aban();
 	if (arg=="AKICK")
 		alist=conf->akick();
 	if (arg=="AVISITOR")
@@ -988,7 +993,11 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 			n=1;
 		}
 		else
-			n=alist->removeAll(arg3.toUpper());
+		{
+			reply(s, "Please specify number");
+			return TRUE;
+		}
+
 		reply(s, QString("%1 items removed").arg(n));
 		return TRUE;
 	}
@@ -1024,45 +1033,48 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		arg3=parser.nextToken();
 	}
 
-	bool isNick=false;
-	bool isJid=false;
-	QString type;
+	AListItem item;
+	item.setMatcherType(AListItem::JID);
+
 	if (arg2=="NICK" || arg2=="BODY")
 	{
-		type=arg2.toLower();
+		if (arg2=="NICK")
+			item.setMatcherType(AListItem::NICK);
+		else if (arg2=="BODY")
+			item.setMatcherType(AListItem::BODY);
+
 		arg2=arg3.toUpper();
 		arg3=parser.nextToken();
-		qDebug() << arg2;
-		qDebug() << arg3;
-		isNick=true;
 	}
 	else if (arg2=="JID")
 	{
+		item.setMatcherType(AListItem::JID);
 		arg2=arg3.toUpper();
 		arg3=parser.nextToken();
-		isJid=true;
 	}
 
 	if (arg2=="EXP")
 	{
 		QRegExp exp(arg3);
 		if (exp.isValid())
-			arg2=QString("exp "+arg3).toUpper();
+		{
+			arg2=arg3.toUpper();
+			item.setIsRegExp(true);
+		}
 		else
 		{
 			reply(s, "QRegExp is not valid");
 			return true;
 		}
-		qDebug() << arg2;
+
 	}
-	else if (!isNick)
+	else if (item.matcherType()==AListItem::JID)
 	{
 		parser.back(2);
 		QString args=parser.nextToken();
 		QRegExp exp("[^@ ]*@[^ ]*");
 		exp.setMinimal(FALSE);
 		int ps=exp.indexIn(args);
-		// 			qDebug() << arg2 << " | "<< "ps=" << ps << "  " << exp.matchedLength() << "   " << arg2.length() << " !! " << exp.isValid();
 		if (ps==0 && exp.matchedLength()==args.length())
 		{
 			// All ok
@@ -1081,25 +1093,26 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		}
 	}
 
-	arg2=arg2.toUpper();
-	if (isNick)
-		arg2=type+" "+arg2;
-	else if (isJid)
-		arg2="JID "+arg2;
-
-	if (alist->indexOf(arg2)>=0)
-	{
-		// 		reply(s, "Entry already exists. ");
-		alist->removeAll(arg2);
-	}
+	arg2=arg2.toLower();
+	item.setValue(arg2);
 
 	if (howLong)
 	{
 		QDateTime t=QDateTime::currentDateTime().addSecs(howLong*60);
-		alist->append(arg2, t);
+		item.setExpire(t);
 	}
-	else
-		alist->append(arg2);
+
+	int existsIdx=alist->indexOf(item);
+	if (existsIdx>=0)
+	{
+		alist->removeAt(existsIdx);
+	}
+	
+	
+	if (!arg3.isEmpty())
+		item.setReason(arg3);
+	
+	alist->append(item);
 	reply(s, "Updated");
 	recheckJIDs(conf);
 
@@ -1107,73 +1120,49 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 }
 
 // Stanza can be null here
-bool MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
+AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
 {
 	int cnt=list->count();
 	QString line;
-	QString uJid=nick->jidStr().toUpper().section('/', 0, 0);
-	QString uNick=nick->nick().toUpper();
-	QString uBody;
+	QString lJid=nick->jidStr().toLower().section('/', 0, 0);
+	QString lNick=nick->nick().toLower();
+	QString lBody;
 	if (s)
-		uBody=QString::fromStdString(s->body()).toUpper();
+		lBody=QString::fromStdString(s->body()).toLower();
 
-	bool nickOnly;
-	bool jidOnly;
-	bool bodyOnly;
 	for (int i=0; i<cnt; i++)
 	{
-		nickOnly=false;
-		jidOnly=false;
-		bodyOnly=false;
-		line=list->at(i).toUpper();
-		if (line.startsWith("NICK "))
+		AListItem* item=list->at(i);
+	
+		QString testValue;
+		switch (item->matcherType())
 		{
-			line=line.section(' ', 1);
-			nickOnly=true;
+			case AListItem::UNKNOWN: break;
+			case AListItem::NICK: testValue=lNick; break;
+			case AListItem::JID: testValue=lJid; break;
+			case AListItem::BODY: testValue=lBody; break;
 		}
-		else if (line.startsWith("JID "))
-		{
-			line=line.section(' ', 1);
-			jidOnly=true;
-		}
-		else if (line.startsWith("BODY "))
-		{
-			line=line.section(' ', 1);
-			bodyOnly=true;
-		}
+		if (testValue.isEmpty())
+			continue;
 		
-		if (line.startsWith("EXP "))
+		qDebug() << testValue << " item=" << item->value();
+		
+		if (item->isRegExp())
 		{
-			QRegExp exp(line.section(' ', 1));
+			QRegExp exp(item->value());
 			exp.setMinimal(FALSE);
 			exp.setCaseSensitivity(Qt::CaseInsensitive);
-			if (!nickOnly && !bodyOnly)
-			{
-				if (exp.exactMatch(uJid))
-					return TRUE;
-			}
-			if (!jidOnly && !bodyOnly)
-			{
-				if (exp.exactMatch(uNick))
-					return TRUE;
-			}
-			if (s && !nickOnly && !jidOnly)
-			{
-				if (exp.exactMatch(uBody))
-					return true;
-			}
+			if (exp.exactMatch(testValue))
+				return item;
 		}
 		else
 		{
-			if (!nickOnly && !bodyOnly && line==uJid)
-				return TRUE;
-			if (!jidOnly && !bodyOnly && line==uNick)
-				return TRUE;
-			if (s && !nickOnly && !jidOnly && line==uBody)
-				return TRUE;
+			if (testValue==item->value())
+				return item;
 		}
+
 	}
-	return FALSE;
+	return 0L;
 }
 
 void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
@@ -1182,31 +1171,43 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 		return;
 
 	QString aff=n->affiliation().toUpper();
-
+	AListItem* item;
 	if ((aff!="OWNER") && !aff.startsWith("ADMIN") && aff!="MEMBER")
 	{
-		if (aFind(c->aban(),n, s))
+		if (item=aFind(c->aban(), n, s))
 		{
 			if (s && warnImOwner(s))
 				return;
-			setAffiliation(c,n->jidStr(),"outcast", "You are not welcomed here");
+			QString reason=item->reason();
+			if (reason.isEmpty())
+				reason=DataStorage::instance()->getString("str/ban_reason");
+			setAffiliation(c, n->jidStr(), "outcast",reason);
 			return;
 		}
-		
-		if (aFind(c->akick(), n, s))
+
+		if (item=aFind(c->akick(), n, s))
 		{
-			setRole(c, n, "none", "You are not welcomed here");
+			QString reason=item->reason();
+			if (reason.isEmpty())
+				reason=DataStorage::instance()->getString("str/kick_reason");
+			setRole(c, n, "none", reason);
 			return;
 		}
-		if (aFind(c->avisitor(), n, s))
+		if (item=aFind(c->avisitor(), n, s))
 		{
-			setRole(c, n, "visitor", "You shoud be a visitor");
+			QString reason=item->reason();
+			if (reason.isEmpty())
+				reason=DataStorage::instance()->getString("str/visitor_reason");
+			setRole(c, n, "visitor", reason);
 			return;
 		}
 	}
-	if (aFind(c->amoderator(), n, s))
+	if (item=aFind(c->amoderator(), n, s))
 	{
-		setRole(c, n, "moderator", "You shoud be a moderator");
+		QString reason=item->reason();
+		if (reason.isEmpty())
+			reason=DataStorage::instance()->getString("str/moderator_reason");
+		setRole(c, n, "moderator", reason);
 		return;
 	}
 }
@@ -1240,7 +1241,7 @@ QString MucPlugin::getJID(gloox::Stanza*s, const QString& n)
 		return QString::null;
 		Conference *conf=nick->conference();
 		if (!conf)
-			return QString::null;
+		return QString::null;
 		return QString("%1/%2").arg(conf->name()).arg(nick->nick());
 	}
 
@@ -1299,10 +1300,11 @@ bool MucPlugin::warnImOwner(gloox::Stanza* s)
 	Nick* nick=getNick(s, myNick);
 	if (!nick)
 		return false;
-	
+
 	if (nick->affiliation().toUpper() == "OWNER")
 	{
-		reply(s, "I'm conference owner. Affiliation editor is disabled for security purposes");
+		reply(s,
+				"I'm conference owner. Affiliation editor is disabled for security purposes");
 		return true;
 	}
 

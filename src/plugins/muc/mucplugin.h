@@ -5,6 +5,7 @@
 #include "conferencelist.h"
 
 class MessageParser;
+class AListItem;
 
 class MucPlugin : public BasePlugin
 {
@@ -49,7 +50,7 @@ private:
 	void setAffiliation(gloox::Stanza* s, Nick*, const QString& affiliation, const QString& reason=QString::null);
 	void setAffiliation(Conference* conf, const QString& jid, const QString& affiliation, const QString& reason=QString::null);
 	QString getIqError(gloox::Stanza* s);
-	bool aFind(AList* list, Nick *n, gloox::Stanza* s);
+	AListItem* aFind(AList* list, Nick *n, gloox::Stanza* s);
 	// Advanced commands
 	bool autoLists(gloox::Stanza* s, MessageParser& parser);
 	void checkMember(gloox::Stanza* s, Conference* c, Nick*);
