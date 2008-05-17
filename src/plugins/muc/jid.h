@@ -31,6 +31,7 @@ private:
 	QString myResource;
 	QDateTime myCreated;
 	void loadJid();
+	void updateJid();
 };
 
 #endif

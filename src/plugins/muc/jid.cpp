@@ -34,6 +34,7 @@ Jid::Jid(Nick* parent, int id)
 {
 	myParent=parent;
 	myId=id;
+	myTemporary=false;
 	QSqlQuery query=DataStorage::instance()
 			->prepareQuery("SELECT jid,created FROM conference_jids WHERE conference_id = ? AND id = ?");
 	query.addBindValue(parent->conference()->id());
@@ -107,7 +108,10 @@ void Jid::setFullJid(const QString& fullJid)
 	// Changed JID from emtpy to empty
 	if (myTemporary && fullJid.isEmpty())
 		return;
-
+	
+	if (fullJid.toUpper()==QString(myJid+"/"+myResource).toUpper())
+		return;
+	
 	if (myTemporary)
 	{
 		// Changed from unknown to known
@@ -121,7 +125,26 @@ void Jid::setFullJid(const QString& fullJid)
 
 	myJid=fullJid.section('/',0,0);
 	myResource=fullJid.section('/',1);
-	loadJid(); // myId will be changed;
+	if (myId>0)
+	{
+		updateJid();
+	}
+	else
+	{
+		loadJid(); // myId will be changed;
+	}
+}
+
+void Jid::updateJid()
+{
+	if (myId<=0)
+		return;
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("UPDATE conference_jids SET jid=?, resource=? WHERE id=?");
+	query.addBindValue(myJid);
+	query.addBindValue(myResource);
+	query.addBindValue(myId);
+	query.exec();
 }
 
 void Jid::removeTemporary(Conference *conf)
