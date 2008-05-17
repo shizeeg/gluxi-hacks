@@ -8,6 +8,7 @@
 #include <QSqlQuery>
 #include <QVariant>
 #include <QDateTime>
+#include <QSqlError>
 
 AList::AList(Conference* conf, int type) :
 	QList<AListItem*>()
@@ -234,7 +235,8 @@ void AList::convertUnknown()
 		fixQuery.addBindValue(myParent->id());
 		fixQuery.addBindValue(myType);
 		fixQuery.addBindValue(id);
-		fixQuery.exec();
-		qDebug() << "Converted alias: " << id << origValue;
+		if (!fixQuery.exec())
+			qDebug() << fixQuery.lastError().text();
+		qDebug() << "Converted alist item: " << id << origValue;
 	}
 }
