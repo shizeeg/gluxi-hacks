@@ -57,7 +57,7 @@ void AList::load()
 {
 	clear();
 	QSqlQuery query= DataStorage::instance()
-	->prepareQuery("SELECT id, matcher, regexp, value,"
+	->prepareQuery("SELECT id, matcher, isregexp, value,"
 		" reason, expire FROM conference_alists"
 		" WHERE conference_id=? AND list=?");
 
@@ -105,7 +105,7 @@ void AList::append(const AListItem& item)
 {
 	QSqlQuery query= DataStorage::instance()
 	->prepareQuery("INSERT INTO conference_alists"
-		" (conference_id, list, matcher, regexp, value, reason, expire)"
+		" (conference_id, list, matcher, isregexp, value, reason, expire)"
 		" VALUES (?, ?, ?, ?, ?, ?, ?)");
 	query.addBindValue(myParent->id());
 	query.addBindValue(myType);
@@ -226,7 +226,7 @@ void AList::convertUnknown()
 		QSqlQuery fixQuery = DataStorage::instance()
 		->
 		prepareQuery("UPDATE conference_alists SET"
-			" matcher=?, regexp=?, value=?"
+			" matcher=?, isregexp=?, value=?"
 			" WHERE conference_id=? AND list=? AND id=?");
 		fixQuery.addBindValue(matcherType);
 		fixQuery.addBindValue(isRegExp);
