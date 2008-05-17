@@ -1145,8 +1145,6 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
 		if (testValue.isEmpty())
 			continue;
 		
-		qDebug() << testValue << " item=" << item->value();
-		
 		if (item->isRegExp())
 		{
 			QRegExp exp(item->value());
