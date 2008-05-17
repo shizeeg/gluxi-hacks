@@ -114,7 +114,6 @@ bool GlooxWrapper::onTLSConnect( const gloox::CertInfo& )
 
 void GlooxWrapper::handleMessage(gloox::Stanza* s, gloox::MessageSession*)
 {
-	qDebug() << "Got message";
 	emit sigMessage(MyStanza(s));
 }
 

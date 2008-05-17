@@ -287,10 +287,6 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 
 	Conference* conf=getConf(s);
 
-	// conf can be nil here!!!
-
-	qDebug() << "** MUC CMD: " << cmd;
-
 	if (parser.isForMe())
 	{
 		
