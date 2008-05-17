@@ -385,6 +385,8 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	}
 	nick->updateLastActivity();
 	nick->commit();
+	
+	checkMember(s, conf, nick);
 
 	if (msgPrefix!=prefix() || !parser.isForMe())
 	{
@@ -913,13 +915,13 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 			return true;
 		}
 
-		if (aFind(conf->aban(),n))
+		if (aFind(conf->aban(),n, 0L))
 			answer+=QString("\"%1\" is in aban list\n").arg(arg2.toLower());
-		if (aFind(conf->akick(), n))
+		if (aFind(conf->akick(), n, 0L))
 			answer+=QString("\"%1\" is in akick list\n").arg(arg2.toLower());
-		if (aFind(conf->avisitor(), n))
+		if (aFind(conf->avisitor(), n, 0L))
 			answer+=QString("\"%1\" is in avisitor list\n").arg(arg2.toLower());
-		if (aFind(conf->amoderator(), n))
+		if (aFind(conf->amoderator(), n, 0L))
 			answer+=QString("\"%1\" is in amoderator list\n").arg(arg2.toLower());
 		if (answer.endsWith("\n"))
 			answer.remove(answer.length()-1, 1);
@@ -1028,8 +1030,10 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 
 	bool isNick=false;
 	bool isJid=false;
-	if (arg2=="NICK")
+	QString type;
+	if (arg2=="NICK" || arg2=="BODY")
 	{
+		type=arg2.toLower();
 		arg2=arg3.toUpper();
 		arg3=parser.nextToken();
 		qDebug() << arg2;
@@ -1083,7 +1087,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 
 	arg2=arg2.toUpper();
 	if (isNick)
-		arg2="NICK "+arg2;
+		arg2=type+" "+arg2;
 	else if (isJid)
 		arg2="JID "+arg2;
 
@@ -1106,15 +1110,20 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	return true;
 }
 
-bool MucPlugin::aFind(AList* list, Nick* nick)
+// Stanza can be null here
+bool MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
 {
 	int cnt=list->count();
 	QString line;
 	QString uJid=nick->jidStr().toUpper().section('/', 0, 0);
 	QString uNick=nick->nick().toUpper();
+	QString uBody;
+	if (s)
+		uBody=QString::fromStdString(s->body()).toUpper();
 
 	bool nickOnly;
 	bool jidOnly;
+	bool bodyOnly;
 	for (int i=0; i<cnt; i++)
 	{
 		nickOnly=false;
@@ -1125,36 +1134,45 @@ bool MucPlugin::aFind(AList* list, Nick* nick)
 			line=line.section(' ', 1);
 			nickOnly=true;
 		}
-		else
+		else if (line.startsWith("JID "))
 		{
-			if (line.startsWith("JID "))
-			{
-				line=line.section(' ', 1);
-				jidOnly=true;
-			}
+			line=line.section(' ', 1);
+			jidOnly=true;
 		}
-
+		else if (line.startsWith("BODY "))
+		{
+			line=line.section(' ', 1);
+			bodyOnly=true;
+		}
+		
 		if (line.startsWith("EXP "))
 		{
 			QRegExp exp(line.section(' ', 1));
 			exp.setMinimal(FALSE);
 			exp.setCaseSensitivity(Qt::CaseInsensitive);
-			if (!nickOnly)
+			if (!nickOnly && !bodyOnly)
 			{
 				if (exp.exactMatch(uJid))
 					return TRUE;
 			}
-			if (!jidOnly)
+			if (!jidOnly && !bodyOnly)
 			{
 				if (exp.exactMatch(uNick))
 					return TRUE;
 			}
+			if (s && !nickOnly && !jidOnly)
+			{
+				if (exp.exactMatch(uBody))
+					return true;
+			}
 		}
 		else
 		{
-			if (!nickOnly && line==uJid)
+			if (!nickOnly && !bodyOnly && line==uJid)
 				return TRUE;
-			if (!jidOnly && line==uNick)
+			if (!jidOnly && !bodyOnly && line==uNick)
+				return TRUE;
+			if (s && !nickOnly && !jidOnly && line==uBody)
 				return TRUE;
 		}
 	}
@@ -1170,7 +1188,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 
 	if ((aff!="OWNER") && !aff.startsWith("ADMIN") && aff!="MEMBER")
 	{
-		if (aFind(c->aban(),n))
+		if (aFind(c->aban(),n, s))
 		{
 			if (s && warnImOwner(s))
 				return;
@@ -1178,18 +1196,18 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 			return;
 		}
 		
-		if (aFind(c->akick(), n) )
+		if (aFind(c->akick(), n, s))
 		{
 			setRole(c, n, "none", "You are not welcomed here");
 			return;
 		}
-		if (aFind(c->avisitor(), n))
+		if (aFind(c->avisitor(), n, s))
 		{
 			setRole(c, n, "visitor", "You shoud be a visitor");
 			return;
 		}
 	}
-	if (aFind(c->amoderator(), n))
+	if (aFind(c->amoderator(), n, s))
 	{
 		setRole(c, n, "moderator", "You shoud be a moderator");
 		return;
@@ -1290,6 +1308,6 @@ bool MucPlugin::warnImOwner(gloox::Stanza* s)
 		reply(s, "I'm conference owner. Affiliation editor is disabled for security purposes");
 		return true;
 	}
-	
+
 	return false;
 }
