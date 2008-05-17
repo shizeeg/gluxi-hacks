@@ -1124,6 +1124,7 @@ bool MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
 	{
 		nickOnly=false;
 		jidOnly=false;
+		bodyOnly=false;
 		line=list->at(i).toUpper();
 		if (line.startsWith("NICK "))
 		{
