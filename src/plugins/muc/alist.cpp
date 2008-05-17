@@ -186,7 +186,7 @@ AListItem* AList::itemFromQuery(QSqlQuery& query)
 void AList::convertUnknown()
 {
 	QSqlQuery query= DataStorage::instance()
-	->prepareQuery("SELECT value FROM conference_alists"
+	->prepareQuery("SELECT value, id FROM conference_alists"
 		" WHERE conference_id=? AND list=? AND matcher=?");
 	query.addBindValue(myParent->id());
 	query.addBindValue(myType);
@@ -198,6 +198,7 @@ void AList::convertUnknown()
 	while (query.next())
 	{
 		QString origValue=query.value(0).toString();
+		int id=query.value(1).toInt();
 		QString value=origValue.toUpper();
 		AListItem::MatcherType matcherType=AListItem::JID;
 		bool isRegExp=false;
@@ -225,14 +226,15 @@ void AList::convertUnknown()
 		->
 		prepareQuery("UPDATE conference_alists SET"
 			" matcher=?, regexp=?, value=?"
-			" WHERE conference_id=? AND list=? AND value=?");
+			" WHERE conference_id=? AND list=? AND id=?");
 		fixQuery.addBindValue(matcherType);
 		fixQuery.addBindValue(isRegExp);
 		fixQuery.addBindValue(value.toLower());
 
 		fixQuery.addBindValue(myParent->id());
 		fixQuery.addBindValue(myType);
-		fixQuery.addBindValue(origValue);
+		fixQuery.addBindValue(id);
 		fixQuery.exec();
+		qDebug() << "Converted alias: " << id << origValue;
 	}
 }
