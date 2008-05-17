@@ -76,6 +76,7 @@ Conference::Conference(const QString& name, const QString& nick, bool lazyLeave)
 	}
 	if (!lazyLeave)
 		Nick::setAllOffline(this);
+	myBan=new AList(this, ALIST_BAN);
 	myKick=new AList(this,ALIST_KICK);
 	myVisitor=new AList(this, ALIST_VISITOR);
 	myModerator=new AList(this, ALIST_MODERATOR);
@@ -95,6 +96,7 @@ Conference::~Conference()
 	{
 		myNicks.lazyClear();
 	}
+	delete myBan;
 	delete myKick;
 	delete myVisitor;
 	delete myModerator;

@@ -52,7 +52,7 @@ private:
 	bool aFind(AList* list, Nick *n);
 	// Advanced commands
 	bool autoLists(gloox::Stanza* s, MessageParser& parser);
-	void checkMember(Conference* c, Nick*);
+	void checkMember(gloox::Stanza* s, Conference* c, Nick*);
 	void recheckJIDs(Conference* c);
 	void sendMessage(Conference* conf, const QString&msg);
 	QRegExp getConfExp(const QString&);

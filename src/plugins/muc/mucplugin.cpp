@@ -25,7 +25,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 	commands << "WHEREAMI" << "NICK" << "IDLE" << "KNOWN" << "JOIN" << "LEAVE" << "KICK"
 			<< "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN" << "BANJID"
 			<< "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
-	commands << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND" << "SEEN"
+	commands << "ABAN" << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND" << "SEEN"
 			<< "CLIENTS" << "SETNICK";
 	commands << "HERE";
 	pluginId=1;
@@ -67,13 +67,10 @@ bool MucPlugin::canHandlePresence(gloox::Stanza* s)
 bool MucPlugin::isMyMessage(gloox::Stanza*s)
 {
 	QString jid=QString::fromStdString(s->from().bare());
-	qDebug() << "MucPlugin::isMyMessage() " << jid;
 	Conference* conf=conferences.byName(jid);
 	if (!conf)
 		return false;
-	qDebug() << "| conf found";
 	QString res=QString::fromStdString(s->from().resource());
-	qDebug() << "| res=" << res <<" && mynick=" << conf->nick();
 	if (res.isEmpty() || conf->nick()==res)
 		return true;
 	return false;
@@ -272,7 +269,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		 }
 		 */
 		conf->removeExpired();
-		checkMember(conf, n);
+		checkMember(s, conf, n);
 	}
 }
 
@@ -554,7 +551,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		return true;
 	}
 
-	if (cmd=="AKICK" || cmd=="AVISITOR" || cmd=="AMODERATOR" || cmd=="AEDIT"
+	if (cmd=="ABAN" || cmd=="AKICK" || cmd=="AVISITOR" || cmd=="AMODERATOR" || cmd=="AEDIT"
 			|| cmd=="AFIND")
 	{
 		if (!isFromConfAdmin(s))
@@ -916,6 +913,8 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 			return true;
 		}
 
+		if (aFind(conf->aban(),n))
+			answer+=QString("\"%1\" is in aban list\n").arg(arg2.toLower());
 		if (aFind(conf->akick(), n))
 			answer+=QString("\"%1\" is in akick list\n").arg(arg2.toLower());
 		if (aFind(conf->avisitor(), n))
@@ -930,6 +929,8 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		return true;
 	}
 
+	if (arg=="ABAN")
+			alist=conf->aban();
 	if (arg=="AKICK")
 		alist=conf->akick();
 	if (arg=="AVISITOR")
@@ -1080,7 +1081,6 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		}
 	}
 
-	qDebug() << "[]]]]]] " << arg2;
 	arg2=arg2.toUpper();
 	if (isNick)
 		arg2="NICK "+arg2;
@@ -1161,7 +1161,7 @@ bool MucPlugin::aFind(AList* list, Nick* nick)
 	return FALSE;
 }
 
-void MucPlugin::checkMember(Conference*c, Nick* n)
+void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 {
 	if (!n)
 		return;
@@ -1170,6 +1170,14 @@ void MucPlugin::checkMember(Conference*c, Nick* n)
 
 	if ((aff!="OWNER") && !aff.startsWith("ADMIN") && aff!="MEMBER")
 	{
+		if (aFind(c->aban(),n))
+		{
+			if (s && warnImOwner(s))
+				return;
+			setAffiliation(c,n->jidStr(),"outcast", "You are not welcomed here");
+			return;
+		}
+		
 		if (aFind(c->akick(), n) )
 		{
 			setRole(c, n, "none", "You are not welcomed here");
@@ -1196,7 +1204,7 @@ void MucPlugin::recheckJIDs(Conference *c)
 	{
 		Nick *n=c->nicks()->at(i);
 		assert(n);
-		checkMember(c, n);
+		checkMember(0L, c, n);
 	}
 }
 

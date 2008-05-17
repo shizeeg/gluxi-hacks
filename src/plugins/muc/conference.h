@@ -25,6 +25,7 @@ public:
 	void setAutoJoin(bool b);
 	void removeExpired();
 
+	AList* aban() { return myBan; };
 	AList* akick() { return myKick; };
 	AList* avisitor() { return myVisitor; };
 	AList* amoderator() { return myModerator; };
@@ -46,6 +47,7 @@ private:
 	/*QStringList myKick;
 	QStringList myVisitor;
 	QStringList myModerator;*/
+	AList* myBan;
 	AList* myKick;
 	AList* myVisitor;
 	AList* myModerator;
