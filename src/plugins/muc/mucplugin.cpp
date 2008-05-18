@@ -1059,6 +1059,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		if (exp.isValid())
 		{
 			arg2=arg3.toUpper();
+			arg3=parser.nextToken();
 			item.setIsRegExp(true);
 		}
 		else

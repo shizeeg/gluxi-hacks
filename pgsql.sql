@@ -16,7 +16,7 @@ CREATE TABLE conference_alists (
   reason varchar(100) NULL,
   expire timestamp default NULL,
   PRIMARY KEY (id),
-  UNIQUE (conference_id,list,matcher,regexp,value)
+  UNIQUE (conference_id,list,matcher,isregexp,value)
 );
 
 
