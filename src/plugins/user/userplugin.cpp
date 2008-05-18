@@ -129,7 +129,7 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 	AsyncRequest* req=bot()->asyncRequests()->byStanza(s);
 	if (s->subtype()==gloox::StanzaIqGet)
 	{
-		if (s->type()!=gloox::StanzaIqResult && xmlns=="jabber:iq:version")
+		if (s->subtype()!=gloox::StanzaIqResult && xmlns=="jabber:iq:version")
 		{
 			//We should send our version
 			sendVersion(s);
@@ -175,9 +175,8 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 			else
 				msg=QString("Pong from %1's server after %2 secs.").arg(src).arg(delay);
 			reply(req->stanza(), msg);
-			return true;
 		}
-		if (s->subtype()==gloox::StanzaIqResult)
+		else if (s->subtype()==gloox::StanzaIqResult)
 		{
 			QString name;
 			QString version;
