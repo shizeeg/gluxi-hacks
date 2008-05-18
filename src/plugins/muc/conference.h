@@ -29,6 +29,7 @@ public:
 	AList* akick() { return myKick; };
 	AList* avisitor() { return myVisitor; };
 	AList* amoderator() { return myModerator; };
+	AList* acommand() { return myCommand; };
 	QString seen(const QString& nick);
 	QString clientStat();
 	void setNick(const QString& name);
@@ -51,6 +52,7 @@ private:
 	AList* myKick;
 	AList* myVisitor;
 	AList* myModerator;
+	AList* myCommand;
 };
 
 #endif

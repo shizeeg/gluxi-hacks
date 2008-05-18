@@ -80,6 +80,7 @@ Conference::Conference(const QString& name, const QString& nick, bool lazyLeave)
 	myKick=new AList(this,ALIST_KICK);
 	myVisitor=new AList(this, ALIST_VISITOR);
 	myModerator=new AList(this, ALIST_MODERATOR);
+	myCommand=new AList(this, ALIST_CMD);
 }
 
 Conference::~Conference()
@@ -100,6 +101,7 @@ Conference::~Conference()
 	delete myKick;
 	delete myVisitor;
 	delete myModerator;
+	delete myCommand;
 }
 
 QStringList Conference::autoJoinList()

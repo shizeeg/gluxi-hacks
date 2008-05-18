@@ -26,7 +26,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 	commands << "WHEREAMI" << "NICK" << "IDLE" << "KNOWN" << "JOIN" << "LEAVE"
 			<< "KICK" << "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN"
 			<< "BANJID" << "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
-	commands << "ABAN" << "AKICK" << "AVISITOR" << "AMODERATOR" << "AFIND"
+	commands << "ABAN" << "AKICK" << "AVISITOR" << "ACMD" << "AMODERATOR" << "AFIND"
 			<< "SEEN" << "CLIENTS" << "SETNICK";
 	commands << "HERE";
 	pluginId=1;
@@ -70,6 +70,8 @@ bool MucPlugin::isMyMessage(gloox::Stanza*s)
 	QString jid=QString::fromStdString(s->from().bare());
 	Conference* conf=conferences.byName(jid);
 	if (!conf)
+		return false;
+	if (s->from()==s->to())
 		return false;
 	QString res=QString::fromStdString(s->from().resource());
 	if (res.isEmpty() || conf->nick()==res)
@@ -554,8 +556,8 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		return true;
 	}
 
-	if (cmd=="ABAN" || cmd=="AKICK" || cmd=="AVISITOR" || cmd=="AMODERATOR"
-			|| cmd=="AEDIT" || cmd=="AFIND")
+	if (cmd=="ABAN" || cmd=="AKICK" || cmd=="AVISITOR" || cmd=="AMODERATOR" 
+		|| cmd=="ACMD" || cmd=="AEDIT" || cmd=="AFIND")
 	{
 		if (!isFromConfAdmin(s))
 			return true;
@@ -597,6 +599,8 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 Conference* MucPlugin::getConf(gloox::Stanza* s)
 {
 	QString confName=QString::fromStdString(s->from().bare());
+	if (confName.isEmpty())
+		confName=QString::fromStdString(s->to().bare());
 	Conference* conf=conferences.byName(confName);
 	if (!conf)
 	{
@@ -924,6 +928,8 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 			answer+=QString("\"%1\" is in avisitor list\n").arg(arg2.toLower());
 		if (aFind(conf->amoderator(), n, 0L))
 			answer+=QString("\"%1\" is in amoderator list\n").arg(arg2.toLower());
+		if (aFind(conf->acommand(), n, 0L))
+			answer+=QString("\"%1\" is in acmd list\n").arg(arg2.toLower());
 		if (answer.endsWith("\n"))
 			answer.remove(answer.length()-1, 1);
 		if (answer.isEmpty())
@@ -940,6 +946,9 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		alist=conf->avisitor();
 	if (arg=="AMODERATOR")
 		alist=conf->amoderator();
+	if (arg=="ACMD")
+		alist=conf->acommand();
+	
 	if (!alist)
 	{
 		reply(s, QString("Try \"!muc help\""));
@@ -1111,7 +1120,10 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	
 	
 	if (!arg3.isEmpty())
-		item.setReason(arg3);
+	{
+		parser.back(1);
+		item.setReason(parser.joinBody());
+	}
 	
 	alist->append(item);
 	reply(s, "Updated");
@@ -1207,6 +1219,23 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 		if (reason.isEmpty())
 			reason=DataStorage::instance()->getString("str/moderator_reason");
 		setRole(c, n, "moderator", reason);
+		return;
+	}
+	
+	if (item=aFind(c->acommand(), n, s))
+	{
+		QString action=item->reason();
+		if (action.isEmpty())
+			return;
+		action=expandMacro(s,c,n,action);
+		QString from(c->name()+"/"+c->nick());
+		gloox::Stanza* st=gloox::Stanza::createMessageStanza(from.toStdString(),
+				action.toStdString());
+		st->addAttribute("from", from.toStdString());
+		st->addAttribute("type", "groupchat");
+		bot()->client()->handleMessage(st, 0);
+		delete st;
+		
 		return;
 	}
 }
@@ -1308,4 +1337,15 @@ bool MucPlugin::warnImOwner(gloox::Stanza* s)
 	}
 
 	return false;
+}
+
+QString MucPlugin::expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QString& str)
+{
+	QString msg=str;
+	if (s)
+	{
+		msg.replace("${JID}", n->jidStr());
+		msg.replace("${NICK}",n->nick());
+	}
+	return msg;
 }
