@@ -1346,6 +1346,7 @@ QString MucPlugin::expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QS
 	{
 		msg.replace("${JID}", n->jidStr());
 		msg.replace("${NICK}",n->nick());
+		msg.replace("${BODY}", QString::fromStdString(s->body()));
 	}
 	return msg;
 }
