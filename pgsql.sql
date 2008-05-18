@@ -11,12 +11,13 @@ CREATE TABLE conference_alists (
   conference_id int NOT NULL,
   list smallint NOT NULL,
   matcher smallint NOT NULL DEFAULT 0,
-  isregexp boolean NOT NULL DEFAULT false,
+  test smallint NOT NULL DEFAULT 0,
+  inv boolean NOT NULL DEFAULT false,
   value varchar(50) NOT NULL,
   reason varchar(100) NULL,
   expire timestamp default NULL,
   PRIMARY KEY (id),
-  UNIQUE (conference_id,list,matcher,isregexp,value)
+  UNIQUE (conference_id,list,matcher,test,value)
 );
 
 

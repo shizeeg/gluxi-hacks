@@ -22,18 +22,20 @@
 AListItem::AListItem(int id)
 {
 	id_=id;
-	matcherType_=UNKNOWN;
-	isRegExp_=false;
+	matcherType_=MatcherUnknown;
+	testType_=TestExact;
+	invert_=false;
 }
 
-AListItem::AListItem(int id, MatcherType matcherType, bool isRegExp,
+AListItem::AListItem(int id, MatcherType matcherType, TestType testType,
 		const QString& value, const QDateTime& expire)
 {
 	id_=id;
 	matcherType_=matcherType;
-	isRegExp_=isRegExp;
+	testType_=testType;
 	value_=value;
 	expire_=expire;
+	invert_=false;
 }
 
 AListItem::~AListItem()
@@ -42,6 +44,6 @@ AListItem::~AListItem()
 
 bool AListItem::operator==(const AListItem& other)
 {
-	return matcherType_==other.matcherType() && isRegExp_ == other.isRegExp()
-	&& value_==other.value() && expire_==other.expire();
+	return matcherType_==other.matcherType() && testType_ == other.testType()
+		&& value_==other.value() && expire_==other.expire();
 }

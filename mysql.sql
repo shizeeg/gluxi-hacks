@@ -38,12 +38,13 @@ CREATE TABLE `conference_alists` (
   `conference_id` int(11) NOT NULL,
   `list` tinyint(1) NOT NULL,
   `matcher` tinyint(4) NOT NULL DEFAULT '0',
-  `isregexp` tinyint(1) NOT NULL DEFAULT '0',
+  `test` tinyint(4) NOT NULL DEFAULT '0',
+  `inv` tinyint(1) NOT NULL DEFAULT '0',
   `value` varchar(50) collate utf8_bin NOT NULL,
   `reason` varchar(100) collate utf8_bin NULL,
   `expire` datetime default NULL,
   PRIMARY KEY (id),
-  UNIQUE KEY  (`conference_id`,`list`,`matcher`, `regexp`, `value`)
+  UNIQUE KEY  (`conference_id`,`list`,`matcher`, `test`, `value`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --

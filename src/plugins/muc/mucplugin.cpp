@@ -1043,23 +1043,31 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	}
 
 	AListItem item;
-	item.setMatcherType(AListItem::JID);
+	item.setMatcherType(AListItem::MatcherJid);
+	item.setTestType(AListItem::TestExact);
 
-	if (arg2=="NICK" || arg2=="BODY" || arg2=="RES")
+	if (arg2=="!")
 	{
-		if (arg2=="NICK")
-			item.setMatcherType(AListItem::NICK);
-		else if (arg2=="BODY")
-			item.setMatcherType(AListItem::BODY);
-		else if (arg2=="RES")
-			item.setMatcherType(AListItem::RESOURCE);
-
+		item.setInvert(true);
 		arg2=arg3.toUpper();
 		arg3=parser.nextToken();
 	}
+	
+	if (arg2=="NICK" || arg2=="BODY" || arg2=="RES")
+	{
+		if (arg2=="NICK")
+			item.setMatcherType(AListItem::MatcherNick);
+		else if (arg2=="BODY")
+			item.setMatcherType(AListItem::MatcherBody);
+		else if (arg2=="RES")
+			item.setMatcherType(AListItem::MatcherResource);
+
+		arg2=arg3.toUpper();
+		arg3=parser.nextToken();
+	} 
 	else if (arg2=="JID")
 	{
-		item.setMatcherType(AListItem::JID);
+		item.setMatcherType(AListItem::MatcherJid);
 		arg2=arg3.toUpper();
 		arg3=parser.nextToken();
 	}
@@ -1071,16 +1079,21 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		{
 			arg2=arg3.toUpper();
 			arg3=parser.nextToken();
-			item.setIsRegExp(true);
+			item.setTestType(AListItem::TestRegExp);
 		}
 		else
 		{
 			reply(s, "QRegExp is not valid");
 			return true;
 		}
-
 	}
-	else if (item.matcherType()==AListItem::JID)
+	else if (arg2=="SUB")
+	{
+		item.setTestType(AListItem::TestSubstring);
+		arg2=arg3.toUpper();
+		arg3=parser.nextToken();
+	}
+	else if (item.matcherType()==AListItem::MatcherJid)
 	{
 		parser.back(2);
 		QString args=parser.nextToken();
@@ -1153,34 +1166,45 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
 		AListItem* item=list->at(i);
 	
 		QString testValue;
-		if (!isPresence && (item->matcherType() == AListItem::NICK || item->matcherType()==AListItem::JID))
+		if (!isPresence && (item->matcherType() == AListItem::MatcherNick || item->matcherType()==AListItem::MatcherJid))
 			continue;
 		
 		switch (item->matcherType())
 		{
-			case AListItem::UNKNOWN: break;
-			case AListItem::NICK: testValue=lNick; break;
-			case AListItem::JID: testValue=lJid; break;
-			case AListItem::RESOURCE: testValue=lResource; break;
-			case AListItem::BODY: testValue=lBody; break;
+			case AListItem::MatcherUnknown: break;
+			case AListItem::MatcherNick: testValue=lNick; break;
+			case AListItem::MatcherJid: testValue=lJid; break;
+			case AListItem::MatcherResource: testValue=lResource; break;
+			case AListItem::MatcherBody: testValue=lBody; break;
 		}
 		if (testValue.isEmpty())
 			continue;
 		
-		if (item->isRegExp())
+		switch (item->testType())
 		{
-			QRegExp exp(item->value());
-			exp.setMinimal(FALSE);
-			exp.setCaseSensitivity(Qt::CaseInsensitive);
-			if (exp.exactMatch(testValue))
-				return item;
+			case AListItem::TestUnknown: break;
+			case AListItem::TestRegExp:
+			{
+				QRegExp exp(item->value());
+				exp.setMinimal(FALSE);
+				exp.setCaseSensitivity(Qt::CaseInsensitive);
+				if (item->isInvert() ^ exp.exactMatch(testValue))
+					return item;
+				break;
+			}
+			case AListItem::TestExact:
+			{
+				if (item->isInvert() ^ testValue==item->value())
+					return item;
+				break;
+			}
+			case AListItem::TestSubstring:
+			{
+				if (item->isInvert() ^ (testValue.indexOf(item->value())>=0))
+					return item;
+				break;
+			}
 		}
-		else
-		{
-			if (testValue==item->value())
-				return item;
-		}
-
 	}
 	return 0L;
 }
