@@ -153,6 +153,9 @@ QString AList::toString()
 		case AListItem::BODY:
 			flags+="B";
 			break;
+		case AListItem::RESOURCE:
+			flags+="R";
+			break;
 		}
 		flags+=item->isRegExp() ? "E" : " ";
 

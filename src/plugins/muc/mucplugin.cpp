@@ -1045,12 +1045,14 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	AListItem item;
 	item.setMatcherType(AListItem::JID);
 
-	if (arg2=="NICK" || arg2=="BODY")
+	if (arg2=="NICK" || arg2=="BODY" || arg2=="RES")
 	{
 		if (arg2=="NICK")
 			item.setMatcherType(AListItem::NICK);
 		else if (arg2=="BODY")
 			item.setMatcherType(AListItem::BODY);
+		else if (arg2=="RES")
+			item.setMatcherType(AListItem::RESOURCE);
 
 		arg2=arg3.toUpper();
 		arg3=parser.nextToken();
@@ -1138,6 +1140,7 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
 	int cnt=list->count();
 	QString line;
 	QString lJid=nick->jidStr().toLower().section('/', 0, 0);
+	QString lResource=nick->jidStr().toLower().section('/', 1);
 	QString lNick=nick->nick().toLower();
 	QString lBody;
 	if (s)
@@ -1158,6 +1161,7 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
 			case AListItem::UNKNOWN: break;
 			case AListItem::NICK: testValue=lNick; break;
 			case AListItem::JID: testValue=lJid; break;
+			case AListItem::RESOURCE: testValue=lResource; break;
 			case AListItem::BODY: testValue=lBody; break;
 		}
 		if (testValue.isEmpty())

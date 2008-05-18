@@ -31,7 +31,8 @@ public:
 		UNKNOWN=0,
 		NICK=1,
 		JID=2,
-		BODY=3
+		BODY=3,
+		RESOURCE=4
 	};
 	AListItem(int id=-1);
 	AListItem(int id, MatcherType matcherType, bool isRegExp=false, const QString& value=QString::null, const QDateTime& expire=QDateTime());
