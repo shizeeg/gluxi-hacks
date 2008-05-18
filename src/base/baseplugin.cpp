@@ -144,7 +144,7 @@ bool BasePlugin::isGroupChat(gloox::Stanza* s)
 	return QString::fromStdString(s->findAttribute("type"))=="groupchat";
 }
 
-void BasePlugin::reply(gloox::Stanza* to, const QString& body, bool forcePrivate)
+void BasePlugin::reply(gloox::Stanza* to, const QString& body, bool forcePrivate, bool quoteNick)
 {
 	QString msg;
 	std::string dest;
@@ -161,9 +161,11 @@ void BasePlugin::reply(gloox::Stanza* to, const QString& body, bool forcePrivate
 		{
 			bodyToSend=bodyToSend.section('\n',0,maxmsglines-1)+"[...]";	
 		}
-
 		dest=to->from().bare();
-		msg=QString::fromStdString(to->from().resource())+": "+bodyToSend;
+		if (quoteNick)
+			msg=QString::fromStdString(to->from().resource())+": "+bodyToSend;
+		else
+			msg=bodyToSend;
 	}
 	else
 	{

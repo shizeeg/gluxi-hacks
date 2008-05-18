@@ -47,9 +47,7 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 	QString firstArg=res.section(' ',0,0).toUpper();
 
 	bool noWrap=false;
-	
-	qDebug() << "--- firstArg: " << firstArg;
-	
+
 	if (firstArg=="/NOWRAP")
 	{
 		noWrap=true;

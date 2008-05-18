@@ -1342,10 +1342,18 @@ bool MucPlugin::warnImOwner(gloox::Stanza* s)
 QString MucPlugin::expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QString& str)
 {
 	QString msg=str;
-	if (s)
+	if (c)
+	{
+		msg.replace("${CONFERENCE}",c->name());
+		msg.replace("${MYNICK}",c->nick());
+	}
+	if (n)
 	{
 		msg.replace("${JID}", n->jidStr());
 		msg.replace("${NICK}",n->nick());
+	}
+	if (s)
+	{
 		msg.replace("${BODY}", QString::fromStdString(s->body()));
 	}
 	return msg;

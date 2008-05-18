@@ -41,7 +41,7 @@ public:
 	virtual QString getJID(gloox::Stanza*s, const QString&nick);
 	virtual QString JIDtoNick(const QString& jid);
 	virtual void onQuit(const QString& reason);			// OnQuit
-	void reply(gloox::Stanza*, const QString&, bool forcePrivate=false);
+	void reply(gloox::Stanza*, const QString&, bool forcePrivate=false, bool quoteNick=true);
 	virtual QString getMyNick(gloox::Stanza* s);
 	virtual QString resolveMyNick(gloox::Stanza* s);
 protected:
