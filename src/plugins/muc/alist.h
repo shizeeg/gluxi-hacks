@@ -7,7 +7,7 @@
 #define ALIST_VISITOR 2
 #define ALIST_MODERATOR 3
 #define ALIST_BAN 4
-#define ALIST_CMD 4
+#define ALIST_CMD 5
 
 class AListItem;
 
