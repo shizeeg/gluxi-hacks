@@ -1142,12 +1142,17 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
 	QString lBody;
 	if (s)
 		lBody=QString::fromStdString(s->body()).toLower();
-
+	
+	bool isPresence=!s || (s->type()==gloox::StanzaPresence);
+	
 	for (int i=0; i<cnt; i++)
 	{
 		AListItem* item=list->at(i);
 	
 		QString testValue;
+		if (!isPresence && (item->matcherType() == AListItem::NICK || item->matcherType()==AListItem::JID))
+			continue;
+		
 		switch (item->matcherType())
 		{
 			case AListItem::UNKNOWN: break;
