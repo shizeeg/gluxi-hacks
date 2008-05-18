@@ -2,6 +2,7 @@
 #include "base/messageparser.h"
 #include "base/gluxibot.h"
 #include "base/glooxwrapper.h"
+#include "base/rolelist.h"
 
 #include <QtDebug>
 #include <QTime>
@@ -40,6 +41,11 @@ bool MiscPlugin::parseMessage(gloox::Stanza* s)
 	}
 	if (cmd=="SAYJID" || cmd=="SAYJIDGC") 
 	{
+		if (getRole(s)<ROLE_MODERATOR)
+		{
+			reply(s,"You should be moderator to do this");
+			return true;
+		}
 		QString dst=parser.nextToken();
 		if (dst.isEmpty())
 		{
