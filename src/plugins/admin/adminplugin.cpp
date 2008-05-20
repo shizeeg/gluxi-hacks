@@ -15,8 +15,8 @@
 #include <QSqlRecord>
 #include <QVariant>
 
-QString restrictedTerms[]={"UPDATE", "TRUNCATE", "DROP", "CREATE", 
-			"GRANT", "ALTER", "INSERT", ""};
+QString restrictedTerms[]={"DELETE", "UPDATE", "TRUNCATE", "DROP", "CREATE", 
+			"GRANT", "ALTER", "INSERT", "TRANSACTION", ""};
 
 const int TAB_SIZE=1;
 
