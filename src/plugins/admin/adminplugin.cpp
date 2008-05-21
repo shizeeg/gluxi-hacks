@@ -184,6 +184,12 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 	
 	if (cmd=="SQL")
 	{
+		if (!isFromBotOwner(s))
+		{
+			reply(s, "Only bot owner can do this");
+			return true;
+		}
+		
 		QString query=parser.joinBody();
 		QString queryUp=query.toUpper();
 		int idx=0;
