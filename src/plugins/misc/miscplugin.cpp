@@ -61,6 +61,11 @@ bool MiscPlugin::parseMessage(gloox::Stanza* s)
 	}
 	if (cmd=="SAY") 
 	{
+		if (getRole(s)<ROLE_MODERATOR)
+		{
+			reply(s,"You should be moderator to do this");
+			return true;
+		}
 		QString body=parser.joinBody();
 		reply(s,body,false, false);
 		return true;
