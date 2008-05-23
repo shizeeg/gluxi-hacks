@@ -162,10 +162,17 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 	if (type=="error")
 	{
 		qDebug()
-				<< "[MUC] Got type='error' in onPresence. Looks like we can't join conference";
+				<< "[MUC] Got type='error' in onPresence. Looks like we can't join conference: " << confFull << "Nick: " << nick; 
 		int idx=confInProgress.indexOf(getConfExp(confFull));
 		if (idx>=0)
 			confInProgress.removeAt(idx);
+		QString registeredNick=DataStorage::instance()->getString("muc/nick");
+		if (nick!=registeredNick)
+		{
+			// Try to rejoin with default nick
+			confFull=confFull.section('/',0,0);
+			join(confFull);
+		}
 		return;
 	}
 
@@ -219,8 +226,15 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		qDebug() << "MUC::handlePresence: new Nick";
 		if (role=="none" || type=="unavailable")
 			return;
+
 		n=new Nick(conf, nick,getItem(s,"jid"));
 		conf->nicks()->append(n);
+		
+		if (nick==conf->nick())
+		{
+			// Got own presence after renaming
+
+		}		
 	}
 	if (role=="none" || type=="unavailable")
 	{
@@ -234,8 +248,8 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 			{
 				QString newNick=getItem(s, "nick");
 				qDebug() << "Renaming done: "+newNick;
-				conf->setNick(newNick);
 				conf->nicks()->remove(n);
+				conf->setNick(newNick);
 			}
 			else
 			{

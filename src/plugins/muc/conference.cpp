@@ -199,10 +199,14 @@ void Conference::setNick(const QString& nick)
 {
 	myNick=nick;
 	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("UPDATE conferences SET nick=? WHERE conference_id=?");
+		->prepareQuery("UPDATE conferences SET nick=? WHERE id=?");
 	query.addBindValue(nick);
 	query.addBindValue(myId);
-	query.exec();
+	qDebug() << "Setting nick: " << myId << ", " << nick;
+	if (!query.exec())
+	{
+		qDebug() << query.lastQuery() << ": " << query.lastError().text();
+	}
 }
 
 void Conference::setLazyLeave(bool value)
