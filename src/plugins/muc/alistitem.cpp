@@ -47,3 +47,9 @@ bool AListItem::operator==(const AListItem& other)
 	return matcherType_==other.matcherType() && testType_ == other.testType()
 		&& value_==other.value() && expire_==other.expire();
 }
+
+bool AListItem::isSameCondition(const AListItem& other)
+{
+	return matcherType_==other.matcherType() && testType_ == other.testType()
+			&& value_==other.value();
+}

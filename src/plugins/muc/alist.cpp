@@ -48,6 +48,19 @@ int AList::indexOf(const AListItem& other)
 	return -1;
 }
 
+int AList::indexOfSameCondition(const AListItem& other)
+{
+	int idx=0;
+	for (Iterator it=begin(); it!=end(); ++it)
+	{
+		AListItem* item=(*it);
+		if (item->isSameCondition(other))
+			return idx;
+		++idx;
+	}
+	return -1;
+}
+
 AListItem* AList::at(int idx)
 {
 	return QList<AListItem*>::at(idx);

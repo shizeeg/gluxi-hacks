@@ -64,6 +64,7 @@ public:
 	void setExpire(const QDateTime& expire) { expire_=expire; }
 	
 	bool operator==(const AListItem& other);
+	bool isSameCondition(const AListItem& other);
 private:
 	int id_;
 	MatcherType matcherType_;

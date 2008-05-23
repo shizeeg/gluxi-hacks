@@ -958,6 +958,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	//parser.back();
 	arg2=arg2.toUpper();
 	QString arg3=parser.nextToken();
+	bool isRemoving=false;
 	if (arg2=="HELP" || arg2=="")
 	{
 		reply(s, QString("\"%1\" commands: help, show, count, clear,"
@@ -1000,15 +1001,15 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 			}
 			alist->removeAt(idx-1);
 			n=1;
+			reply(s, QString("%1 items removed").arg(n));
+			return TRUE;
 		}
 		else
 		{
-			reply(s, "Please specify number");
-			return TRUE;
-		}
-
-		reply(s, QString("%1 items removed").arg(n));
-		return TRUE;
+			isRemoving=true;
+			arg2=arg3.toUpper();
+			arg3=parser.nextToken();
+		}		
 	}
 
 	int howLong=0;
@@ -1127,10 +1128,23 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		item.setExpire(t);
 	}
 
-	int existsIdx=alist->indexOf(item);
+	int existsIdx=alist->indexOfSameCondition(item);
 	if (existsIdx>=0)
 	{
 		alist->removeAt(existsIdx);
+		if (isRemoving)
+		{
+			reply(s, "Removed");
+			return true;
+		}
+	}
+	else
+	{
+		if (isRemoving)
+		{
+			reply(s,"Can't find item to remove");
+			return true;
+		}
 	}
 	
 	
@@ -1139,11 +1153,9 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		parser.back(1);
 		item.setReason(parser.joinBody());
 	}
-	
 	alist->append(item);
 	reply(s, "Updated");
 	recheckJIDs(conf);
-
 	return true;
 }
 

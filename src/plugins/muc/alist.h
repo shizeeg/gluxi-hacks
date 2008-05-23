@@ -28,6 +28,7 @@ public:
 	void clear();
 	int count();
 	int indexOf(const AListItem& other);
+	int indexOfSameCondition(const AListItem& other);
 	AListItem* at(int idx);
 private:
 	Conference *myParent;
