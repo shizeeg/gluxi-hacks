@@ -143,7 +143,7 @@ bool MucPlugin::canHandleMessage(gloox::Stanza* s)
 		qDebug() << "MUC: getNick() returns 0L";
 		return false;
 	}
-	if (n->nick()==conf->nick())
+	if (n->nick()==conf->nick() && !s->from()==s->to())
 	{
 		qDebug() << "MUC: Self message ignored";
 		return false;
@@ -1239,6 +1239,10 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 {
 	if (!n)
 		return;
+	
+	// We should not parse own messages, since this can create loop 
+	if (s && (s->from() == s->to() || isMyMessage(s)))
+		s=0l;
 
 	QString aff=n->affiliation().toUpper();
 	AListItem* item;
