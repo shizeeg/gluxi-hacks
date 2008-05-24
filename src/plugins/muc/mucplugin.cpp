@@ -143,7 +143,7 @@ bool MucPlugin::canHandleMessage(gloox::Stanza* s)
 		qDebug() << "MUC: getNick() returns 0L";
 		return false;
 	}
-	if (n->nick()==conf->nick() && !s->from() == s->to())
+	if (n->nick()==conf->nick())
 	{
 		qDebug() << "MUC: Self message ignored";
 		return false;
