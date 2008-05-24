@@ -60,7 +60,7 @@ private:
 	QString affiliationByCommand(const QString& cmd);
 	int getStatus(gloox::Stanza* s);
 	bool warnImOwner(gloox::Stanza* s);
-	QString expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QString& s);
+	QString expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QString& s, const AListItem* item=0);
 };
 
 #endif

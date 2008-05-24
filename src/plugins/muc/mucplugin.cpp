@@ -1290,7 +1290,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 		QString action=item->reason();
 		if (action.isEmpty())
 			return;
-		action=expandMacro(s,c,n,action);
+		action=expandMacro(s,c,n,action,item);
 		QString from(c->name()+"/"+c->nick());
 		gloox::Stanza* st=gloox::Stanza::createMessageStanza(from.toStdString(),
 				action.toStdString());
@@ -1402,7 +1402,7 @@ bool MucPlugin::warnImOwner(gloox::Stanza* s)
 	return false;
 }
 
-QString MucPlugin::expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QString& str)
+QString MucPlugin::expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QString& str, const AListItem* item)
 {
 	QString msg=str;
 	if (c)
@@ -1417,7 +1417,31 @@ QString MucPlugin::expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QS
 	}
 	if (s)
 	{
-		msg.replace("${BODY}", QString::fromStdString(s->body()));
+		QString body=QString::fromStdString(s->body());
+		
+		if (item)
+		{
+			QString value=item->value();
+			msg.replace("${BODY}", body);
+			
+			if (!value.isEmpty() && msg.indexOf("${BODYARG}")>=0)
+			{
+				if (body.startsWith(value))
+				{
+					body.remove(0,value.length());
+				}
+				else
+				{
+					int idx=body.indexOf(value, Qt::CaseSensitive);
+					if (idx>=0)
+					{
+						body.remove(idx,value.length());
+						body.replace("  "," ");
+					}
+				}
+				msg.replace("${BODYARG}", body.trimmed());
+			}
+		}
 	}
 	return msg;
 }
