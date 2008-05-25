@@ -1237,7 +1237,11 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
 
 void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 {
-	if (!n)
+	if (!n || !c)
+		return;
+	
+	// Don't process our own presences
+	if (c && n->nick()==c->nick())
 		return;
 	
 	// We should not parse own messages, since this can create loop 
