@@ -1418,11 +1418,11 @@ QString MucPlugin::expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QS
 	if (s)
 	{
 		QString body=QString::fromStdString(s->body());
+		msg.replace("${BODY}", body);
 		
 		if (item)
 		{
 			QString value=item->value();
-			msg.replace("${BODY}", body);
 			
 			if (!value.isEmpty() && msg.indexOf("${BODYARG}")>=0)
 			{
