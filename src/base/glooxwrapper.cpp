@@ -27,9 +27,13 @@ GlooxWrapper::GlooxWrapper()
 		storage->getStdString("account/password"),
 		storage->getStdString("account/server"),
 		storage->getStdString("account/resource"));
+	
+	QString hostToConnect=storage->getString("account/host");
+	if (hostToConnect.isEmpty())
+		hostToConnect=storage->getString("account/server");
 
 	myConnection = new gloox::ConnectionTCPClient(myClient, myClient->logInstance(), 
-		storage->getStdString("account/server"),
+		hostToConnect.toStdString(),
 		5222 );
  	myClient->setConnectionImpl(myConnection);
 
