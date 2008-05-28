@@ -61,6 +61,12 @@ void GlooxWrapper::run()
 {
 	qDebug() << "GlooxWrapper::run()";
 	
+	int timeout=DataStorage::instance()->getInt("account/keepalive");
+	if (timeout<=0)
+		timeout=-1;
+	else
+		timeout*=1000;
+	
 	// We run connect() in non-blocking mode just because we should be 
 	// able to sync our threads
 	while (1)
@@ -76,11 +82,18 @@ void GlooxWrapper::run()
 		pfd.events=POLLIN | POLLPRI | POLLERR | POLLNVAL;
 		while (1)
 		{
-
-			res=poll(&pfd,1,-1);
+			res=poll(&pfd,1, timeout);
 
 			if (res<0)
 				break;
+			
+			if (res==0 && timeout>0)
+			{
+				gloox::Stanza* s=new gloox::Stanza("iq");
+				send(s);
+				return;
+			}
+			
 			if (!res)
 				continue;
 		
