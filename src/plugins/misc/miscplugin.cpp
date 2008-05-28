@@ -3,6 +3,7 @@
 #include "base/gluxibot.h"
 #include "base/glooxwrapper.h"
 #include "base/rolelist.h"
+#include "base/datastorage.h"
 
 #include <QtDebug>
 #include <QTime>
@@ -10,7 +11,13 @@
 MiscPlugin::MiscPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "TEST" << "DATE" << "TIME" << "SAY" << "SAYJID" << "SAYJIDGC"	;
+	commands << "TEST" << "DATE" << "TIME" << "SAY";
+	
+	sayJidDisabled_=DataStorage::instance()->getInt("cmd/disable_misc_sayjid");
+	if (!sayJidDisabled_)
+	{
+		commands << "SAYJID" << "SAYJIDGC";
+	}
 }
 
 MiscPlugin::~MiscPlugin()
@@ -39,7 +46,7 @@ bool MiscPlugin::parseMessage(gloox::Stanza* s)
 		reply(s, QTime::currentTime().toString(Qt::LocaleDate));
 		return true;
 	}
-	if (cmd=="SAYJID" || cmd=="SAYJIDGC") 
+	if (!sayJidDisabled_ && (cmd=="SAYJID" || cmd=="SAYJIDGC"))	 
 	{
 		if (getRole(s)<ROLE_MODERATOR)
 		{

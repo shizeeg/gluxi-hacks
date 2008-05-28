@@ -17,6 +17,8 @@ public:
 	virtual QString name() const { return "Misc"; };
 	virtual QString prefix() const { return "MISC"; };
 	virtual bool parseMessage(gloox::Stanza* );
+private:
+	bool sayJidDisabled_;
 };
 
 #endif
