@@ -16,10 +16,30 @@ DataStorage::DataStorage()
 		return;
 	}
 	myInstance=this;
-	settings=new QSettings("gluxi.cfg", QSettings::IniFormat);
-	loadSettings();
+	settings=0;
+	setConfigFile("gluxi.cfg");
 }
 
+DataStorage::DataStorage(const QString& configFile)
+{
+	if (myInstance)
+	{
+		qWarning() << "DataStorage Instance already exists. Not updating myInstance()";
+		return;
+	}
+	myInstance=this;
+	settings=0;
+	setConfigFile(configFile);
+}
+
+void DataStorage::setConfigFile(const QString& configFile)
+{
+	configFile_=configFile;
+	if (settings)
+		delete settings;
+	settings=new QSettings(configFile_, QSettings::IniFormat);
+	loadSettings();
+}
 
 DataStorage::~DataStorage()
 {
@@ -35,6 +55,16 @@ DataStorage* DataStorage::instance()
 	if (!myInstance)
 		new DataStorage();
 	return myInstance;
+}
+
+DataStorage* DataStorage::instance(const QString& configFile)
+{
+	if (myInstance)
+	{
+		qDebug() << "Not using config file " << configFile <<" since DataStorage is already configured";
+		return myInstance;
+	}
+	return new DataStorage(configFile);
 }
 
 void DataStorage::loadSettings()

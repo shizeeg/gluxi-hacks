@@ -1,9 +1,11 @@
 #include "gluxibot.h"
+#include "datastorage.h"
 #include "segfault.h"
 
 #include <QCoreApplication>
 #include <QLocale>
 #include <QTextCodec>
+#include <QStringList>
 
 #ifndef Q_WS_WIN
 #include <sys/types.h>
@@ -56,7 +58,13 @@ int main(int argc, char*argv[])
 	QCoreApplication app(argc, argv);
 	QLocale::setDefault(QLocale("en_US"));
 	QTextCodec::setCodecForCStrings (QTextCodec::codecForName("UTF-8"));
-	installSigHandlers();
+	
+	QStringList arguments=app.arguments();
+
+	if (arguments.count()>1)
+		DataStorage::instance(arguments[1]);
+	
+	installSigHandlers();	
 	bot=new GluxiBot();
 	int res=app.exec();
 	delete bot;
