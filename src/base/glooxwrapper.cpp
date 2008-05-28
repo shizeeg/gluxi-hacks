@@ -91,7 +91,7 @@ void GlooxWrapper::run()
 			{
 				gloox::Stanza* s=new gloox::Stanza("iq");
 				send(s);
-				return;
+				continue;
 			}
 			
 			if (!res)
