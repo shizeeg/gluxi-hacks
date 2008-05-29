@@ -60,7 +60,9 @@ ADD_CUSTOM_COMMAND(
 	DEPENDS ${HG_VERSION_DEPENDS}
 )
 
-cmake_policy(SET CMP0003 NEW)
+if(COMMAND cmake_policy)
+	cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
 ADD_EXECUTABLE(gluxi ${base_SRC} ${base_SRC_MOC} ${loader_SRC})
 
 SET (GLUXI_PLUGINS_LINK)
