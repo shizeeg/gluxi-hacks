@@ -42,6 +42,7 @@ public:
 private:
 	gloox::Tag* createCommandTag(const QString& nodePart, const QString& name, const QString& jid);
 	gloox::Tag* createFieldTag(const ConfigField& field);
+	ConfigField createConfigFieldFromTag(gloox::Tag* tag);
 	QString fieldTypeToString(ConfigField::FieldType fieldType);
 };
 

@@ -27,6 +27,14 @@ ConfigField::ConfigField(FieldType type, const QString& name, const QString& des
 	value_=value;
 }
 
+ConfigField::ConfigField(const QString& name, const QString& value)
+{
+	type_=FIELDTYPE_UNKNOWN;
+	name_=name;
+	value_=value;
+	description_="";
+}
+	
 ConfigField::ConfigField(const ConfigField& other)
 {
 	type_=other.type();

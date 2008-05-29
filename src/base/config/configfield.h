@@ -32,6 +32,7 @@ public:
 	};
 
 	ConfigField(FieldType type, const QString& name, const QString& description=QString(), const QString& value=QString());
+	ConfigField(const QString& name, const QString& value=QString());
 	ConfigField(const ConfigField& other);
 	virtual ~ConfigField();
 	

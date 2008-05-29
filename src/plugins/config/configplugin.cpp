@@ -5,6 +5,7 @@
 #include "base/config/abstractconfigurator.h"
 
 #include <gloox/stanza.h>
+#include <list>
 
 #include <QtDebug>
 #include <QTime>
@@ -78,6 +79,8 @@ bool ConfigPlugin::onIq(gloox::Stanza* s)
 		gloox::Tag* incCmdTag=s->findChild("command","node","http://jabber.org/protocol/rc#config");
 		if (incCmdTag)
 		{
+			gloox::Tag* xTag=incCmdTag->findChild("x");
+			
 			QString action=QString::fromStdString(incCmdTag->findAttribute("action")).toLower();
 			bool isCancel=(action=="cancel");
 			
@@ -93,18 +96,35 @@ bool ConfigPlugin::onIq(gloox::Stanza* s)
 			}
 			else
 			{
-				cmdTag->addAttribute("status","executing");
-				gloox::Tag *xTag=new gloox::Tag("x");
-				xTag->addAttribute("xmlns","jabber:x:data");
-				xTag->addAttribute("type","form");
-				xTag->addChild(new gloox::Tag("title","Form title"));
-				xTag->addChild(new gloox::Tag("instructions","Manual how to fill"));
-				QList<ConfigField> fields=config->loadFields();
-				for (QList<ConfigField>::iterator it=fields.begin(); it!=fields.end(); ++it)
+				if (xTag && xTag->findAttribute("type")=="submit")
 				{
-					xTag->addChild(createFieldTag(*it));
+					std::list<gloox::Tag*> childTags=xTag->children();
+					QList<ConfigField> configFieldList;
+					for (std::list<gloox::Tag*>::iterator it=childTags.begin(); it!=childTags.end(); ++it)
+					{
+						gloox::Tag* child=(*it);
+						if (child->name()!="field")
+							continue;
+						configFieldList.append(createConfigFieldFromTag(child));
+					}
+					config->saveFields(configFieldList);
+					cmdTag->addAttribute("status","completed");
 				}
-				cmdTag->addChild(xTag);
+				else
+				{
+					cmdTag->addAttribute("status","executing");
+					gloox::Tag *xTag=new gloox::Tag("x");
+					xTag->addAttribute("xmlns","jabber:x:data");
+					xTag->addAttribute("type","form");
+					xTag->addChild(new gloox::Tag("title","Form title"));
+					xTag->addChild(new gloox::Tag("instructions","Manual how to fill"));
+					QList<ConfigField> fields=config->loadFields();
+					for (QList<ConfigField>::iterator it=fields.begin(); it!=fields.end(); ++it)
+					{
+						xTag->addChild(createFieldTag(*it));
+					}
+					cmdTag->addChild(xTag);
+				}
 			}
 			st->addChild(cmdTag);
 			st->finalize();
@@ -146,4 +166,15 @@ QString ConfigPlugin::fieldTypeToString(ConfigField::FieldType fieldType)
 		return "checkbox";
 	}
 	return QString();
+}
+
+ConfigField ConfigPlugin::createConfigFieldFromTag(gloox::Tag* tag)
+{
+	QString type("");
+	QString name=QString::fromStdString(tag->findAttribute("var"));
+	QString value;
+	gloox::Tag* valueTag=tag->findChild("value");
+	if (valueTag)
+		value=QString::fromStdString(valueTag->cdata());
+	return ConfigField(name,value);
 }
