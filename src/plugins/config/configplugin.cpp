@@ -73,7 +73,7 @@ bool ConfigPlugin::onIq(gloox::Stanza* s)
 			bot()->client()->send(out);
 		}
 	}
-	if (s->subtype()==gloox::StanzaIqSet)
+	if (s->subtype()==gloox::StanzaIqSet || s->subtype() == gloox::StanzaIqGet)
 	{
 		gloox::Tag* incCmdTag=s->findChild("command","node","http://jabber.org/protocol/rc#config");
 		if (incCmdTag)
