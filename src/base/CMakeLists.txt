@@ -21,6 +21,8 @@ set (base_HDR
 	vcardwrapper.h
 	gloox/myvcardmanager.h
 	logger.h
+	config/configfield.h
+	config/abstractconfigurator.h
 	gluxi_version.h
 )
 
@@ -41,6 +43,8 @@ set (base_SRC
 	segfault.c
 	gloox/myvcardmanager.cpp
 	logger.cpp
+	config/configfield.cpp
+	config/abstractconfigurator.cpp
 	${HG_VERSION_FILE}
 )
 
@@ -56,7 +60,7 @@ ADD_CUSTOM_COMMAND(
 	DEPENDS ${HG_VERSION_DEPENDS}
 )
 
-
+cmake_policy(SET CMP0003 NEW)
 ADD_EXECUTABLE(gluxi ${base_SRC} ${base_SRC_MOC} ${loader_SRC})
 
 SET (GLUXI_PLUGINS_LINK)

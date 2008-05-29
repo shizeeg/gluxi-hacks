@@ -4,6 +4,7 @@
 #include "alist.h"
 #include "alistitem.h"
 #include "jid.h"
+#include "config/mucconfigurator.h"
 
 #include "base/common.h"
 #include "base/gluxibot.h"
@@ -1320,12 +1321,25 @@ void MucPlugin::recheckJIDs(Conference *c)
 }
 
 // Storage provider
-int MucPlugin::getStorage(gloox::Stanza *s)
+QList<int> MucPlugin::getStorage(gloox::Stanza *s)
+{
+	Conference* conf=getConf(s);
+	QList<int> res;
+	if (!conf)
+		return res;
+	res << pluginId << conf->id();
+	return res;
+}
+
+AbstractConfigurator* MucPlugin::getConfigurator(gloox::Stanza* s)
 {
 	Conference* conf=getConf(s);
 	if (!conf)
 		return 0;
-	return conf->id();
+	if (getRole(s)<ROLE_OWNER)
+		return 0;
+	
+	return new MucConfigurator(conf->name()+"/"+conf->nick());
 }
 
 QString MucPlugin::getJID(gloox::Stanza*s, const QString& n)

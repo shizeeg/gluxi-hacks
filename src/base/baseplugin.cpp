@@ -208,9 +208,9 @@ int BasePlugin::getRole(gloox::Stanza *s)
 	return (role1>role2) ? role1: role2;
 }
 
-int BasePlugin::getStorage(gloox::Stanza*s)
+QList<int> BasePlugin::getStorage(gloox::Stanza*s)
 {
-	return 0;
+	return QList<int>();
 }
 
 QString BasePlugin::getNick(gloox::Stanza*s)
@@ -254,3 +254,7 @@ QString BasePlugin::getPresence(const gloox::Presence& pr)
         return "Unknown";
 }
 
+AbstractConfigurator* BasePlugin::getConfigurator(gloox::Stanza* s)
+{
+	return 0;
+}

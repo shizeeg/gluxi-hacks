@@ -18,6 +18,7 @@ class AsyncRequestList;
 class MyStanza;
 class RoleList;
 class VCardWrapper;
+class AbstractConfigurator;
 
 class gloox::Client;
 class gloox::Stanza;
@@ -49,7 +50,7 @@ public:
 	PluginList* plugins() { return &myPlugins; };
 	AsyncRequestList* asyncRequests() { return myAsyncRequests; };
 	QList<int> getStorage(gloox::Stanza*s);
-
+	AbstractConfigurator* getConfigurator(gloox::Stanza* s);
 	bool isMyMessage(gloox::Stanza *);
 	QString getJID(gloox::Stanza*s, const QString&);
 	QString JIDtoNick(const QString& jid);

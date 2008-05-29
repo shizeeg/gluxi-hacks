@@ -26,12 +26,13 @@ public:
 	virtual bool canHandleIq( gloox::Stanza* );
 	virtual bool onIq(gloox::Stanza* );
 	virtual bool isMyMessage(gloox::Stanza*);
-	virtual int getStorage(gloox::Stanza*s );
+	virtual QList<int> getStorage(gloox::Stanza*s );
 	virtual QString getJID(gloox::Stanza*s, const QString&nick);
 	virtual QString JIDtoNick(const QString& jid);
 	virtual QString getMyNick(gloox::Stanza* s);
 	virtual QString resolveMyNick(gloox::Stanza* s); 
 	virtual void onQuit(const QString& reason);
+	virtual AbstractConfigurator* getConfigurator(gloox::Stanza* s);
 private:
 	bool lazyOffline;
 	ConferenceList conferences;

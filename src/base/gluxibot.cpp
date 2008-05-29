@@ -9,6 +9,7 @@
 #include "rolelist.h"
 #include "vcardwrapper.h"
 #include "logger.h"
+#include "config/abstractconfigurator.h"
 
 #include <QtDebug>
 #include <QMetaType>
@@ -189,8 +190,13 @@ void GluxiBot::handleIq(const MyStanza& st)
 		plugin=it.next();
 		assert(plugin);
 		if (plugin->canHandleIq(s))
-			plugin->onIq(s);
+		{
+			if (plugin->onIq(s))
+				return;
+		}
 	}
+	gloox::Stanza* errStanza=gloox::Stanza::createIqStanza(s->from(),s->id(),gloox::StanzaIqError,s->xmlns());
+	client()->send(errStanza);
 }
 
 void GluxiBot::handleVCard(const VCardWrapper& vcard)
@@ -207,22 +213,19 @@ void GluxiBot::handleVCard(const VCardWrapper& vcard)
 
 QList<int> GluxiBot::getStorage(gloox::Stanza*s)
 {
-	QList<int> res;
 	QListIterator<BasePlugin*> it(myPlugins);
 	BasePlugin *plugin;
 	while (it.hasNext())
 	{
 		plugin=it.next();
 		assert(plugin);
-		int st=plugin->getStorage(s);
-		if (st)
+		QList<int> res=plugin->getStorage(s);
+		if (!res.isEmpty())
 		{
-			res << plugin->id();
-			res << st;
 			return res;
 		}
 	}
-	return res;
+	return QList<int>();
 }
 
 QString GluxiBot::getJID(gloox::Stanza* s, const QString& nick)
@@ -298,6 +301,21 @@ QString GluxiBot::getMyNick(gloox::Stanza* s)
 	}
 	
 	return QString::fromStdString(client()->jid().username());
+}
+
+AbstractConfigurator* GluxiBot::getConfigurator(gloox::Stanza* s)
+{
+	QListIterator<BasePlugin*> it(myPlugins);
+	BasePlugin *plugin;
+	while (it.hasNext())
+	{
+		plugin=it.next();
+		assert(plugin);
+		AbstractConfigurator* cfg=plugin->getConfigurator(s);
+		if (cfg)
+			return cfg;
+	}
+	return 0l;
 }
 
 BasePlugin* GluxiBot::pluginByStanzaId(gloox::Stanza* s)

@@ -9,6 +9,7 @@
 #include <gloox/client.h>
 
 class GluxiBot;
+class AbstractConfigurator;
 
 /**
 	@author Dmitry Nezhevenko <dion@inhex.net>
@@ -37,13 +38,14 @@ public:
  	virtual bool onIq(gloox::Stanza*);
  	virtual bool shouldIgnoreError(); // Should we ignore can't handle error;
  	virtual bool isMyMessage(gloox::Stanza*s); // TODO: Fix it
- 	virtual int getStorage(gloox::Stanza*s);
+ 	virtual QList<int> getStorage(gloox::Stanza*s);
 	virtual QString getJID(gloox::Stanza*s, const QString&nick);
 	virtual QString JIDtoNick(const QString& jid);
 	virtual void onQuit(const QString& reason);			// OnQuit
 	void reply(gloox::Stanza*, const QString&, bool forcePrivate=false, bool quoteNick=true);
 	virtual QString getMyNick(gloox::Stanza* s);
 	virtual QString resolveMyNick(gloox::Stanza* s);
+	virtual AbstractConfigurator* getConfigurator(gloox::Stanza* s);
 protected:
 	int pluginId;
 	bool myShouldIgnoreError;
@@ -56,7 +58,7 @@ protected:
 
 	virtual bool isFromBotOwner(gloox::Stanza*, bool message=false);
 	int getRole(gloox::Stanza*);
-        QString getPresence(const gloox::Presence& pr);
+	QString getPresence(const gloox::Presence& pr);
 };
 
 #endif

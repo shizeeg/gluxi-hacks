@@ -12,6 +12,7 @@ set (plugin_HDR
 	jid.h
 	nick.h
 	nicklist.h
+	config/mucconfigurator.h
 )
 
 set (plugin_SRC
@@ -23,6 +24,7 @@ set (plugin_SRC
 	mucplugin.cpp
 	nick.cpp
 	nicklist.cpp
+	config/mucconfigurator.cpp
 )
 
 GLUXI_PLUGIN()
