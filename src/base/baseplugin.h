@@ -2,6 +2,7 @@
 #define BASEPLUGIN_H
 
 #include "vcardwrapper.h"
+#include "config/storagekey.h"
 
 #include <QObject>
 #include <QStringList>
@@ -38,7 +39,7 @@ public:
  	virtual bool onIq(gloox::Stanza*);
  	virtual bool shouldIgnoreError(); // Should we ignore can't handle error;
  	virtual bool isMyMessage(gloox::Stanza*s); // TODO: Fix it
- 	virtual QList<int> getStorage(gloox::Stanza*s);
+ 	virtual StorageKey getStorage(gloox::Stanza*s);
 	virtual QString getJID(gloox::Stanza*s, const QString&nick);
 	virtual QString JIDtoNick(const QString& jid);
 	virtual void onQuit(const QString& reason);			// OnQuit

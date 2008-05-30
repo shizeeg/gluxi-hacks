@@ -26,7 +26,7 @@ public:
 	virtual bool canHandleIq( gloox::Stanza* );
 	virtual bool onIq(gloox::Stanza* );
 	virtual bool isMyMessage(gloox::Stanza*);
-	virtual QList<int> getStorage(gloox::Stanza*s );
+	virtual StorageKey getStorage(gloox::Stanza*s );
 	virtual QString getJID(gloox::Stanza*s, const QString&nick);
 	virtual QString JIDtoNick(const QString& jid);
 	virtual QString getMyNick(gloox::Stanza* s);

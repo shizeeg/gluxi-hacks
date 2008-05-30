@@ -2,6 +2,7 @@
 #define GLOOXBOT_H
 
 #include "pluginlist.h"
+#include "config/storagekey.h"
 
 #include <QObject>
 #include <QEvent>
@@ -49,7 +50,7 @@ public:
 	
 	PluginList* plugins() { return &myPlugins; };
 	AsyncRequestList* asyncRequests() { return myAsyncRequests; };
-	QList<int> getStorage(gloox::Stanza*s);
+	StorageKey getStorage(gloox::Stanza*s);
 	AbstractConfigurator* getConfigurator(gloox::Stanza* s);
 	bool isMyMessage(gloox::Stanza *);
 	QString getJID(gloox::Stanza*s, const QString&);

@@ -208,9 +208,9 @@ int BasePlugin::getRole(gloox::Stanza *s)
 	return (role1>role2) ? role1: role2;
 }
 
-QList<int> BasePlugin::getStorage(gloox::Stanza*s)
+StorageKey BasePlugin::getStorage(gloox::Stanza*s)
 {
-	return QList<int>();
+	return StorageKey();
 }
 
 QString BasePlugin::getNick(gloox::Stanza*s)

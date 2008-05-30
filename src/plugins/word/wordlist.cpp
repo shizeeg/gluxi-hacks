@@ -13,14 +13,15 @@ WordList::WordList()
 {
 }
 
-int WordList::append(const QList<int>& storage, const QString& name, const QString& nick, const QString& value)
+int WordList::append(const StorageKey& storage, const QString& name, const QString& nick, const QString& value)
 {
-	if (storage.count()!=2)
+	if (!storage.isValid())
 		return 0;
+	
 	QSqlQuery query=DataStorage::instance()
 		->prepareQuery("INSERT INTO words(plugin, storage, name, date, nick, value) VALUES (?, ?, ?, ?, ?, ?)");
-	query.addBindValue(storage[0]);
-	query.addBindValue(storage[1]);
+	query.addBindValue(storage.plugin());
+	query.addBindValue(storage.storage());
 	query.addBindValue(name);
 	query.addBindValue(QDateTime::currentDateTime());
 	query.addBindValue(nick);
@@ -31,8 +32,8 @@ int WordList::append(const QList<int>& storage, const QString& name, const QStri
 		query.clear();
 		query.prepare("UPDATE words SET value=? WHERE plugin=? AND storage=? AND name=? AND nick=?");
 		query.addBindValue(value);
-		query.addBindValue(storage[0]);
-		query.addBindValue(storage[1]);
+		query.addBindValue(storage.plugin());
+		query.addBindValue(storage.storage());
 		query.addBindValue(name);
 		query.addBindValue(nick);
 		if (!query.exec())
@@ -41,8 +42,8 @@ int WordList::append(const QList<int>& storage, const QString& name, const QStri
 	}
 	query.clear();
 	query.prepare("SELECT COUNT(name) FROM words WHERE plugin=? AND storage=? AND name=?");
-	query.addBindValue(storage[0]);
-	query.addBindValue(storage[1]);
+	query.addBindValue(storage.plugin());
+	query.addBindValue(storage.storage());
 	query.addBindValue(name);
 	if (!query.exec())
 	{
@@ -56,8 +57,8 @@ int WordList::append(const QList<int>& storage, const QString& name, const QStri
 	{
 		query.clear();
 		query.prepare("DELETE FROM words WHERE plugin=? AND storage=? AND name=? ORDER BY DATE LIMIT ?");
-		query.addBindValue(storage[0]);
-		query.addBindValue(storage[1]);
+		query.addBindValue(storage.plugin());
+		query.addBindValue(storage.storage());
 		query.addBindValue(name);
 		query.addBindValue(toDel);
 		query.exec();
@@ -65,15 +66,15 @@ int WordList::append(const QList<int>& storage, const QString& name, const QStri
 	return 1;
 }
 
-QMap<QString,QString> WordList::getAll(const QList<int>& storage, const QString& name)
+QMap<QString,QString> WordList::getAll(const StorageKey& storage, const QString& name)
 {
 	QMap<QString,QString> map;
-	if (storage.count()!=2)
+	if (!storage.isValid())
 		return map;
 	QSqlQuery query=DataStorage::instance()
 		->prepareQuery("SELECT nick, value FROM words WHERE plugin=? AND storage=? AND name=? ORDER BY date DESC");
-	query.addBindValue(storage[0]);
-	query.addBindValue(storage[1]);
+	query.addBindValue(storage.plugin());
+	query.addBindValue(storage.storage());
 	query.addBindValue(name);
 	if (!query.exec())
 		return map;
@@ -82,14 +83,14 @@ QMap<QString,QString> WordList::getAll(const QList<int>& storage, const QString&
 	return map;
 }
 
-QString WordList::get(const QList<int>& storage, const QString&name, QString* nick)
+QString WordList::get(const StorageKey& storage, const QString&name, QString* nick)
 {
-	if (storage.count()!=2)
+	if (!storage.isValid())
 		return QString::null;
 	QSqlQuery query=DataStorage::instance()
 		->prepareQuery("SELECT nick, value FROM words WHERE plugin=? AND storage=? AND name=? ORDER BY date DESC LIMIT 1");
-	query.addBindValue(storage[0]);
-	query.addBindValue(storage[1]);
+	query.addBindValue(storage.plugin());
+	query.addBindValue(storage.storage());
 	query.addBindValue(name);
 	query.exec();
 	if (!query.next())
@@ -99,52 +100,52 @@ QString WordList::get(const QList<int>& storage, const QString&name, QString* ni
 	return query.value(1).toString();
 }
 
-void WordList::clear(const QList<int>& storage)
+void WordList::clear(const StorageKey& storage)
 {
-	if (storage.count()!=2)
+	if (!storage.isValid())
 		return;
 	QSqlQuery query=DataStorage::instance()
 		->prepareQuery("DELETE FROM words WHERE plugin=? AND storage=?");
-	query.addBindValue(storage[0]);
-	query.addBindValue(storage[1]);
+	query.addBindValue(storage.plugin());
+	query.addBindValue(storage.storage());
 	query.exec();
 }
 
-int WordList::count(const QList<int>& storage)
+int WordList::count(const StorageKey& storage)
 {
-	if (storage.count()!=2)
+	if (!storage.isValid())
 		return 0;
 	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("SELECT COUNT(*) FROM (SELECT name FROM words WHERE plugin=1 AND storage=1 GROUP BY NAME) AS ul");
-	query.addBindValue(storage[0]);
-	query.addBindValue(storage[1]);
+		->prepareQuery("SELECT COUNT(*) FROM (SELECT name FROM words WHERE plugin=? AND storage=? GROUP BY NAME) AS ul");
+	query.addBindValue(storage.plugin());
+	query.addBindValue(storage.storage());
 	query.exec();
 	if (!query.next())
 		return 0;
 	return query.value(0).toInt();
 }
 
-bool WordList::remove(const QList<int>& storage, const QString& name)
+bool WordList::remove(const StorageKey& storage, const QString& name)
 {
-	if (storage.count()!=2)
+	if (!storage.isValid())
 		return false;
 	QSqlQuery query=DataStorage::instance()
 		->prepareQuery("DELETE FROM words WHERE plugin=? AND storage=? AND name=?");
-	query.addBindValue(storage[0]);
-	query.addBindValue(storage[1]);
+	query.addBindValue(storage.plugin());
+	query.addBindValue(storage.storage());
 	query.addBindValue(name);
 	query.exec();
 	return query.numRowsAffected();
 }
 
-QStringList WordList::getNames(const QList<int>& storage)
+QStringList WordList::getNames(const StorageKey& storage)
 {
-	if (storage.count()!=2)
+	if (!storage.isValid())
 		return QStringList();
 	QSqlQuery query=DataStorage::instance()
 		->prepareQuery("select name from words where plugin=? and storage=? group by name ORDER BY name");
-	query.addBindValue(storage[0]);
-	query.addBindValue(storage[1]);
+	query.addBindValue(storage.plugin());
+	query.addBindValue(storage.storage());
 	if (!query.exec())
 		return QStringList();
 	QStringList res;

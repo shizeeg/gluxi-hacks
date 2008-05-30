@@ -1,6 +1,8 @@
 #ifndef ALIAS_LIST
 #define ALIAS_LIST
 
+#include "base/config/storagekey.h"
+
 #include <QList>
 #include <QMap>
 
@@ -11,12 +13,12 @@ class AliasList
 public:
 	AliasList();
 	// 0 - err, 1 - added, 2 - updated
-	int append(const QList<int>& storage, const QString& name, const QString& value);
-	QMap<QString,QString> getAll(const QList<int>& storage);
-	QString get(const QList<int>& storage, const QString&name);
-	void clear(const QList<int>& storage);
-	int count(const QList<int>& storage);
-	bool remove(const QList<int>& storage, const QString& name);
+	int append(const StorageKey& storage, const QString& name, const QString& value);
+	QMap<QString,QString> getAll(const StorageKey& storage);
+	QString get(const StorageKey& storage, const QString&name);
+	void clear(const StorageKey& storage);
+	int count(const StorageKey& storage);
+	bool remove(const StorageKey& storage, const QString& name);
 };
 
 #endif

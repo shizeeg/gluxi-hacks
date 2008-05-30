@@ -21,6 +21,7 @@ set (base_HDR
 	vcardwrapper.h
 	gloox/myvcardmanager.h
 	logger.h
+	config/storagekey.h
 	config/configfield.h
 	config/abstractconfigurator.h
 	gluxi_version.h
@@ -43,6 +44,7 @@ set (base_SRC
 	segfault.c
 	gloox/myvcardmanager.cpp
 	logger.cpp
+	config/storagekey.cpp
 	config/configfield.cpp
 	config/abstractconfigurator.cpp
 	${HG_VERSION_FILE}

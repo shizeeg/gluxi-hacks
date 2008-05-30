@@ -1321,14 +1321,13 @@ void MucPlugin::recheckJIDs(Conference *c)
 }
 
 // Storage provider
-QList<int> MucPlugin::getStorage(gloox::Stanza *s)
+StorageKey MucPlugin::getStorage(gloox::Stanza *s)
 {
 	Conference* conf=getConf(s);
-	QList<int> res;
 	if (!conf)
-		return res;
-	res << pluginId << conf->id();
-	return res;
+		return StorageKey();
+	
+	return StorageKey(pluginId, conf->id());
 }
 
 AbstractConfigurator* MucPlugin::getConfigurator(gloox::Stanza* s)

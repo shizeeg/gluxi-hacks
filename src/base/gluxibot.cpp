@@ -211,7 +211,7 @@ void GluxiBot::handleVCard(const VCardWrapper& vcard)
 	}
 }
 
-QList<int> GluxiBot::getStorage(gloox::Stanza*s)
+StorageKey GluxiBot::getStorage(gloox::Stanza*s)
 {
 	QListIterator<BasePlugin*> it(myPlugins);
 	BasePlugin *plugin;
@@ -219,13 +219,11 @@ QList<int> GluxiBot::getStorage(gloox::Stanza*s)
 	{
 		plugin=it.next();
 		assert(plugin);
-		QList<int> res=plugin->getStorage(s);
-		if (!res.isEmpty())
-		{
-			return res;
-		}
+		StorageKey key=plugin->getStorage(s);
+		if (key.isValid())
+			return key;
 	}
-	return QList<int>();
+	return StorageKey();
 }
 
 QString GluxiBot::getJID(gloox::Stanza* s, const QString& nick)
