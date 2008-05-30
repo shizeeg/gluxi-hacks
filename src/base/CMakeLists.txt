@@ -24,6 +24,7 @@ set (base_HDR
 	config/storagekey.h
 	config/configfield.h
 	config/abstractconfigurator.h
+	config/sqlbasedconfigurator.h
 	gluxi_version.h
 )
 
@@ -47,6 +48,7 @@ set (base_SRC
 	config/storagekey.cpp
 	config/configfield.cpp
 	config/abstractconfigurator.cpp
+	config/sqlbasedconfigurator.cpp
 	${HG_VERSION_FILE}
 )
 
