@@ -20,16 +20,13 @@
 #ifndef MUCCONFIGURATOR_H_
 #define MUCCONFIGURATOR_H_
 
-#include "base/config/abstractconfigurator.h"
+#include "base/config/sqlbasedconfigurator.h"
 
-class MucConfigurator: public AbstractConfigurator
+class MucConfigurator: public SqlBasedConfigurator
 {
 public:
-	MucConfigurator(const QString& targetJid);
+	MucConfigurator(const QString& targetJid, StorageKey key);
 	virtual ~MucConfigurator();
-	virtual QList<ConfigField> loadFields();
-	virtual void saveFields(QList<ConfigField> fields);
-	
 };
 
 #endif /*MUCCONFIGURATOR_H_*/

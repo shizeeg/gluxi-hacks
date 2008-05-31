@@ -33,7 +33,7 @@ public:
 	// These members should be thread-safe
 	void disconnect();
 	void send(gloox::Stanza* s);
-	void registerIqHandler(const QString& service);
+	void addIqHandler(const QString& service);
 	void fetchVCard(const QString& jid);
 	void setPresence(gloox::Presence presence, const QString& status, int priority);
 	void setPresence(const QString& jid, gloox::Presence presence, const QString& status);

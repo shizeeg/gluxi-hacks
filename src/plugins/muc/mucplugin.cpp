@@ -1335,10 +1335,10 @@ AbstractConfigurator* MucPlugin::getConfigurator(gloox::Stanza* s)
 	Conference* conf=getConf(s);
 	if (!conf)
 		return 0;
-	if (getRole(s)<ROLE_OWNER)
+	if (getRole(s)<ROLE_ADMIN)
 		return 0;
 	
-	return new MucConfigurator(conf->name()+"/"+conf->nick());
+	return new MucConfigurator(conf->name()+"/"+conf->nick(),StorageKey(pluginId, conf->id()));
 }
 
 QString MucPlugin::getJID(gloox::Stanza*s, const QString& n)

@@ -24,8 +24,8 @@ UserPlugin::UserPlugin(GluxiBot *parent) :
 {
 	commands << "VERSION" << "PING" << "DISCO" << "VCARD" << "PHOTO";
 
-	bot()->client()->registerIqHandler("jabber:iq:version");
-	bot()->client()->registerIqHandler("http://jabber.org/protocol/disco#items");
+	bot()->registerIqHandler("jabber:iq:version");
+	bot()->registerIqHandler("http://jabber.org/protocol/disco#items");
 }
 
 UserPlugin::~UserPlugin()

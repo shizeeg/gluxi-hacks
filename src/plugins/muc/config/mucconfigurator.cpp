@@ -19,23 +19,11 @@
  ***************************************************************************/
 #include "mucconfigurator.h"
 
-MucConfigurator::MucConfigurator(const QString& targetJid)
-	: AbstractConfigurator(targetJid)
+MucConfigurator::MucConfigurator(const QString& targetJid, StorageKey key)
+	: SqlBasedConfigurator(targetJid, key)
 {
 }
 
 MucConfigurator::~MucConfigurator()
-{
-}
-
-QList<ConfigField> MucConfigurator::loadFields()
-{
-	QList<ConfigField> fields;
-	fields << ConfigField(ConfigField::FIELDTYPE_TEXT,"field1","this is field 1", "value1");
-	fields << ConfigField(ConfigField::FIELDTYPE_TEXT,"field2","this is field 2", "value2");
-	fields << ConfigField(ConfigField::FIELDTYPE_TEXT,"field3","this is field 3", "value3");
-	return fields;
-}
-void MucConfigurator::saveFields(QList<ConfigField> fields)
 {
 }

@@ -13,8 +13,8 @@
 ConfigPlugin::ConfigPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	bot()->client()->registerIqHandler("http://jabber.org/protocol/disco#info");
-	bot()->client()->registerIqHandler("http://jabber.org/protocol/commands");
+	bot()->registerIqHandler("http://jabber.org/protocol/disco#info");
+	bot()->registerIqHandler("http://jabber.org/protocol/commands");
 }
 
 ConfigPlugin::~ConfigPlugin()
@@ -38,6 +38,7 @@ bool ConfigPlugin::canHandleIq(gloox::Stanza* s)
 
 bool ConfigPlugin::onIq(gloox::Stanza* s)
 {
+	return false;
 	AbstractConfigurator* config=bot()->getConfigurator(s);
 	if (!config)
 		return false;
@@ -56,6 +57,10 @@ bool ConfigPlugin::onIq(gloox::Stanza* s)
 			if (queryTag==0)
 				return false;
 			queryTag->addChild(new gloox::Tag("feature","var","http://jabber.org/protocol/commands",false));
+			gloox::Tag* identifyTag=new gloox::Tag("identify", "category","client", false);
+			identifyTag->addAttribute("type","bot");
+			identifyTag->addAttribute("name","GluxiBot");
+			queryTag->addChild(identifyTag);
 			out->finalize();
 			bot()->client()->send(out);
 			return true;
@@ -72,11 +77,14 @@ bool ConfigPlugin::onIq(gloox::Stanza* s)
 			
 			out->finalize();
 			bot()->client()->send(out);
+			return true;
 		}
 	}
 	if (s->subtype()==gloox::StanzaIqSet || s->subtype() == gloox::StanzaIqGet)
 	{
 		gloox::Tag* incCmdTag=s->findChild("command","node","http://jabber.org/protocol/rc#config");
+		//if (!incCmdTag)
+		//	incCmdTag=s->findChild("query","node","http://jabber.org/protocol/rc#config");
 		if (incCmdTag)
 		{
 			gloox::Tag* xTag=incCmdTag->findChild("x");
@@ -85,8 +93,8 @@ bool ConfigPlugin::onIq(gloox::Stanza* s)
 			bool isCancel=(action=="cancel");
 			
 			gloox::Stanza* st=gloox::Stanza::createIqStanza(s->from(),s->id(),gloox::StanzaIqResult);
-			gloox::Tag *cmdTag=new gloox::Tag("command");
-			cmdTag->addAttribute("xmlns","http://jabber.org/protocol/commands");
+			gloox::Tag *cmdTag=new gloox::Tag(incCmdTag->name());
+			cmdTag->addAttribute("xmlns",cmdTag->findAttribute("xmlns"));
 			cmdTag->addAttribute("node","http://jabber.org/protocol/rc#config");
 			cmdTag->addAttribute("sessionid",s->id());
 			
@@ -116,8 +124,8 @@ bool ConfigPlugin::onIq(gloox::Stanza* s)
 					gloox::Tag *xTag=new gloox::Tag("x");
 					xTag->addAttribute("xmlns","jabber:x:data");
 					xTag->addAttribute("type","form");
-					xTag->addChild(new gloox::Tag("title","Form title"));
-					xTag->addChild(new gloox::Tag("instructions","Manual how to fill"));
+					xTag->addChild(new gloox::Tag("title","Configuration"));
+					xTag->addChild(new gloox::Tag("instructions","Please fill all fields"));
 					QList<ConfigField> fields=config->loadFields();
 					for (QList<ConfigField>::iterator it=fields.begin(); it!=fields.end(); ++it)
 					{
@@ -128,11 +136,11 @@ bool ConfigPlugin::onIq(gloox::Stanza* s)
 			}
 			st->addChild(cmdTag);
 			st->finalize();
-			qDebug() << QString::fromStdString(st->xml());
 			bot()->client()->send(st);
 			return true;
 		}
 	}
+	return false;
 }
 
 gloox::Tag* ConfigPlugin::createCommandTag(const QString& nodePart, const QString& name, const QString& jid)
@@ -163,7 +171,7 @@ QString ConfigPlugin::fieldTypeToString(ConfigField::FieldType fieldType)
 	case ConfigField::FIELDTYPE_TEXT:
 		return "text-single";
 	case ConfigField::FIELDTYPE_CHECKBOX:
-		return "checkbox";
+		return "boolean";
 	}
 	return QString();
 }

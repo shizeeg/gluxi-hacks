@@ -17,24 +17,24 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef SQLBASEDCONFIGURATOR_H_
-#define SQLBASEDCONFIGURATOR_H_
+#include "identityitem.h"
 
-#include "abstractconfigurator.h"
-#include "storagekey.h"
-
-class SqlBasedConfigurator: public AbstractConfigurator
+IdentityItem::IdentityItem(const QString& category, const QString& type, const QString& name)
 {
-public:
-	SqlBasedConfigurator(const QString& targetJid, const StorageKey& key);
-	virtual ~SqlBasedConfigurator();
-	virtual QList<ConfigField> loadFields();
-	virtual void saveFields(QList<ConfigField> fields);
-protected:
-	StorageKey key_;
-	QList<ConfigField> loadAvailableFields();
-	ConfigField loadValue(const ConfigField& field);
-	void saveValue(const ConfigField& field);
-};
+	category_=category;
+	type_=type;
+	name_=name;
+}
 
-#endif /*SQLBASEDCONFIGURATOR_H_*/
+IdentityItem::~IdentityItem()
+{
+}
+
+gloox::Tag* IdentityItem::infoTag()
+{
+	gloox::Tag* tag=new gloox::Tag("identity");
+	tag->addAttribute("category", category_.toStdString());
+	tag->addAttribute("type",type_.toStdString());
+	tag->addAttribute("name", name_.toStdString());
+	return tag;
+}

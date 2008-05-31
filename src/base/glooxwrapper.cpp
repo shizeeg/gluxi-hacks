@@ -190,7 +190,7 @@ void GlooxWrapper::send(gloox::Stanza* s)
 	myClient->send(s);
 }
 
-void GlooxWrapper::registerIqHandler(const QString& service)
+void GlooxWrapper::addIqHandler(const QString& service)
 {
 	QMutexLocker locker(&mutex);
 	myClient->registerIqHandler(this,service.toStdString());

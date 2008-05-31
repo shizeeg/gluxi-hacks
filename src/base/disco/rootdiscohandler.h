@@ -17,24 +17,28 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef SQLBASEDCONFIGURATOR_H_
-#define SQLBASEDCONFIGURATOR_H_
+#ifndef ROOTDISCOHANDLER_H_
+#define ROOTDISCOHANDLER_H_
 
-#include "abstractconfigurator.h"
-#include "storagekey.h"
+#include "discohandler.h"
 
-class SqlBasedConfigurator: public AbstractConfigurator
+#include <QList>
+#include <QMap>
+
+class RootDiscoHandler: public DiscoHandler
 {
 public:
-	SqlBasedConfigurator(const QString& targetJid, const StorageKey& key);
-	virtual ~SqlBasedConfigurator();
-	virtual QList<ConfigField> loadFields();
-	virtual void saveFields(QList<ConfigField> fields);
-protected:
-	StorageKey key_;
-	QList<ConfigField> loadAvailableFields();
-	ConfigField loadValue(const ConfigField& field);
-	void saveValue(const ConfigField& field);
+	RootDiscoHandler();
+	virtual ~RootDiscoHandler();
+	virtual gloox::Stanza* handleDiscoRequest(gloox::Stanza* s);
+	DiscoHandler* rootHandler() { return rootHandler_; }
+	void registerDiscoHandler(DiscoHandler* handler);
+	void unregisterDiscoHandler(DiscoHandler* handler);
+	void addIqHandler(const QString& service);
+private:
+	 //QList<DiscoHandler*> handlersList_;
+	 QMap<QString, DiscoHandler*> handlersMap_;
+	 DiscoHandler* rootHandler_;
 };
 
-#endif /*SQLBASEDCONFIGURATOR_H_*/
+#endif /*ROOTDISCOHANDLER_H_*/

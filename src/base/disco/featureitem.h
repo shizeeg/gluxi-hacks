@@ -17,24 +17,21 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef SQLBASEDCONFIGURATOR_H_
-#define SQLBASEDCONFIGURATOR_H_
+#ifndef FEATUREITEM_H_
+#define FEATUREITEM_H_
 
-#include "abstractconfigurator.h"
-#include "storagekey.h"
+#include "infoitem.h"
 
-class SqlBasedConfigurator: public AbstractConfigurator
+#include <QString>
+
+class FeatureItem: public InfoItem
 {
 public:
-	SqlBasedConfigurator(const QString& targetJid, const StorageKey& key);
-	virtual ~SqlBasedConfigurator();
-	virtual QList<ConfigField> loadFields();
-	virtual void saveFields(QList<ConfigField> fields);
-protected:
-	StorageKey key_;
-	QList<ConfigField> loadAvailableFields();
-	ConfigField loadValue(const ConfigField& field);
-	void saveValue(const ConfigField& field);
+	FeatureItem(const QString& var);
+	virtual ~FeatureItem();
+	virtual gloox::Tag* infoTag();
+private:
+	QString var_;
 };
 
-#endif /*SQLBASEDCONFIGURATOR_H_*/
+#endif /*FEATUREITEM_H_*/

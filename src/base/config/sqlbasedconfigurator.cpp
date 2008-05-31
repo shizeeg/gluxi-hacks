@@ -21,13 +21,15 @@
 #include "base/datastorage.h"
 
 #include <QSqlQuery>
+#include <QSqlError>
 #include <QVariant>
 #include <QSet>
+#include <QtDebug>
 
 SqlBasedConfigurator::SqlBasedConfigurator(const QString& targetJid, const StorageKey& key)
 	: AbstractConfigurator(targetJid)
 {
-	
+	key_=key;
 }
 
 SqlBasedConfigurator::~SqlBasedConfigurator()
@@ -61,11 +63,15 @@ QList<ConfigField> SqlBasedConfigurator::loadAvailableFields()
 {
 	QSqlQuery query=DataStorage::instance()
 		->prepareQuery("SELECT name, field_type, description, default_value FROM configuration_fields"
-				"WHERE plugin=? ORDER BY priority");
+				" WHERE plugin=? ORDER BY priority");
+	qDebug() << "plugin: " << key_.plugin();
 	query.addBindValue(key_.plugin());
 	QList<ConfigField> fieldList;
 	if (!query.exec())
+	{
+		qDebug() << query.lastError().text();
 		return fieldList;
+	}
 	while (query.next())
 	{
 		QString name=query.value(0).toString();

@@ -20,6 +20,7 @@ class MyStanza;
 class RoleList;
 class VCardWrapper;
 class AbstractConfigurator;
+class RootDiscoHandler;
 
 class gloox::Client;
 class gloox::Stanza;
@@ -58,8 +59,11 @@ public:
 	void onQuit(const QString& reason);
 	int getPriority();
 	QString getMyNick(gloox::Stanza* s);
+	void registerIqHandler(const QString& service);
+	RootDiscoHandler* getRootDiscoHandler() { return rootDiscoHandler_; }
 private:
 	GlooxWrapper *myGloox;
+	RootDiscoHandler* rootDiscoHandler_;
 
 	RoleList *myRoles;
 	PluginList myPlugins;

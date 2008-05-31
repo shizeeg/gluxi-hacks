@@ -17,24 +17,58 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef SQLBASEDCONFIGURATOR_H_
-#define SQLBASEDCONFIGURATOR_H_
+#include "rootdiscohandler.h"
+#include "identityitem.h"
 
-#include "abstractconfigurator.h"
-#include "storagekey.h"
-
-class SqlBasedConfigurator: public AbstractConfigurator
+RootDiscoHandler::RootDiscoHandler()
 {
-public:
-	SqlBasedConfigurator(const QString& targetJid, const StorageKey& key);
-	virtual ~SqlBasedConfigurator();
-	virtual QList<ConfigField> loadFields();
-	virtual void saveFields(QList<ConfigField> fields);
-protected:
-	StorageKey key_;
-	QList<ConfigField> loadAvailableFields();
-	ConfigField loadValue(const ConfigField& field);
-	void saveValue(const ConfigField& field);
-};
+	rootHandler_=new DiscoHandler("");
+	rootHandler_->addInfoItem(new IdentityItem("client","bot","GluxiBot"));
+}
 
-#endif /*SQLBASEDCONFIGURATOR_H_*/
+RootDiscoHandler::~RootDiscoHandler()
+{
+	delete rootHandler_;
+}
+
+gloox::Stanza* RootDiscoHandler::handleDiscoRequest(gloox::Stanza* s)
+{
+	gloox::Tag* queryTag=s->findChild("query");
+	if (!queryTag)
+		return false;
+	QString node=QString::fromStdString(queryTag->findAttribute("node"));
+	
+	if (node.isEmpty())
+		return rootHandler_->handleDiscoRequest(s);
+	
+	DiscoHandler* handler=handlersMap_.value(node);
+	if (handler)
+		return handler->handleDiscoRequest(s);
+	return 0;
+}
+
+void RootDiscoHandler::addIqHandler(const QString& service)
+{
+
+}
+
+void RootDiscoHandler::registerDiscoHandler(DiscoHandler* handler)
+{
+	if (handler->parentNode().isEmpty())
+	{
+		rootHandler_->addChildHandler(handler);
+	}
+	else
+	{
+		DiscoHandler* parentHandler=handlersMap_.value(handler->parentNode());
+		if (parentHandler)
+			parentHandler->addChildHandler(handler);
+	}
+	
+	handlersMap_.insert(handler->node(), handler);
+}
+
+void RootDiscoHandler::unregisterDiscoHandler(DiscoHandler* handler)
+{
+	handlersMap_.remove(handler->node());
+}

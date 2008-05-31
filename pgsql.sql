@@ -94,7 +94,7 @@ CREATE TABLE configuration_fields (
   priority smallint NOT NULL DEFAULT 0,
   field_type smallint NOT NULL,
   description varchar(100) NOT NULL,
-  default_value varchar(250) NOT NULL,
+  default_value varchar(250) NULL DEFAULT NULL,
   PRIMARY KEY (plugin,name)
 );
 

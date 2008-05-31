@@ -17,24 +17,41 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef SQLBASEDCONFIGURATOR_H_
-#define SQLBASEDCONFIGURATOR_H_
+#ifndef DISCOHANDLER_H_
+#define DISCOHANDLER_H_
 
-#include "abstractconfigurator.h"
-#include "storagekey.h"
+#include "infoitem.h"
 
-class SqlBasedConfigurator: public AbstractConfigurator
+#include <gloox/stanza.h>
+
+#include <QList>
+#include <QString>
+
+class gloox::Stanza;
+
+class DiscoHandler
 {
 public:
-	SqlBasedConfigurator(const QString& targetJid, const StorageKey& key);
-	virtual ~SqlBasedConfigurator();
-	virtual QList<ConfigField> loadFields();
-	virtual void saveFields(QList<ConfigField> fields);
+	DiscoHandler(const QString& node=QString(), const QString& parentNode=QString(), const QString& name=QString(), const QString& jid=QString());
+	virtual ~DiscoHandler();
+	void addInfoItem(InfoItem* item);
+	void addChildHandler(DiscoHandler* handler);
+	
+	virtual gloox::Stanza* handleDiscoRequest(gloox::Stanza* s);
+	virtual gloox::Tag* itemTag(const QString& defaultJid);
+	QString node() const { return node_; }
+	QString parentNode() const { return parentNode_; }
+	QString name() const { return name_; }
+	QString jid() const { return jid_; }
 protected:
-	StorageKey key_;
-	QList<ConfigField> loadAvailableFields();
-	ConfigField loadValue(const ConfigField& field);
-	void saveValue(const ConfigField& field);
+	QString node_;
+	QString parentNode_;
+	QString name_;
+	QString jid_;
+	QList<InfoItem*> infoItems_;
+	QList<DiscoHandler*> childDiscoHandlers_;
+	gloox::Stanza* handleDiscoInfoRequest(gloox::Stanza* s);
+	gloox::Stanza* handleDiscoItemsRequest(gloox::Stanza* s);
 };
 
-#endif /*SQLBASEDCONFIGURATOR_H_*/
+#endif /*DISCOHANDLER_H_*/
