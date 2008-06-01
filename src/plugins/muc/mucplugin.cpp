@@ -489,20 +489,9 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 				return true;
 		}
 
-		QString target;
-		QString reason;
-		int ps=arg.indexOf('|');
-		if (ps>=0)
-		{
-			target=arg.section('|', 0, 0);
-			reason=arg.section('|', 1);
-		}
-		else
-		{
-			target=arg.section(' ', 0, 0);
-			reason=arg.section(' ', 1);
-		}
-
+		QString target=arg;
+		QString reason=parser.nextToken();
+		
 		Nick *n=getNickVerbose(s, target);
 		if (!n)
 			return true;
