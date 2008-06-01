@@ -5,9 +5,10 @@ VCardWrapper::VCardWrapper()
 	empty=true;
 }
 
-VCardWrapper::VCardWrapper(const gloox::JID &jid, gloox::VCard *vcard)
+VCardWrapper::VCardWrapper(const std::string& id, const gloox::JID &jid, gloox::VCard *vcard)
 {
 	jid_=jid;
+	id_=QString::fromStdString(id);
 	if (vcard!=0)
 	{
 		empty=false;
@@ -22,6 +23,7 @@ VCardWrapper::VCardWrapper(const gloox::JID &jid, gloox::VCard *vcard)
 
 VCardWrapper::VCardWrapper(const VCardWrapper& other)
 {
+	id_=other.id();
 	jid_=other.jid();
 	vcard_=gloox::VCard(other.vcard());
 	empty=other.isEmpty();

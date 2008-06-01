@@ -7,7 +7,7 @@
 #include "base/messageparser.h"
 #include "base/gluxi_version.h"
 
-#include <gloox/vcardmanager.h>
+#include "base/gloox/myvcardmanager.h"
 #include <string>
 
 #include <QFile>
@@ -97,10 +97,10 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 			jid=arg;
 		if (jid.isEmpty())
 			jid=QString::fromStdString(s->from().bare());
-		bot()->client()->fetchVCard(jid);
+		QString vcardId=bot()->client()->fetchVCard(jid);
 		gloox::Stanza *sf=new gloox::Stanza(s);
 		qDebug() << "VCard request: " << jid;
-		sf->addAttribute("id", QString("vcard_%1").arg(jid).toStdString());
+		sf->addAttribute("id", QString("vcard_%1").arg(vcardId).toStdString());
 		AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
 		req->setName(cmd);
 		bot()->asyncRequests()->append(req);
@@ -286,13 +286,12 @@ bool UserPlugin::onVCard(const VCardWrapper& vcardWrapper)
 	const gloox::JID jid=vcardWrapper.jid();
 	gloox::VCard vcard=gloox::VCard(vcardWrapper.vcard());
 
-	qDebug() << "Got vcard";
+	qDebug() << "Got vcard: "+vcardWrapper.id();
 	QString jidStr=QString::fromStdString(jid.full());
-	QString reqId=QString("vcard_"+jidStr);
+	QString reqId=QString("vcard_%1").arg(vcardWrapper.id());
 	AsyncRequest* req=bot()->asyncRequests()->byStanzaId(reqId);
 	if (req==0l)
 	{
-		qDebug() << "No request found for jid: "+jidStr;
 		return false;
 	}
 	if (vcardWrapper.isEmpty())

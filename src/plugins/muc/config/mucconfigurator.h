@@ -31,9 +31,13 @@ public:
 	
 	bool isApplyAlistsToMembers() const { return applyAlistsToMembers_; }
 	bool isCheckAlistsEveryPresence() const { return checkAlistsEveryPresence_; }
+	bool isDevoiceNoVCard() const { return devoiceNoVCard_; }
+	QString devoiceNoVCardReason() const { return devoiceNoVCardReason_; }
 private:
 	bool applyAlistsToMembers_;
 	bool checkAlistsEveryPresence_;
+	bool devoiceNoVCard_;
+	QString devoiceNoVCardReason_;
 	void parse();
 	
 };

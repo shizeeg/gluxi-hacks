@@ -44,6 +44,10 @@ void MucConfigurator::parse()
 		if (field.name()=="alists_members")
 			applyAlistsToMembers_=field.boolValue();
 		if (field.name()=="alists_every_presence")
-			checkAlistsEveryPresence_=field.boolValue();		
+			checkAlistsEveryPresence_=field.boolValue();
+		if (field.name()=="devoice_no_vcard")
+			devoiceNoVCard_=field.boolValue();
+		if (field.name()=="devoice_no_vcard_reason")
+			devoiceNoVCardReason_=field.value();
 	}
 }

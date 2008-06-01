@@ -25,6 +25,7 @@ public:
 	virtual bool parseMessage(gloox::Stanza* );
 	virtual bool canHandleIq( gloox::Stanza* );
 	virtual bool onIq(gloox::Stanza* );
+	virtual bool onVCard(const VCardWrapper& vcard);
 	virtual bool isMyMessage(gloox::Stanza*);
 	virtual StorageKey getStorage(gloox::Stanza*s );
 	virtual QString getJID(gloox::Stanza*s, const QString&nick);
@@ -63,6 +64,7 @@ private:
 	int getStatus(gloox::Stanza* s);
 	bool warnImOwner(gloox::Stanza* s);
 	QString expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QString& s, const AListItem* item=0);
+	void requestVCard(gloox::Stanza* s, Conference* conf, Nick* nick);
 };
 
 #endif

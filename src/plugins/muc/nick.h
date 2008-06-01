@@ -38,6 +38,8 @@ public:
 	void setValidateRequired(const bool value) { myValidateRequired=value; }; 
 	void commit();
 	static void setAllOffline (Conference* conf);
+	bool isDevoicedNoVCard() const {return devoicedNoVCard_; }
+	void setDevoicedNoVCard(bool v) { devoicedNoVCard_ = v; } 
 private:
 	int myId;
 	bool myLazyLeave;
@@ -52,6 +54,7 @@ private:
 	QDateTime myLastActivity;
 	QString myShow;
 	QString myStatus;
+	bool devoicedNoVCard_;
 };
 
 #endif

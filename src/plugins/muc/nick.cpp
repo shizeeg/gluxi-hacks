@@ -11,6 +11,7 @@
 
 Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 {
+	devoicedNoVCard_=false;
 	myValidateRequired=false;
 	myParent=parent;
 	myNick=nick;
@@ -76,6 +77,7 @@ Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 
 Nick::Nick(Conference* parent, int id)
 {
+	devoicedNoVCard_=false;
 	myParent=parent;
 	myLazyLeave=false;
 	myId=id;
