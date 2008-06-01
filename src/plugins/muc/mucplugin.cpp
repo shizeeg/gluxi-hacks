@@ -961,7 +961,6 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	arg=arg.toLower();
 	//parser.back();
 	arg2=arg2.toUpper();
-	QString arg3=parser.nextToken();
 	bool isRemoving=false;
 	if (arg2=="HELP" || arg2=="")
 	{
@@ -994,7 +993,8 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	if (arg2=="DEL")
 	{
 		bool ok;
-		int idx=arg3.toInt(&ok);
+		QString itemNum=parser.nextToken();
+		int idx=itemNum.toInt(&ok);
 		int n;
 		if (ok)
 		{
@@ -1010,9 +1010,9 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		}
 		else
 		{
+			parser.back(1);
+			arg2=parser.nextToken();
 			isRemoving=true;
-			arg2=arg3.toUpper();
-			arg3=parser.nextToken();
 		}		
 	}
 
@@ -1043,8 +1043,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 			return true;
 		}
 		howLong=dt*k;
-		arg2=arg3.toUpper();
-		arg3=parser.nextToken();
+		arg2=parser.nextToken().toUpper();
 	}
 
 	AListItem item;
@@ -1054,9 +1053,10 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	if (arg2=="!")
 	{
 		item.setInvert(true);
-		arg2=arg3.toUpper();
-		arg3=parser.nextToken();
+		arg2=parser.nextToken().toUpper();
 	}
+	
+	qDebug() << "1: " << arg2;
 	
 	if (arg2=="NICK" || arg2=="BODY" || arg2=="RES")
 	{
@@ -1067,23 +1067,24 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		else if (arg2=="RES")
 			item.setMatcherType(AListItem::MatcherResource);
 
-		arg2=arg3.toUpper();
-		arg3=parser.nextToken();
+		arg2=parser.nextToken().toUpper();
 	} 
 	else if (arg2=="JID")
 	{
 		item.setMatcherType(AListItem::MatcherJid);
-		arg2=arg3.toUpper();
-		arg3=parser.nextToken();
+		arg2=parser.nextToken().toUpper();
 	}
 
+	qDebug() << "2: " << arg2;
+	
 	if (arg2=="EXP")
 	{
-		QRegExp exp(arg3);
+		QString expStr=parser.nextToken();
+		QRegExp exp(expStr);
 		if (exp.isValid())
 		{
-			arg2=arg3.toUpper();
-			arg3=parser.nextToken();
+			parser.back();
+			arg2=parser.nextToken().toUpper();
 			item.setTestType(AListItem::TestRegExp);
 		}
 		else
@@ -1095,12 +1096,11 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	else if (arg2=="SUB")
 	{
 		item.setTestType(AListItem::TestSubstring);
-		arg2=arg3.toUpper();
-		arg3=parser.nextToken();
+		arg2=parser.nextToken().toUpper();
 	}
 	else if (item.matcherType()==AListItem::MatcherJid)
 	{
-		parser.back(2);
+		parser.back(1);
 		QString args=parser.nextToken();
 		QRegExp exp("[^@ ]*@[^ ]*");
 		exp.setMinimal(FALSE);
@@ -1123,6 +1123,8 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		}
 	}
 
+	qDebug() << "3: " << arg2;
+	
 	arg2=arg2.toLower();
 	item.setValue(arg2);
 
@@ -1151,11 +1153,11 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		}
 	}
 	
-	
-	if (!arg3.isEmpty())
+	qDebug() << "4: " << arg2;
+	QString reason=parser.joinBody().trimmed();
+	if (!reason.isEmpty())
 	{
-		parser.back(1);
-		item.setReason(parser.joinBody());
+		item.setReason(reason);
 	}
 	alist->append(item);
 	reply(s, "Updated");
