@@ -10,6 +10,9 @@
 #include "vcardwrapper.h"
 #include "logger.h"
 #include "config/abstractconfigurator.h"
+#include "disco/rootdiscohandler.h"
+#include "disco/identityitem.h"
+#include "disco/featureitem.h"
 
 #include <QtDebug>
 #include <QMetaType>
@@ -61,6 +64,8 @@ GluxiBot::GluxiBot()
 		myRoles->insert(tmp, ROLE_BOTOWNER);
 	}
 /*	myOwners.append(storage->getString("access/owner"));*/
+
+	rootDiscoHandler_=new RootDiscoHandler(this);
 	
 	myAsyncRequests=new AsyncRequestList();
 	PluginLoader::loadPlugins(&myPlugins,this);
@@ -176,6 +181,13 @@ void GluxiBot::handleIq(const MyStanza& st)
 
 	qDebug() << "[IN ] " << s->xml().data();
 
+	gloox::Stanza* iqReply=rootDiscoHandler_->handleDiscoRequest(s);
+	if (iqReply)
+	{
+		myGloox->send(iqReply);
+		return;
+	} 
+	
 	BasePlugin *plugin;
 	plugin=pluginByStanzaId(s);
 	if (plugin)
@@ -192,7 +204,10 @@ void GluxiBot::handleIq(const MyStanza& st)
 		if (plugin->canHandleIq(s))
 		{
 			if (plugin->onIq(s))
+			{
+				qDebug() << "IQ handled by " << plugin->name();
 				return;
+			}
 		}
 	}
 	gloox::Stanza* errStanza=gloox::Stanza::createIqStanza(s->from(),s->id(),gloox::StanzaIqError,s->xmlns());
@@ -239,6 +254,21 @@ QString GluxiBot::getJID(gloox::Stanza* s, const QString& nick)
 		{
 			return jid;
 		}
+	}
+	return QString::null;
+}
+
+QString GluxiBot::getBotJID(gloox::Stanza* s)
+{
+	QListIterator<BasePlugin*> it(myPlugins);
+	BasePlugin *plugin;
+	while (it.hasNext())
+	{
+		plugin=it.next();
+		assert(plugin);
+		QString jid=plugin->getBotJID(s);
+		if (!jid.isEmpty())
+			return jid;
 	}
 	return QString::null;
 }
@@ -329,4 +359,10 @@ BasePlugin* GluxiBot::pluginByStanzaId(gloox::Stanza* s)
 int GluxiBot::getPriority()
 {
 	return DataStorage::instance()->getInt("account/priority");
+}
+
+void GluxiBot::registerIqHandler(const QString& service)
+{
+	myGloox->addIqHandler(service);
+	//rootDiscoHandler_->rootHandler()->addInfoItem(new FeatureItem(service));
 }

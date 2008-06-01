@@ -20,6 +20,7 @@ class MyStanza;
 class RoleList;
 class VCardWrapper;
 class AbstractConfigurator;
+class RootDiscoHandler;
 
 class gloox::Client;
 class gloox::Stanza;
@@ -54,12 +55,16 @@ public:
 	AbstractConfigurator* getConfigurator(gloox::Stanza* s);
 	bool isMyMessage(gloox::Stanza *);
 	QString getJID(gloox::Stanza*s, const QString&);
+	QString getBotJID(gloox::Stanza*s);
 	QString JIDtoNick(const QString& jid);
 	void onQuit(const QString& reason);
 	int getPriority();
 	QString getMyNick(gloox::Stanza* s);
+	void registerIqHandler(const QString& service);
+	RootDiscoHandler* rootDiscoHandler() { return rootDiscoHandler_; }
 private:
 	GlooxWrapper *myGloox;
+	RootDiscoHandler* rootDiscoHandler_;
 
 	RoleList *myRoles;
 	PluginList myPlugins;

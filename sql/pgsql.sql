@@ -79,3 +79,22 @@ CREATE TABLE words (
   value text NOT NULL,
   PRIMARY KEY (plugin,storage,name,nick)
 );
+
+CREATE TABLE configuration (
+  plugin smallint NOT NULL,
+  storage smallint NOT NULL,
+  name varchar(50) NOT NULL,
+  value varchar(250) NOT NULL,
+  PRIMARY KEY (plugin,storage,name)
+);
+
+CREATE TABLE configuration_fields (
+  plugin smallint NOT NULL,
+  name varchar(50) NOT NULL,
+  priority smallint NOT NULL DEFAULT 0,
+  field_type smallint NOT NULL,
+  description varchar(100) NOT NULL,
+  default_value varchar(250) NULL DEFAULT NULL,
+  PRIMARY KEY (plugin,name)
+);
+

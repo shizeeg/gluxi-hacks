@@ -20,15 +20,25 @@
 #ifndef MUCCONFIGURATOR_H_
 #define MUCCONFIGURATOR_H_
 
-#include "base/config/abstractconfigurator.h"
+#include "base/config/sqlbasedconfigurator.h"
 
-class MucConfigurator: public AbstractConfigurator
+class MucConfigurator: public SqlBasedConfigurator
 {
 public:
-	MucConfigurator(const QString& targetJid);
+	MucConfigurator(const QString& targetJid, StorageKey key);
 	virtual ~MucConfigurator();
-	virtual QList<ConfigField> loadFields();
 	virtual void saveFields(QList<ConfigField> fields);
+	
+	bool isApplyAlistsToMembers() const { return applyAlistsToMembers_; }
+	bool isCheckAlistsEveryPresence() const { return checkAlistsEveryPresence_; }
+	bool isDevoiceNoVCard() const { return devoiceNoVCard_; }
+	QString devoiceNoVCardReason() const { return devoiceNoVCardReason_; }
+private:
+	bool applyAlistsToMembers_;
+	bool checkAlistsEveryPresence_;
+	bool devoiceNoVCard_;
+	QString devoiceNoVCardReason_;
+	void parse();
 	
 };
 

@@ -12,6 +12,9 @@
 #include "base/datastorage.h"
 #include "base/rolelist.h"
 #include "base/messageparser.h"
+#include "base/asyncrequest.h"
+#include "base/asyncrequestlist.h"
+#include "base/vcardwrapper.h"
 
 #include <QtDebug>
 #include <QRegExp>
@@ -28,7 +31,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 			<< "KICK" << "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN"
 			<< "BANJID" << "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
 	commands << "ABAN" << "AKICK" << "AVISITOR" << "ACMD" << "AMODERATOR" << "AFIND"
-			<< "SEEN" << "CLIENTS" << "SETNICK";
+			<< "SEEN" << "CLIENTS" << "SETNICK" << "CHECKVCARD";
 	commands << "HERE";
 	pluginId=1;
 	lazyOffline=DataStorage::instance()->getInt("muc/lazyoffline");
@@ -194,9 +197,9 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		confFull=confInProgress[ps];;
 
 		conf=new Conference(confFull.section('/',0,0),confFull.section('/',1,1), lazyOffline);
-		qDebug() << conf->name();
+		MucConfigurator* configurator=new MucConfigurator(confFull,StorageKey(pluginId, conf->id()));
+		conf->setConfigurator(configurator);
 		conferences.append(conf);
-		qDebug() << confInProgress;
 		confInProgress.removeAt(ps);
 
 		if (lazyOffline)
@@ -221,13 +224,15 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		}
 
 	}
-
+	
+	bool newNick=false;
 	if (!n)
 	{
 		qDebug() << "MUC::handlePresence: new Nick";
 		if (role=="none" || type=="unavailable")
 			return;
 
+		newNick=true;
 		n=new Nick(conf, nick,getItem(s,"jid"));
 		conf->nicks()->append(n);
 		
@@ -286,7 +291,11 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		 }
 		 */
 		conf->removeExpired();
-		checkMember(s, conf, n);
+		if (newNick || conf->configurator()->isCheckAlistsEveryPresence())
+			checkMember(s, conf, n);
+		
+		if (newNick && conf->configurator()->isDevoiceNoVCard())
+			requestVCard(s, conf, n);
 	}
 }
 
@@ -452,7 +461,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		reply(s, nickInfo);
 		return true;
 	}
-
+	
 	if (cmd=="IDLE")
 	{
 		Nick *n=getNickVerbose(s, arg);
@@ -462,6 +471,16 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		return true;
 	}
 
+	if (cmd=="CHECKVCARD")
+	{
+		Nick *n=getNick(s);
+		if (!n)
+			return true;
+		requestVCard(s,conf,n);
+		reply(s,"Ok");
+		return true;
+	}
+	
 	if (cmd=="SEEN")
 	{
 		reply(s, conf->seen(arg));
@@ -1243,7 +1262,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 
 	QString aff=n->affiliation().toUpper();
 	AListItem* item;
-	if ((aff!="OWNER") && !aff.startsWith("ADMIN") && aff!="MEMBER")
+	if (((aff!="OWNER") && !aff.startsWith("ADMIN") && aff!="MEMBER")|| c->configurator()->isApplyAlistsToMembers())
 	{
 		if (item=aFind(c->aban(), n, s))
 		{
@@ -1327,10 +1346,10 @@ AbstractConfigurator* MucPlugin::getConfigurator(gloox::Stanza* s)
 	Conference* conf=getConf(s);
 	if (!conf)
 		return 0;
-	if (getRole(s)<ROLE_OWNER)
+	if (getRole(s)<ROLE_ADMIN)
 		return 0;
 	
-	return new MucConfigurator(conf->name()+"/"+conf->nick());
+	return conf->configurator();
 }
 
 QString MucPlugin::getJID(gloox::Stanza*s, const QString& n)
@@ -1339,11 +1358,20 @@ QString MucPlugin::getJID(gloox::Stanza*s, const QString& n)
 	Nick* nick=getNick(s, n);
 	if (!nick)
 		return QString::null;
-		Conference *conf=nick->conference();
-		if (!conf)
+	Conference *conf=nick->conference();
+	if (!conf)
 		return QString::null;
-		return QString("%1/%2").arg(conf->name()).arg(nick->nick());
-	}
+	return QString("%1/%2").arg(conf->name()).arg(nick->nick());
+}
+
+QString MucPlugin::getBotJID(gloox::Stanza* s)
+{
+	Conference* conf=getConf(s);
+	if (!conf)
+		return QString::null;
+
+	return QString("%1/%2").arg(conf->name()).arg(conf->nick());
+}
 
 QString MucPlugin::JIDtoNick(const QString& jid)
 {
@@ -1453,4 +1481,63 @@ QString MucPlugin::expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QS
 		}
 	}
 	return msg;
+}
+
+void MucPlugin::requestVCard(gloox::Stanza* s, Conference* conf, Nick* nick)
+{
+	if (nick->jidStr().isEmpty())
+		return;
+	
+	QString jid=conf->name()+"/"+nick->nick();
+	QString vcardId=bot()->client()->fetchVCard(jid);
+	gloox::Stanza *sf=new gloox::Stanza(s);
+	sf->addAttribute("id", QString("muc_vcard_%1").arg(vcardId).toStdString());
+	sf->addAttribute("gluxi_jid", nick->jidStr().toStdString());
+	AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
+	req->setName("muc::vcard: "+jid);
+	bot()->asyncRequests()->append(req);
+}
+
+bool MucPlugin::onVCard(const VCardWrapper& vcardWrapper)
+{
+	const gloox::JID jid=vcardWrapper.jid();
+	gloox::VCard vcard=gloox::VCard(vcardWrapper.vcard());
+
+	qDebug() << "Got vcard: "+vcardWrapper.id();
+	QString jidStr=QString::fromStdString(jid.full());
+	QString reqId=QString("muc_vcard_%1").arg(vcardWrapper.id());
+	AsyncRequest* req=bot()->asyncRequests()->byStanzaId(reqId);
+	if (req==0l)
+	{
+		return false;
+	}
+	
+	gloox::Stanza* src=req->stanza();
+	Conference* conf=getConf(src);
+	Nick* nick=getNick(src);
+	QString stored_jid=QString::fromStdString(src->findAttribute("gluxi_jid"));
+	
+	if (conf && nick && stored_jid==nick->jidStr())
+	{
+		if (vcardWrapper.isEmpty() || vcardWrapper.vcardStr().isEmpty())
+		{
+			if (conf->configurator()->isDevoiceNoVCard())
+			{
+				reply(src, conf->configurator()->devoiceNoVCardReason(),true, true);
+				setRole(conf, nick, "visitor","");
+				nick->setDevoicedNoVCard(true);
+			}
+		}
+		else
+		{
+			if (nick->isDevoicedNoVCard() && conf->configurator()->isDevoiceNoVCard() && nick->role().toUpper()=="VISITOR")
+			{
+				setRole(conf, nick, "participant","");
+				nick->setDevoicedNoVCard(false);
+			}
+		}
+	}
+	delete req;
+	bot()->asyncRequests()->removeAll(req);
+	return true;
 }

@@ -19,23 +19,35 @@
  ***************************************************************************/
 #include "mucconfigurator.h"
 
-MucConfigurator::MucConfigurator(const QString& targetJid)
-	: AbstractConfigurator(targetJid)
+MucConfigurator::MucConfigurator(const QString& targetJid, StorageKey key)
+	: SqlBasedConfigurator(targetJid, key)
 {
+	parse();
 }
 
 MucConfigurator::~MucConfigurator()
 {
 }
 
-QList<ConfigField> MucConfigurator::loadFields()
-{
-	QList<ConfigField> fields;
-	fields << ConfigField(ConfigField::FIELDTYPE_TEXT,"field1","this is field 1", "value1");
-	fields << ConfigField(ConfigField::FIELDTYPE_TEXT,"field2","this is field 2", "value2");
-	fields << ConfigField(ConfigField::FIELDTYPE_TEXT,"field3","this is field 3", "value3");
-	return fields;
-}
 void MucConfigurator::saveFields(QList<ConfigField> fields)
 {
+	SqlBasedConfigurator::saveFields(fields);
+	parse();
+}
+
+void MucConfigurator::parse()
+{
+	QList<ConfigField> fields=loadFields();
+	for (QList<ConfigField>::iterator it=fields.begin(); it!=fields.end(); ++it)
+	{
+		ConfigField field=*it;
+		if (field.name()=="alists_members")
+			applyAlistsToMembers_=field.boolValue();
+		if (field.name()=="alists_every_presence")
+			checkAlistsEveryPresence_=field.boolValue();
+		if (field.name()=="devoice_no_vcard")
+			devoiceNoVCard_=field.boolValue();
+		if (field.name()=="devoice_no_vcard_reason")
+			devoiceNoVCardReason_=field.value();
+	}
 }

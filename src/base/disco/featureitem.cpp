@@ -17,33 +17,21 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef CONFIGPLUGIN_H
-#define CONFIGPLUGIN_H
+#include "featureitem.h"
 
-#include "base/baseplugin.h"
-#include "base/config/configfield.h"
-#include "base/disco/discohandler.h"
+#include <gloox/tag.h>
 
-#include <gloox/stanza.h>
-
-/**
-	@author Dmitry Nezhevenko <dion@inhex.net>
-*/
-class ConfigPlugin : public BasePlugin, public DiscoHandler
+FeatureItem::FeatureItem(const QString& var)
 {
-	Q_OBJECT
-public:
-	ConfigPlugin(GluxiBot *parent = 0);
-	~ConfigPlugin();
-	virtual QString name() const { return "Config"; };
-	virtual QString prefix() const { return "CONFIG"; };
-	virtual bool parseMessage(gloox::Stanza* );
-	virtual gloox::Stanza* handleDiscoRequest(gloox::Stanza* s, const QString& jid);
-private:
-	gloox::Tag* createCommandTag(const QString& nodePart, const QString& name, const QString& jid);
-	gloox::Tag* createFieldTag(const ConfigField& field);
-	ConfigField createConfigFieldFromTag(gloox::Tag* tag);
-	QString fieldTypeToString(ConfigField::FieldType fieldType);
-};
+	var_=var;
+}
 
-#endif
+FeatureItem::~FeatureItem()
+{
+}
+
+gloox::Tag* FeatureItem::infoTag()
+{
+	gloox::Tag* tag=new gloox::Tag("feature", "var", var_.toStdString(), false);
+	return tag;
+}

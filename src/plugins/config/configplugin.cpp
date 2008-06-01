@@ -3,6 +3,9 @@
 #include "base/gluxibot.h"
 #include "base/glooxwrapper.h"
 #include "base/config/abstractconfigurator.h"
+#include "base/disco/rootdiscohandler.h"
+#include "base/disco/featureitem.h"
+#include "base/disco/identityitem.h"
 
 #include <gloox/stanza.h>
 #include <list>
@@ -10,15 +13,21 @@
 #include <QtDebug>
 #include <QTime>
 
+#define GLUXI_CONFIG_NODE "http://gluxi.inhex.net/node/config"
+
 ConfigPlugin::ConfigPlugin(GluxiBot *parent) :
-	BasePlugin(parent)
+	BasePlugin(parent),  DiscoHandler(GLUXI_CONFIG_NODE,"", "Configuration")
 {
-	bot()->client()->registerIqHandler("http://jabber.org/protocol/disco#info");
-	bot()->client()->registerIqHandler("http://jabber.org/protocol/commands");
+	bot()->registerIqHandler("http://jabber.org/protocol/disco#info");
+	bot()->registerIqHandler("http://jabber.org/protocol/commands");
+	bot()->rootDiscoHandler()->registerDiscoHandler(this);
+	addInfoItem(new FeatureItem("http://jabber.org/protocol/commands"));
+	addInfoItem(new IdentityItem("automation", "command-node", "Configuration"));
 }
 
 ConfigPlugin::~ConfigPlugin()
 {
+	bot()->rootDiscoHandler()->unregisterDiscoHandler(this);
 }
 
 bool ConfigPlugin::parseMessage(gloox::Stanza* s)
@@ -31,52 +40,19 @@ bool ConfigPlugin::parseMessage(gloox::Stanza* s)
 	return false;
 }
 
-bool ConfigPlugin::canHandleIq(gloox::Stanza* s)
+gloox::Stanza* ConfigPlugin::handleDiscoRequest(gloox::Stanza* s, const QString& jid)
 {
-	return true;
-}
-
-bool ConfigPlugin::onIq(gloox::Stanza* s)
-{
+	gloox::Stanza* res=0;
+	if (res=DiscoHandler::handleDiscoRequest(s, jid))
+		return res;
+	
 	AbstractConfigurator* config=bot()->getConfigurator(s);
 	if (!config)
-		return false;
+		return 0;
 	
-	if (s->subtype() == gloox::StanzaIqGet)
-	{
-		gloox::Tag* queryTag=s->findChild("query");
-		if (queryTag==0)
-			return false;
-		
-		if (s->xmlns() == "http://jabber.org/protocol/disco#info")
-		{
-			//Notify about commands support
-			gloox::Stanza* out=gloox::Stanza::createIqStanza(s->from(),s->id(),gloox::StanzaIqResult,"http://jabber.org/protocol/disco#info");
-			queryTag=out->findChild("query");
-			if (queryTag==0)
-				return false;
-			queryTag->addChild(new gloox::Tag("feature","var","http://jabber.org/protocol/commands",false));
-			out->finalize();
-			bot()->client()->send(out);
-			return true;
-		}
-		if (s->xmlns() == "http://jabber.org/protocol/disco#items" && s->findChild("query","node","http://jabber.org/protocol/commands"))
-		{
-			qDebug() << "Report command list";
-			gloox::Stanza* out=gloox::Stanza::createIqStanza(s->from(),s->id(),gloox::StanzaIqResult,"http://jabber.org/protocol/disco#items");
-			queryTag=out->findChild("query");
-			if (queryTag==0)
-				return false;
-			
-			queryTag->addChild(createCommandTag("config","Configuration",config->targetJid()));
-			
-			out->finalize();
-			bot()->client()->send(out);
-		}
-	}
 	if (s->subtype()==gloox::StanzaIqSet || s->subtype() == gloox::StanzaIqGet)
-	{
-		gloox::Tag* incCmdTag=s->findChild("command","node","http://jabber.org/protocol/rc#config");
+	{		
+		gloox::Tag* incCmdTag=s->findChild("command","node", GLUXI_CONFIG_NODE);
 		if (incCmdTag)
 		{
 			gloox::Tag* xTag=incCmdTag->findChild("x");
@@ -85,9 +61,9 @@ bool ConfigPlugin::onIq(gloox::Stanza* s)
 			bool isCancel=(action=="cancel");
 			
 			gloox::Stanza* st=gloox::Stanza::createIqStanza(s->from(),s->id(),gloox::StanzaIqResult);
-			gloox::Tag *cmdTag=new gloox::Tag("command");
-			cmdTag->addAttribute("xmlns","http://jabber.org/protocol/commands");
-			cmdTag->addAttribute("node","http://jabber.org/protocol/rc#config");
+			gloox::Tag *cmdTag=new gloox::Tag(incCmdTag->name());
+			cmdTag->addAttribute("xmlns",cmdTag->findAttribute("xmlns"));
+			cmdTag->addAttribute("node",GLUXI_CONFIG_NODE);
 			cmdTag->addAttribute("sessionid",s->id());
 			
 			if (isCancel)
@@ -116,8 +92,8 @@ bool ConfigPlugin::onIq(gloox::Stanza* s)
 					gloox::Tag *xTag=new gloox::Tag("x");
 					xTag->addAttribute("xmlns","jabber:x:data");
 					xTag->addAttribute("type","form");
-					xTag->addChild(new gloox::Tag("title","Form title"));
-					xTag->addChild(new gloox::Tag("instructions","Manual how to fill"));
+					xTag->addChild(new gloox::Tag("title","Configuration"));
+					xTag->addChild(new gloox::Tag("instructions","Please fill all fields"));
 					QList<ConfigField> fields=config->loadFields();
 					for (QList<ConfigField>::iterator it=fields.begin(); it!=fields.end(); ++it)
 					{
@@ -128,11 +104,10 @@ bool ConfigPlugin::onIq(gloox::Stanza* s)
 			}
 			st->addChild(cmdTag);
 			st->finalize();
-			qDebug() << QString::fromStdString(st->xml());
-			bot()->client()->send(st);
-			return true;
+			return st;
 		}
 	}
+	return 0;
 }
 
 gloox::Tag* ConfigPlugin::createCommandTag(const QString& nodePart, const QString& name, const QString& jid)
@@ -163,7 +138,7 @@ QString ConfigPlugin::fieldTypeToString(ConfigField::FieldType fieldType)
 	case ConfigField::FIELDTYPE_TEXT:
 		return "text-single";
 	case ConfigField::FIELDTYPE_CHECKBOX:
-		return "checkbox";
+		return "boolean";
 	}
 	return QString();
 }

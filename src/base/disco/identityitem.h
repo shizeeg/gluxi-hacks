@@ -17,33 +17,23 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef CONFIGPLUGIN_H
-#define CONFIGPLUGIN_H
+#ifndef IDENTITYITEM_H_
+#define IDENTITYITEM_H_
 
-#include "base/baseplugin.h"
-#include "base/config/configfield.h"
-#include "base/disco/discohandler.h"
+#include "infoitem.h"
 
-#include <gloox/stanza.h>
+#include <QString>
 
-/**
-	@author Dmitry Nezhevenko <dion@inhex.net>
-*/
-class ConfigPlugin : public BasePlugin, public DiscoHandler
+class IdentityItem: public InfoItem
 {
-	Q_OBJECT
 public:
-	ConfigPlugin(GluxiBot *parent = 0);
-	~ConfigPlugin();
-	virtual QString name() const { return "Config"; };
-	virtual QString prefix() const { return "CONFIG"; };
-	virtual bool parseMessage(gloox::Stanza* );
-	virtual gloox::Stanza* handleDiscoRequest(gloox::Stanza* s, const QString& jid);
+	IdentityItem(const QString& category=QString(), const QString& type=QString(), const QString& name=QString());
+	virtual ~IdentityItem();
+	virtual gloox::Tag* infoTag();
 private:
-	gloox::Tag* createCommandTag(const QString& nodePart, const QString& name, const QString& jid);
-	gloox::Tag* createFieldTag(const ConfigField& field);
-	ConfigField createConfigFieldFromTag(gloox::Tag* tag);
-	QString fieldTypeToString(ConfigField::FieldType fieldType);
+	QString category_;
+	QString type_;
+	QString name_;
 };
 
-#endif
+#endif /*IDENTITYITEM_H_*/

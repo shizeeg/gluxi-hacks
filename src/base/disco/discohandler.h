@@ -17,33 +17,44 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef CONFIGPLUGIN_H
-#define CONFIGPLUGIN_H
+#ifndef DISCOHANDLER_H_
+#define DISCOHANDLER_H_
 
-#include "base/baseplugin.h"
-#include "base/config/configfield.h"
-#include "base/disco/discohandler.h"
+#include "infoitem.h"
 
 #include <gloox/stanza.h>
 
-/**
-	@author Dmitry Nezhevenko <dion@inhex.net>
-*/
-class ConfigPlugin : public BasePlugin, public DiscoHandler
+#include <QList>
+#include <QString>
+
+class GluxiBot;
+
+class gloox::Stanza;
+
+class DiscoHandler
 {
-	Q_OBJECT
 public:
-	ConfigPlugin(GluxiBot *parent = 0);
-	~ConfigPlugin();
-	virtual QString name() const { return "Config"; };
-	virtual QString prefix() const { return "CONFIG"; };
-	virtual bool parseMessage(gloox::Stanza* );
+	DiscoHandler(const QString& node=QString(), const QString& parentNode=QString(), const QString& name=QString());
+	virtual ~DiscoHandler();
+	void addInfoItem(InfoItem* item);
+	void addChildHandler(DiscoHandler* handler);
+	void removeChildHandler(DiscoHandler* handler);
+	
 	virtual gloox::Stanza* handleDiscoRequest(gloox::Stanza* s, const QString& jid);
-private:
-	gloox::Tag* createCommandTag(const QString& nodePart, const QString& name, const QString& jid);
-	gloox::Tag* createFieldTag(const ConfigField& field);
-	ConfigField createConfigFieldFromTag(gloox::Tag* tag);
-	QString fieldTypeToString(ConfigField::FieldType fieldType);
+	virtual gloox::Tag* itemTag(const QString& jid);
+	QString node() const { return node_; }
+	QString parentNode() const { return parentNode_; }
+	QString name() const { return name_; }
+	void setBot(GluxiBot* bot) { bot_=bot; }
+protected:
+	QString node_;
+	QString parentNode_;
+	QString name_;
+	QList<InfoItem*> infoItems_;
+	QList<DiscoHandler*> childDiscoHandlers_;
+	GluxiBot* bot_;
+	gloox::Stanza* handleDiscoInfoRequest(gloox::Stanza* s, const QString& jid);
+	gloox::Stanza* handleDiscoItemsRequest(gloox::Stanza* s, const QString& jid);
 };
 
-#endif
+#endif /*DISCOHANDLER_H_*/

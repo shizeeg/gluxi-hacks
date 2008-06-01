@@ -25,7 +25,7 @@ namespace gloox
 
   class ClientBase;
   class VCard;
-  class VCardHandler;
+  class MyVCardHandler;
 
   /**
    * @brief A VCardManager can be used to fetch an entities VCard as well as for setting
@@ -120,7 +120,7 @@ namespace gloox
        * @param jid The entity's JID.
        * @param vch The VCardHandler that will receive the result of the VCard fetch.
        */
-      void fetchVCard( const JID& jid, VCardHandler *vch );
+      std::string fetchVCard( const JID& jid, MyVCardHandler *vch );
 
       /**
        * Use this function to store or update your own VCard on the server. Remember to
@@ -130,7 +130,7 @@ namespace gloox
        * @param vcard Your VCard to store.
        * @param vch The VCardHandler that will receive the result of the VCard store.
        */
-      void storeVCard( const VCard *vcard, VCardHandler *vch );
+      void storeVCard( const VCard *vcard, MyVCardHandler *vch );
 
       /**
        * Use this function, e.g. from your VCardHandler-derived class's dtor, to cancel any
@@ -139,7 +139,7 @@ namespace gloox
        * @param vch The VCardHandler to remove from any queues.
        * @since 0.9
        */
-      void cancelVCardOperations( VCardHandler *vch );
+      void cancelVCardOperations( MyVCardHandler *vch );
 
       // reimplemented from IqHandler
       virtual bool handleIq( Stanza *stanza );
@@ -148,7 +148,7 @@ namespace gloox
       virtual bool handleIqID( Stanza *stanza, int context );
 
     private:
-      typedef std::map<std::string, VCardHandler*> TrackMap;
+      typedef std::map<std::string, MyVCardHandler*> TrackMap;
       ClientBase *m_parent;
       TrackMap m_trackMap;
 

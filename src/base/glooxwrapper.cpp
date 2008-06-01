@@ -165,14 +165,15 @@ bool GlooxWrapper::handleIqID(gloox::Stanza*, int)
 }
 
 
-void GlooxWrapper::handleVCard(const gloox::JID &jid, gloox::VCard *vcard)
+void GlooxWrapper::handleVCard(const std::string& id, const gloox::JID &jid, gloox::VCard *vcard)
 {
-	emit sigVCard(VCardWrapper(jid, vcard)); 
+	emit sigVCard(VCardWrapper(id, jid, vcard)); 
 }
 
-void GlooxWrapper::handleVCardResult(VCardContext context, const gloox::JID &jid,
+void GlooxWrapper::handleVCardResult(const std::string& id, VCardContext context, const gloox::JID &jid,
 		gloox::StanzaError se)
 {
+	sigVCard(VCardWrapper(id, jid, 0));
 }
 
 // Thread-safe members
@@ -190,7 +191,7 @@ void GlooxWrapper::send(gloox::Stanza* s)
 	myClient->send(s);
 }
 
-void GlooxWrapper::registerIqHandler(const QString& service)
+void GlooxWrapper::addIqHandler(const QString& service)
 {
 	QMutexLocker locker(&mutex);
 	myClient->registerIqHandler(this,service.toStdString());
@@ -208,10 +209,10 @@ gloox::JID GlooxWrapper::jid()
 	return myClient->jid();
 }
 
-void GlooxWrapper::fetchVCard(const QString& jid) 
+QString GlooxWrapper::fetchVCard(const QString& jid) 
 {
 	QMutexLocker locker(&mutex);
-	vcardManager->fetchVCard(gloox::JID(jid.toStdString()),this);
+	return QString::fromStdString(vcardManager->fetchVCard(gloox::JID(jid.toStdString()),this));
 }
 
 void GlooxWrapper::setPresence(gloox::Presence presence, const QString& status,

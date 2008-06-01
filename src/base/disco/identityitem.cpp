@@ -17,33 +17,24 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef CONFIGPLUGIN_H
-#define CONFIGPLUGIN_H
+#include "identityitem.h"
 
-#include "base/baseplugin.h"
-#include "base/config/configfield.h"
-#include "base/disco/discohandler.h"
-
-#include <gloox/stanza.h>
-
-/**
-	@author Dmitry Nezhevenko <dion@inhex.net>
-*/
-class ConfigPlugin : public BasePlugin, public DiscoHandler
+IdentityItem::IdentityItem(const QString& category, const QString& type, const QString& name)
 {
-	Q_OBJECT
-public:
-	ConfigPlugin(GluxiBot *parent = 0);
-	~ConfigPlugin();
-	virtual QString name() const { return "Config"; };
-	virtual QString prefix() const { return "CONFIG"; };
-	virtual bool parseMessage(gloox::Stanza* );
-	virtual gloox::Stanza* handleDiscoRequest(gloox::Stanza* s, const QString& jid);
-private:
-	gloox::Tag* createCommandTag(const QString& nodePart, const QString& name, const QString& jid);
-	gloox::Tag* createFieldTag(const ConfigField& field);
-	ConfigField createConfigFieldFromTag(gloox::Tag* tag);
-	QString fieldTypeToString(ConfigField::FieldType fieldType);
-};
+	category_=category;
+	type_=type;
+	name_=name;
+}
 
-#endif
+IdentityItem::~IdentityItem()
+{
+}
+
+gloox::Tag* IdentityItem::infoTag()
+{
+	gloox::Tag* tag=new gloox::Tag("identity");
+	tag->addAttribute("category", category_.toStdString());
+	tag->addAttribute("type",type_.toStdString());
+	tag->addAttribute("name", name_.toStdString());
+	return tag;
+}

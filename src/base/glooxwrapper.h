@@ -13,7 +13,7 @@
 #include <gloox/messagehandler.h>
 #include <gloox/iqhandler.h>
 #include <gloox/discohandler.h>
-#include <gloox/vcardhandler.h>
+#include "gloox/myvcardhandler.h"
 #include "gloox/myvcardmanager.h"
 
 class gloox::Client;
@@ -21,7 +21,7 @@ class gloox::Stanza;
 class MyStanza;
 
 class GlooxWrapper: public QThread, gloox::ConnectionListener, gloox::PresenceHandler, gloox::MessageHandler, 
-	public gloox::IqHandler, public gloox::DiscoHandler, public gloox::VCardHandler
+	public gloox::IqHandler, public gloox::DiscoHandler, public gloox::MyVCardHandler
 {
 	Q_OBJECT
 public:
@@ -33,8 +33,8 @@ public:
 	// These members should be thread-safe
 	void disconnect();
 	void send(gloox::Stanza* s);
-	void registerIqHandler(const QString& service);
-	void fetchVCard(const QString& jid);
+	void addIqHandler(const QString& service);
+	QString fetchVCard(const QString& jid);
 	void setPresence(gloox::Presence presence, const QString& status, int priority);
 	void setPresence(const QString& jid, gloox::Presence presence, const QString& status);
 	gloox::MyVCardManager* getVCardManager() { return vcardManager; }
@@ -57,8 +57,8 @@ private:
 	virtual void onConnect();
 	virtual void onDisconnect( gloox::ConnectionError e);
 	virtual bool onTLSConnect( const gloox::CertInfo& );
-	virtual void handleVCard (const gloox::JID &jid, gloox::VCard *vcard);
-	virtual void handleVCardResult (VCardContext context, 
+	virtual void handleVCard (const std::string& id, const gloox::JID &jid, gloox::VCard *vcard);
+	virtual void handleVCardResult (const std::string& id, MyVCardHandler::VCardContext context, 
 			const gloox::JID &jid, gloox::StanzaError se=gloox::StanzaErrorUndefined);
 	
 signals:

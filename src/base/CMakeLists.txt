@@ -21,9 +21,18 @@ set (base_HDR
 	vcardwrapper.h
 	gloox/myvcardmanager.h
 	logger.h
+	
+	disco/discohandler.h
+	disco/identityitem.h
+	disco/featureitem.h
+	disco/infoitem.h
+	disco/rootdiscohandler.h
+	
 	config/storagekey.h
 	config/configfield.h
 	config/abstractconfigurator.h
+	config/configupdateobserver.h
+	config/sqlbasedconfigurator.h
 	gluxi_version.h
 )
 
@@ -44,9 +53,18 @@ set (base_SRC
 	segfault.c
 	gloox/myvcardmanager.cpp
 	logger.cpp
+	
+	disco/discohandler.cpp
+	disco/identityitem.cpp
+	disco/featureitem.cpp
+	disco/infoitem.cpp
+	disco/rootdiscohandler.cpp	
+	
 	config/storagekey.cpp
 	config/configfield.cpp
 	config/abstractconfigurator.cpp
+	config/configupdateobserver.cpp
+	config/sqlbasedconfigurator.cpp
 	${HG_VERSION_FILE}
 )
 

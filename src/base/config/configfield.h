@@ -45,6 +45,7 @@ public:
 	void setName(const QString& name) { name_=name; }
 	void setDescription(const QString& description) { description_=description; }
 	void setValue(const QString& value) { value_=value; }
+	bool boolValue() const;
 private:
 	FieldType type_;
 	QString name_;
