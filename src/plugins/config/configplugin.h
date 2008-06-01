@@ -22,13 +22,14 @@
 
 #include "base/baseplugin.h"
 #include "base/config/configfield.h"
+#include "base/disco/discohandler.h"
 
 #include <gloox/stanza.h>
 
 /**
 	@author Dmitry Nezhevenko <dion@inhex.net>
 */
-class ConfigPlugin : public BasePlugin 
+class ConfigPlugin : public BasePlugin, public DiscoHandler
 {
 	Q_OBJECT
 public:
@@ -37,8 +38,7 @@ public:
 	virtual QString name() const { return "Config"; };
 	virtual QString prefix() const { return "CONFIG"; };
 	virtual bool parseMessage(gloox::Stanza* );
-	virtual bool canHandleIq(gloox::Stanza*);
-	virtual bool onIq(gloox::Stanza*);
+	virtual gloox::Stanza* handleDiscoRequest(gloox::Stanza* s, const QString& jid);
 private:
 	gloox::Tag* createCommandTag(const QString& nodePart, const QString& name, const QString& jid);
 	gloox::Tag* createFieldTag(const ConfigField& field);

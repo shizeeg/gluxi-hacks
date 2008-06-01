@@ -61,7 +61,7 @@ public:
 	int getPriority();
 	QString getMyNick(gloox::Stanza* s);
 	void registerIqHandler(const QString& service);
-	RootDiscoHandler* getRootDiscoHandler() { return rootDiscoHandler_; }
+	RootDiscoHandler* rootDiscoHandler() { return rootDiscoHandler_; }
 private:
 	GlooxWrapper *myGloox;
 	RootDiscoHandler* rootDiscoHandler_;

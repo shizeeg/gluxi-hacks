@@ -185,9 +185,8 @@ void GluxiBot::handleIq(const MyStanza& st)
 	if (iqReply)
 	{
 		myGloox->send(iqReply);
-		qDebug() << "--- disco iq handled";
 		return;
-	}
+	} 
 	
 	BasePlugin *plugin;
 	plugin=pluginByStanzaId(s);

@@ -97,10 +97,9 @@ gloox::Stanza* DiscoHandler::handleDiscoItemsRequest(gloox::Stanza* s, const QSt
 		return false;
 	gloox::Stanza* out=gloox::Stanza::createIqStanza(s->from(),s->id(),gloox::StanzaIqResult,"http://jabber.org/protocol/disco#items");
 	gloox::Tag* queryOut=out->findChild("query");
-	QString toJid=QString::fromStdString(s->to().full());
 	for (QList<DiscoHandler*>::iterator it=childDiscoHandlers_.begin(); it!=childDiscoHandlers_.end(); ++it)
 	{
-		gloox::Tag* sub=(*it)->itemTag(toJid);
+		gloox::Tag* sub=(*it)->itemTag(jid);
 		if (sub)
 			queryOut->addChild(sub);
 	}

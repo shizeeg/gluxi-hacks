@@ -40,7 +40,10 @@ gloox::Stanza* RootDiscoHandler::handleDiscoRequest(gloox::Stanza* s)
 	const QString& jid=bot_->getBotJID(s);
 	gloox::Tag* queryTag=s->findChild("query");
 	if (!queryTag)
+		queryTag=s->findChild("command");
+	if (!queryTag)
 		return false;
+	
 	QString node=QString::fromStdString(queryTag->findAttribute("node"));
 	
 	if (node.isEmpty())
