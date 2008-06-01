@@ -17,6 +17,7 @@ public:
 	const gloox::VCard& vcard() const { return vcard_; }
 	bool isEmpty() const { return empty; }
 	QString id() const {return id_; }
+	QString vcardStr() const;
 private:
 	QString id_;
 	bool empty;

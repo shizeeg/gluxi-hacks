@@ -1527,7 +1527,7 @@ bool MucPlugin::onVCard(const VCardWrapper& vcardWrapper)
 	
 	if (conf && nick && stored_jid==nick->jidStr())
 	{
-		if (vcardWrapper.isEmpty())
+		if (vcardWrapper.isEmpty() || vcardWrapper.vcardStr().isEmpty())
 		{
 			if (conf->configurator()->isDevoiceNoVCard())
 			{
