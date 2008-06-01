@@ -22,14 +22,16 @@
 
 #include <gloox/stanza.h>
 
-DiscoHandler::DiscoHandler(const QString& node, const QString& parentNode, const QString& name, const QString& jid)
+#include <QtDebug>
+
+DiscoHandler::DiscoHandler(const QString& node, const QString& parentNode, const QString& name)
 {
 	node_=node;
 	parentNode_=parentNode;
 	name_=name;
-	jid_=jid;
 	addInfoItem(new FeatureItem("http://jabber.org/protocol/disco#info"));
 	addInfoItem(new FeatureItem("http://jabber.org/protocol/disco#items"));
+	bot_=0;
 }
 
 DiscoHandler::~DiscoHandler()
@@ -43,22 +45,32 @@ void DiscoHandler::addInfoItem(InfoItem* item)
 
 void DiscoHandler::addChildHandler(DiscoHandler* handler)
 {
+	if (childDiscoHandlers_.indexOf(handler)>=0)
+	{
+		qDebug() << "Handler is already registered: " << handler->name();
+		return;
+	}
 	childDiscoHandlers_.append(handler);
 }
 
-gloox::Stanza* DiscoHandler::handleDiscoRequest(gloox::Stanza* s)
+void DiscoHandler::removeChildHandler(DiscoHandler* handler)
+{
+	childDiscoHandlers_.removeAll(handler);
+}
+
+gloox::Stanza* DiscoHandler::handleDiscoRequest(gloox::Stanza* s, const QString& jid)
 {
 	QString xmlns=QString::fromStdString(s->xmlns());
 	if (s->subtype()!=gloox::StanzaIqGet)
 		return 0;
 	if (xmlns=="http://jabber.org/protocol/disco#info")
-		return handleDiscoInfoRequest(s);
+		return handleDiscoInfoRequest(s, jid);
 	if (xmlns=="http://jabber.org/protocol/disco#items")
-			return handleDiscoItemsRequest(s);
+			return handleDiscoItemsRequest(s, jid);
 	return 0;
 }
 
-gloox::Stanza* DiscoHandler::handleDiscoInfoRequest(gloox::Stanza* s)
+gloox::Stanza* DiscoHandler::handleDiscoInfoRequest(gloox::Stanza* s, const QString& jid)
 {
 	gloox::Tag* queryTag=s->findChild("query");
 	if (queryTag==0)
@@ -76,7 +88,7 @@ gloox::Stanza* DiscoHandler::handleDiscoInfoRequest(gloox::Stanza* s)
 	return out;
 }
 
-gloox::Stanza* DiscoHandler::handleDiscoItemsRequest(gloox::Stanza* s)
+gloox::Stanza* DiscoHandler::handleDiscoItemsRequest(gloox::Stanza* s, const QString& jid)
 {
 	gloox::Tag* queryTag=s->findChild("query");
 	if (queryTag==0)
@@ -95,11 +107,11 @@ gloox::Stanza* DiscoHandler::handleDiscoItemsRequest(gloox::Stanza* s)
 	return out;
 }
 
-gloox::Tag* DiscoHandler::itemTag(const QString& defaultJid)
+gloox::Tag* DiscoHandler::itemTag(const QString& jid)
 {
 	gloox::Tag* tag=new gloox::Tag("item");
 	tag->addAttribute("node",node_.toStdString());
 	tag->addAttribute("name",name_.toStdString());
-	tag->addAttribute("jid",(jid_.isEmpty() ? defaultJid : jid_).toStdString());
+	tag->addAttribute("jid", jid.toStdString());
 	return tag;
 }

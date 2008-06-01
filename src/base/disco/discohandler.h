@@ -27,31 +27,34 @@
 #include <QList>
 #include <QString>
 
+class GluxiBot;
+
 class gloox::Stanza;
 
 class DiscoHandler
 {
 public:
-	DiscoHandler(const QString& node=QString(), const QString& parentNode=QString(), const QString& name=QString(), const QString& jid=QString());
+	DiscoHandler(const QString& node=QString(), const QString& parentNode=QString(), const QString& name=QString());
 	virtual ~DiscoHandler();
 	void addInfoItem(InfoItem* item);
 	void addChildHandler(DiscoHandler* handler);
+	void removeChildHandler(DiscoHandler* handler);
 	
-	virtual gloox::Stanza* handleDiscoRequest(gloox::Stanza* s);
-	virtual gloox::Tag* itemTag(const QString& defaultJid);
+	virtual gloox::Stanza* handleDiscoRequest(gloox::Stanza* s, const QString& jid);
+	virtual gloox::Tag* itemTag(const QString& jid);
 	QString node() const { return node_; }
 	QString parentNode() const { return parentNode_; }
 	QString name() const { return name_; }
-	QString jid() const { return jid_; }
+	void setBot(GluxiBot* bot) { bot_=bot; }
 protected:
 	QString node_;
 	QString parentNode_;
 	QString name_;
-	QString jid_;
 	QList<InfoItem*> infoItems_;
 	QList<DiscoHandler*> childDiscoHandlers_;
-	gloox::Stanza* handleDiscoInfoRequest(gloox::Stanza* s);
-	gloox::Stanza* handleDiscoItemsRequest(gloox::Stanza* s);
+	GluxiBot* bot_;
+	gloox::Stanza* handleDiscoInfoRequest(gloox::Stanza* s, const QString& jid);
+	gloox::Stanza* handleDiscoItemsRequest(gloox::Stanza* s, const QString& jid);
 };
 
 #endif /*DISCOHANDLER_H_*/

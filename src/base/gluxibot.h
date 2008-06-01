@@ -55,6 +55,7 @@ public:
 	AbstractConfigurator* getConfigurator(gloox::Stanza* s);
 	bool isMyMessage(gloox::Stanza *);
 	QString getJID(gloox::Stanza*s, const QString&);
+	QString getBotJID(gloox::Stanza*s);
 	QString JIDtoNick(const QString& jid);
 	void onQuit(const QString& reason);
 	int getPriority();

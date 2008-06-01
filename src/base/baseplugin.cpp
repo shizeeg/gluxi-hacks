@@ -230,6 +230,11 @@ QString BasePlugin::getJID(gloox::Stanza*s, const QString& nick)
 	return QString::null;	
 }
 
+QString BasePlugin::getBotJID(gloox::Stanza* s)
+{
+	return QString::null;
+}
+
 QString BasePlugin::JIDtoNick(const QString& /* jid*/)
 {
 	return QString::null;	

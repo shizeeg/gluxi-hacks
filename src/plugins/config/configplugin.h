@@ -28,7 +28,7 @@
 /**
 	@author Dmitry Nezhevenko <dion@inhex.net>
 */
-class ConfigPlugin : public BasePlugin
+class ConfigPlugin : public BasePlugin 
 {
 	Q_OBJECT
 public:

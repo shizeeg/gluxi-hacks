@@ -19,9 +19,13 @@
  ***************************************************************************/
 #include "rootdiscohandler.h"
 #include "identityitem.h"
+#include "../gluxibot.h"
 
-RootDiscoHandler::RootDiscoHandler()
+#include <QDebug>
+
+RootDiscoHandler::RootDiscoHandler(GluxiBot* bot)
 {
+	bot_=bot;
 	rootHandler_=new DiscoHandler("");
 	rootHandler_->addInfoItem(new IdentityItem("client","bot","GluxiBot"));
 }
@@ -32,24 +36,25 @@ RootDiscoHandler::~RootDiscoHandler()
 }
 
 gloox::Stanza* RootDiscoHandler::handleDiscoRequest(gloox::Stanza* s)
-{
+{	
+	const QString& jid=bot_->getBotJID(s);
 	gloox::Tag* queryTag=s->findChild("query");
 	if (!queryTag)
 		return false;
 	QString node=QString::fromStdString(queryTag->findAttribute("node"));
 	
 	if (node.isEmpty())
-		return rootHandler_->handleDiscoRequest(s);
+		return rootHandler_->handleDiscoRequest(s, jid);
 	
 	DiscoHandler* handler=handlersMap_.value(node);
 	if (handler)
-		return handler->handleDiscoRequest(s);
+		return handler->handleDiscoRequest(s, jid);
 	return 0;
 }
 
 void RootDiscoHandler::addIqHandler(const QString& service)
 {
-
+	//TODO: Should we do anything here?
 }
 
 void RootDiscoHandler::registerDiscoHandler(DiscoHandler* handler)
@@ -70,5 +75,15 @@ void RootDiscoHandler::registerDiscoHandler(DiscoHandler* handler)
 
 void RootDiscoHandler::unregisterDiscoHandler(DiscoHandler* handler)
 {
+	if (handler->parentNode().isEmpty())
+	{
+		rootHandler_->removeChildHandler(handler);
+	}
+	else
+	{
+		DiscoHandler* parentHandler=handlersMap_.value(handler->parentNode());
+		if (parentHandler)
+			parentHandler->removeChildHandler(handler);
+	}
 	handlersMap_.remove(handler->node());
 }

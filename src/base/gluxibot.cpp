@@ -65,10 +65,7 @@ GluxiBot::GluxiBot()
 	}
 /*	myOwners.append(storage->getString("access/owner"));*/
 
-	rootDiscoHandler_=new RootDiscoHandler();
-	DiscoHandler* testHandler=new DiscoHandler("node", "", "Some item", "");
-	rootDiscoHandler_->registerDiscoHandler(testHandler);
-	 
+	rootDiscoHandler_=new RootDiscoHandler(this);
 	
 	myAsyncRequests=new AsyncRequestList();
 	PluginLoader::loadPlugins(&myPlugins,this);
@@ -258,6 +255,21 @@ QString GluxiBot::getJID(gloox::Stanza* s, const QString& nick)
 		{
 			return jid;
 		}
+	}
+	return QString::null;
+}
+
+QString GluxiBot::getBotJID(gloox::Stanza* s)
+{
+	QListIterator<BasePlugin*> it(myPlugins);
+	BasePlugin *plugin;
+	while (it.hasNext())
+	{
+		plugin=it.next();
+		assert(plugin);
+		QString jid=plugin->getBotJID(s);
+		if (!jid.isEmpty())
+			return jid;
 	}
 	return QString::null;
 }

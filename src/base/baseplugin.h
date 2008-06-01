@@ -41,6 +41,7 @@ public:
  	virtual bool isMyMessage(gloox::Stanza*s); // TODO: Fix it
  	virtual StorageKey getStorage(gloox::Stanza*s);
 	virtual QString getJID(gloox::Stanza*s, const QString&nick);
+	virtual QString getBotJID(gloox::Stanza* s);
 	virtual QString JIDtoNick(const QString& jid);
 	virtual void onQuit(const QString& reason);			// OnQuit
 	void reply(gloox::Stanza*, const QString&, bool forcePrivate=false, bool quoteNick=true);

@@ -25,10 +25,12 @@
 #include <QList>
 #include <QMap>
 
+class GluxiBot;
+
 class RootDiscoHandler: public DiscoHandler
 {
 public:
-	RootDiscoHandler();
+	RootDiscoHandler(GluxiBot* bot);
 	virtual ~RootDiscoHandler();
 	virtual gloox::Stanza* handleDiscoRequest(gloox::Stanza* s);
 	DiscoHandler* rootHandler() { return rootHandler_; }
@@ -36,7 +38,7 @@ public:
 	void unregisterDiscoHandler(DiscoHandler* handler);
 	void addIqHandler(const QString& service);
 private:
-	 //QList<DiscoHandler*> handlersList_;
+	 GluxiBot* bot_;
 	 QMap<QString, DiscoHandler*> handlersMap_;
 	 DiscoHandler* rootHandler_;
 };

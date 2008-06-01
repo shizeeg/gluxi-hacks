@@ -28,6 +28,7 @@ public:
 	virtual bool isMyMessage(gloox::Stanza*);
 	virtual StorageKey getStorage(gloox::Stanza*s );
 	virtual QString getJID(gloox::Stanza*s, const QString&nick);
+	virtual QString getBotJID(gloox::Stanza* s);
 	virtual QString JIDtoNick(const QString& jid);
 	virtual QString getMyNick(gloox::Stanza* s);
 	virtual QString resolveMyNick(gloox::Stanza* s); 

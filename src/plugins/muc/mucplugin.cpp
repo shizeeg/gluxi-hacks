@@ -1347,11 +1347,20 @@ QString MucPlugin::getJID(gloox::Stanza*s, const QString& n)
 	Nick* nick=getNick(s, n);
 	if (!nick)
 		return QString::null;
-		Conference *conf=nick->conference();
-		if (!conf)
+	Conference *conf=nick->conference();
+	if (!conf)
 		return QString::null;
-		return QString("%1/%2").arg(conf->name()).arg(nick->nick());
-	}
+	return QString("%1/%2").arg(conf->name()).arg(nick->nick());
+}
+
+QString MucPlugin::getBotJID(gloox::Stanza* s)
+{
+	Conference* conf=getConf(s);
+	if (!conf)
+		return QString::null;
+
+	return QString("%1/%2").arg(conf->name()).arg(conf->nick());
+}
 
 QString MucPlugin::JIDtoNick(const QString& jid)
 {
