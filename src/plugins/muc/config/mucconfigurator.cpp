@@ -22,8 +22,28 @@
 MucConfigurator::MucConfigurator(const QString& targetJid, StorageKey key)
 	: SqlBasedConfigurator(targetJid, key)
 {
+	parse();
 }
 
 MucConfigurator::~MucConfigurator()
 {
+}
+
+void MucConfigurator::saveFields(QList<ConfigField> fields)
+{
+	SqlBasedConfigurator::saveFields(fields);
+	parse();
+}
+
+void MucConfigurator::parse()
+{
+	QList<ConfigField> fields=loadFields();
+	for (QList<ConfigField>::iterator it=fields.begin(); it!=fields.end(); ++it)
+	{
+		ConfigField field=*it;
+		if (field.name()=="alists_members")
+			applyAlistsToMembers_=field.boolValue();
+		if (field.name()=="alists_every_presence")
+			checkAlistsEveryPresence_=field.boolValue();		
+	}
 }

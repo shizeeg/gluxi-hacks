@@ -7,6 +7,7 @@
 #include <QStringList>
 
 class AList;
+class MucConfigurator;
 
 class Conference
 {
@@ -38,6 +39,9 @@ public:
 	
 	void loadOnlineNicks();
 	void cleanNonValidNicks();
+
+	MucConfigurator* configurator() const { return configurator_; }
+	void setConfigurator(MucConfigurator* configurator) { configurator_=configurator; }
 private:
 	int myId;
 	bool myLazyLeave;
@@ -53,6 +57,7 @@ private:
 	AList* myVisitor;
 	AList* myModerator;
 	AList* myCommand;
+	MucConfigurator* configurator_;
 };
 
 #endif

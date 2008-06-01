@@ -2,6 +2,7 @@
 #include "alist.h"
 #include "base/common.h"
 #include "base/datastorage.h"
+#include "config/mucconfigurator.h"
 
 #include <QtDebug>
 #include <QSqlQuery>
@@ -102,6 +103,7 @@ Conference::~Conference()
 	delete myVisitor;
 	delete myModerator;
 	delete myCommand;
+	delete configurator_;
 }
 
 QStringList Conference::autoJoinList()

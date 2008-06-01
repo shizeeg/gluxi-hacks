@@ -27,6 +27,15 @@ class MucConfigurator: public SqlBasedConfigurator
 public:
 	MucConfigurator(const QString& targetJid, StorageKey key);
 	virtual ~MucConfigurator();
+	virtual void saveFields(QList<ConfigField> fields);
+	
+	bool isApplyAlistsToMembers() const { return applyAlistsToMembers_; }
+	bool isCheckAlistsEveryPresence() const { return checkAlistsEveryPresence_; }
+private:
+	bool applyAlistsToMembers_;
+	bool checkAlistsEveryPresence_;
+	void parse();
+	
 };
 
 #endif /*MUCCONFIGURATOR_H_*/

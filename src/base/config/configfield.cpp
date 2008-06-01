@@ -46,3 +46,8 @@ ConfigField::ConfigField(const ConfigField& other)
 ConfigField::~ConfigField()
 {
 }
+
+bool ConfigField::boolValue() const
+{
+	return (value_.toInt()>0 || value_.toUpper()=="TRUE");
+}

@@ -194,9 +194,9 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		confFull=confInProgress[ps];;
 
 		conf=new Conference(confFull.section('/',0,0),confFull.section('/',1,1), lazyOffline);
-		qDebug() << conf->name();
+		MucConfigurator* configurator=new MucConfigurator(confFull,StorageKey(pluginId, conf->id()));
+		conf->setConfigurator(configurator);
 		conferences.append(conf);
-		qDebug() << confInProgress;
 		confInProgress.removeAt(ps);
 
 		if (lazyOffline)
@@ -221,13 +221,15 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		}
 
 	}
-
+	
+	bool newNick=false;
 	if (!n)
 	{
 		qDebug() << "MUC::handlePresence: new Nick";
 		if (role=="none" || type=="unavailable")
 			return;
 
+		newNick=true;
 		n=new Nick(conf, nick,getItem(s,"jid"));
 		conf->nicks()->append(n);
 		
@@ -286,7 +288,8 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		 }
 		 */
 		conf->removeExpired();
-		checkMember(s, conf, n);
+		if (newNick || conf->configurator()->isCheckAlistsEveryPresence())
+			checkMember(s, conf, n);
 	}
 }
 
@@ -1251,7 +1254,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 
 	QString aff=n->affiliation().toUpper();
 	AListItem* item;
-	if ((aff!="OWNER") && !aff.startsWith("ADMIN") && aff!="MEMBER")
+	if (((aff!="OWNER") && !aff.startsWith("ADMIN") && aff!="MEMBER")|| c->configurator()->isApplyAlistsToMembers())
 	{
 		if (item=aFind(c->aban(), n, s))
 		{
@@ -1338,7 +1341,7 @@ AbstractConfigurator* MucPlugin::getConfigurator(gloox::Stanza* s)
 	if (getRole(s)<ROLE_ADMIN)
 		return 0;
 	
-	return new MucConfigurator(conf->name()+"/"+conf->nick(),StorageKey(pluginId, conf->id()));
+	return conf->configurator();
 }
 
 QString MucPlugin::getJID(gloox::Stanza*s, const QString& n)
