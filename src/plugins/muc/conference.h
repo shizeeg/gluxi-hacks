@@ -23,6 +23,7 @@ public:
 	bool validated() const { return myValidated; }
 
 	static QStringList autoJoinList(); // List conferences to autojoin
+	static QStringList autoLeaveList(); // List 'died' conferences to leave 
 	void setAutoJoin(bool b);
 	void removeExpired();
 

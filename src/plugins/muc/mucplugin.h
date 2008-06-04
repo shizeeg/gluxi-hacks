@@ -65,6 +65,8 @@ private:
 	bool warnImOwner(gloox::Stanza* s);
 	QString expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QString& s, const AListItem* item=0);
 	void requestVCard(gloox::Stanza* s, Conference* conf, Nick* nick);
+private slots:
+	void sltAutoLeaveTimerTimeout();
 };
 
 #endif

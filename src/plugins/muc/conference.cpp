@@ -250,3 +250,33 @@ void Conference::cleanNonValidNicks()
 	}
 	removeList.clear();
 }
+
+QStringList Conference::autoLeaveList()
+{
+	QStringList res;
+	int deltaTime=DataStorage::instance()->getInt("muc/leave_minjids_interval");
+	int minJids=DataStorage::instance()->getInt("muc/leave_minjids");
+	QSqlQuery query=DataStorage::instance()
+				->prepareQuery("select conferences.name,"
+				" (select count(distinct jid) from conference_nicks"
+				" where conference_nicks.conference_id=conferences.id and"
+				" lastaction > ?) as cnt"
+				" from conferences where autojoin=true and online=true order by cnt");
+	QDateTime currentDate=QDateTime::currentDateTime();
+	currentDate=currentDate.addSecs(-deltaTime);
+	query.addBindValue(currentDate);
+	if (!query.exec())
+	{
+		qDebug() << query.lastError().text();
+		return res;
+	}
+	while (query.next())
+	{
+		QString name=query.value(0).toString();
+		int cnt=query.value(1).toInt();
+		if (cnt>=minJids)
+			break;
+		res.append(QString("%1 %2").arg(cnt).arg(name));
+	}
+	return res;
+}

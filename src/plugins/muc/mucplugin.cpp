@@ -18,6 +18,7 @@
 
 #include <QtDebug>
 #include <QRegExp>
+#include <QTimer>
 
 #include <iostream>
 
@@ -35,6 +36,16 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 	commands << "HERE";
 	pluginId=1;
 	lazyOffline=DataStorage::instance()->getInt("muc/lazyoffline");
+	
+	int leaveCheckInterval=DataStorage::instance()->getInt("muc/leave_checkinterval");
+	if (leaveCheckInterval>0)
+	{
+		leaveCheckInterval*=1000;
+		QTimer* timer=new QTimer(this);
+		connect(timer,SIGNAL(timeout()), SLOT(sltAutoLeaveTimerTimeout()));
+		timer->start(leaveCheckInterval);
+	}
+	
 }
 
 MucPlugin::~MucPlugin()
@@ -1540,4 +1551,26 @@ bool MucPlugin::onVCard(const VCardWrapper& vcardWrapper)
 	delete req;
 	bot()->asyncRequests()->removeAll(req);
 	return true;
+}
+
+void MucPlugin::sltAutoLeaveTimerTimeout()
+{
+	qDebug() << "Checking for died conferences";
+	
+	QStringList conferencesToLeave=Conference::autoLeaveList();
+	if (conferencesToLeave.isEmpty())
+		return;
+	QStringList report;
+	for (QStringList::iterator it=conferencesToLeave.begin(); it!=conferencesToLeave.end(); ++it)
+	{
+		QString value=(*it);
+		int cnt=value.section(' ',0,0).toInt();
+		QString name=value.section(' ',1);
+		report.append(QString("%1: %2 jids").arg(name).arg(cnt));
+		leave(name);
+	}
+	gloox::JID ownerJid(DataStorage::instance()->getStdString("access/owner"));
+	gloox::Stanza *outgoing=gloox::Stanza::createMessageStanza(ownerJid,
+		QString("I'm leaving followed died conferneces:\n%1").arg(report.join("\n")).toStdString());
+	bot()->client()->send(outgoing);
 }
