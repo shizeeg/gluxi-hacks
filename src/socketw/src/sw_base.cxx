@@ -19,6 +19,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #ifndef __WIN32__
   #include <netdb.h>

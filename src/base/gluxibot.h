@@ -22,9 +22,6 @@ class VCardWrapper;
 class AbstractConfigurator;
 class RootDiscoHandler;
 
-class gloox::Client;
-class gloox::Stanza;
-
 class QuitEvent: public QEvent
 {
 public:

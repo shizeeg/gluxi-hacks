@@ -29,8 +29,6 @@
 
 class GluxiBot;
 
-class gloox::Stanza;
-
 class DiscoHandler
 {
 public:

@@ -12,6 +12,8 @@
 #include <signal.h>
 #endif
 
+#include <stdlib.h>
+
 GluxiBot *bot;
 int wasSignal;
 

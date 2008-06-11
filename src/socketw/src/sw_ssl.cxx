@@ -55,7 +55,7 @@ EVP_PKEY* generate_pkey(RSA *rsakey)
 	return(pkey);
 }
 
-X509* BuildCertificate(char *name, char *organization, char *country, EVP_PKEY *key) 
+X509* BuildCertificate(const char *name, char *organization, char *country, EVP_PKEY *key) 
 {
 	if( !name )
 		return NULL;  //Atleast a name should be provided

@@ -16,8 +16,6 @@
 #include "gloox/myvcardhandler.h"
 #include "gloox/myvcardmanager.h"
 
-class gloox::Client;
-class gloox::Stanza;
 class MyStanza;
 
 class GlooxWrapper: public QThread, gloox::ConnectionListener, gloox::PresenceHandler, gloox::MessageHandler, 
