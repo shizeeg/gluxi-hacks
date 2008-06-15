@@ -16,7 +16,7 @@ MiscPlugin::MiscPlugin(GluxiBot *parent) :
 	sayJidDisabled_=DataStorage::instance()->getInt("cmd/disable_misc_sayjid");
 	if (!sayJidDisabled_)
 	{
-		commands << "SAYJID" << "SAYJIDGC";
+		commands << "SAYJID";
 	}
 }
 
@@ -46,9 +46,9 @@ bool MiscPlugin::parseMessage(gloox::Stanza* s)
 		reply(s, QTime::currentTime().toString(Qt::LocaleDate));
 		return true;
 	}
-	if (!sayJidDisabled_ && (cmd=="SAYJID" || cmd=="SAYJIDGC"))	 
+	if (!sayJidDisabled_ && cmd=="SAYJID")	 
 	{
-		if (getRole(s)<ROLE_MODERATOR)
+		if (getRole(s)<ROLE_ADMIN)
 		{
 			reply(s,"You should be moderator to do this");
 			return true;
@@ -61,8 +61,6 @@ bool MiscPlugin::parseMessage(gloox::Stanza* s)
 		}
 		QString body=parser.joinBody();
 		gloox::Stanza* out=gloox::Stanza::createMessageStanza(gloox::JID(dst.toStdString()),body.toStdString());
-		if (cmd=="SAYJIDGC")
-			out->addAttribute("type","groupchat");
 		bot()->client()->send(out);
 		return true;
 	}
