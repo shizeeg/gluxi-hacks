@@ -9,57 +9,65 @@ AliasList::AliasList()
 {
 }
 
-int AliasList::append(const StorageKey& storage, const QString& name, const QString& value)
+int AliasList::append(const StorageKey& storage, const Alias& alias)
 {
 	if (!storage.isValid())
 		return 0;
 	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("INSERT INTO aliases(plugin, storage, name, value) VALUES (?, ?, ?, ?)");
+		->prepareQuery("INSERT INTO aliases(plugin, storage, global, name, value) VALUES (?, ?, ?, ?, ?)");
 	query.addBindValue(storage.plugin());
 	query.addBindValue(storage.storage());
-	query.addBindValue(name);
-	query.addBindValue(value);
+	query.addBindValue(alias.isGlobal());
+	query.addBindValue(alias.name());
+	query.addBindValue(alias.value());
 	if (query.exec())
 		return 1;
 	query.clear();
-	query.prepare("UPDATE aliases SET value=? WHERE plugin=? AND storage=? AND name=?");
-	query.addBindValue(value);
+	query.prepare("UPDATE aliases SET global=?, value=? WHERE plugin=? AND storage=? AND name=?");
+	query.addBindValue(alias.isGlobal());
+	query.addBindValue(alias.value());
 	query.addBindValue(storage.plugin());
 	query.addBindValue(storage.storage());
-	query.addBindValue(name);
+	query.addBindValue(alias.name());
 	if (query.exec())
 		return 2;
 	return 0;
 }
 
-QMap<QString,QString> AliasList::getAll(const StorageKey& storage)
+QMap<QString,Alias> AliasList::getAll(const StorageKey& storage)
 {
-	QMap<QString,QString> map;
+	QMap<QString,Alias> map;
 	if (!storage.isValid())
 		return map;
 	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("SELECT name, value FROM aliases WHERE plugin=? AND storage=?");
+		->prepareQuery("SELECT global, name, value FROM aliases WHERE plugin=? AND storage=?");
 	query.addBindValue(storage.plugin());
 	query.addBindValue(storage.storage());
 	query.exec();
 	while (query.next())
-		map[query.value(0).toString()]=query.value(1).toString();
+	{
+		Alias alias(query.value(1).toString(),query.value(2).toString());
+		alias.setGlobal(query.value(0).toBool());
+		map[alias.name()]=alias;
+	}
 	return map;
 }
 
-QString AliasList::get(const StorageKey& storage, const QString&name)
+Alias AliasList::get(const StorageKey& storage, const QString& name)
 {
 	if (!storage.isValid())
-		return QString::null;
+		return Alias();
 	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("SELECT value FROM aliases WHERE plugin=? AND storage=? AND name=?");
+		->prepareQuery("SELECT global, value FROM aliases WHERE plugin=? AND storage=? AND name=?");
 	query.addBindValue(storage.plugin());
 	query.addBindValue(storage.storage());
 	query.addBindValue(name);
 	query.exec();
 	if (!query.next())
-		return QString::null;
-	return query.value(0).toString();
+		return Alias();
+	Alias alias(name, query.value(1).toString());
+	alias.setGlobal(query.value(0).toBool());
+	return alias;
 }
 
 void AliasList::clear(const StorageKey& storage)

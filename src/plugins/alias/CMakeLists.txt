@@ -5,10 +5,12 @@ set (plugin_HDR_MOC
 )
 
 set (plugin_HDR
+	alias.h
 	aliaslist.h
 )
 
 set (plugin_SRC
+	alias.cpp
 	aliaslist.cpp
 	aliasplugin.cpp
 )

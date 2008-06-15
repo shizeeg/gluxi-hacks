@@ -31,8 +31,7 @@ bool AliasPlugin::canHandleMessage(gloox::Stanza* s)
 	//Stanza with already expanded alias
 	if (s->hasAttribute("glooxbot_alias"))
 		return false;
-	bool res=MessageParser(s,getMyNick(s)).isForMe();
-	return res;
+	return true;
 }
 
 bool AliasPlugin::parseMessage(gloox::Stanza* s)
@@ -43,7 +42,15 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 	if (cmd=="ALIAS")
 		return parseCommands(s);
 
-	QString res=aliases.get(bot()->getStorage(s), cmd);
+	Alias alias=aliases.get(bot()->getStorage(s), cmd);
+	
+	if (!parser.isForMe() && !alias.isGlobal())
+	{
+		myShouldIgnoreError=1;
+		return false;
+	}
+	
+	QString res=alias.value();
 	QString firstArg=res.section(' ',0,0).toUpper();
 
 	bool noWrap=false;
@@ -114,7 +121,7 @@ bool AliasPlugin::parseCommands(gloox::Stanza* s)
 		if (aliasName.isEmpty())
 		{
 			QString res;
-			QMap<QString, QString> all=aliases.getAll(bot()->getStorage(s));
+			QMap<QString, Alias> all=aliases.getAll(bot()->getStorage(s));
 			int cnt=all.count();
 			if (!cnt)
 			{
@@ -122,15 +129,18 @@ bool AliasPlugin::parseCommands(gloox::Stanza* s)
 				return true;
 			}
 			for (int i=0; i<cnt; i++)
-				res+=QString("\n%1) %2=%3").arg(i+1).arg(all.keys()[i].toLower()).arg(all.values()[i]);
+				res+=QString("\n%1) %2%3=%4").arg(i+1).arg(all.values()[i].isGlobal() ? "[GLOBAL] ": "")
+					.arg(all.keys()[i].toLower()).arg(all.values()[i].value());
 			reply(s, QString("Aliases:%1").arg(res));
 			return true;
 		}
 		else
 		{
-			QString value=aliases.get(bot()->getStorage(s),aliasName.toUpper());
+			Alias alias=aliases.get(bot()->getStorage(s),aliasName.toUpper());
+			QString value=alias.value();
 			if (!value.isNull())
-				reply(s, QString("Alias: %1=%2").arg(aliasName).arg(value));
+				reply(s, QString("Alias: %1%2=%3").arg(alias.isGlobal() ? "[GLOBAL] " : "")
+						.arg(aliasName).arg(value));
 			else
 				reply(s, QString("No such alias: %1").arg(aliasName));
 			return true;
@@ -153,6 +163,13 @@ bool AliasPlugin::parseCommands(gloox::Stanza* s)
 	QString value=arg.section('=',1).trimmed();
 	if (cmd=="ADD")
 	{
+		bool global=false;
+		const QString globalStr("/global ");
+		if (value.toLower().startsWith(globalStr))
+		{
+			global=true;
+			value=value.remove(0,globalStr.length()).trimmed();
+		}
 		if (name.isEmpty() || value.isEmpty())
 		{
 			reply(s, "Syntax: !alias add <name>=<value>,"
@@ -160,7 +177,9 @@ bool AliasPlugin::parseCommands(gloox::Stanza* s)
 				" %1, %2.. - arguments; %* - all arguemnts");
 			return true;
 		}
-		int res=aliases.append(bot()->getStorage(s), name, value);
+		Alias alias(name, value);
+		alias.setGlobal(global);
+		int res=aliases.append(bot()->getStorage(s), alias);
 		switch (res)
 		{
 		case 0:
