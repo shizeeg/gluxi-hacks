@@ -16,7 +16,7 @@
 NetPlugin::NetPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
-	commands << "PING" << "TRACEROUTE" << "WWW" << "XEP" << "GOOGLE" << "SVN" << "HEADERS";
+	commands << "PING" << "TRACEROUTE" << "WWW" << "POST" << "XEP" << "GOOGLE" << "SVN" << "HEADERS";
 }
 
 
@@ -67,7 +67,7 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
                 return true;
         }
 
-	if (cmd=="WWW" || cmd=="HEADERS")
+	if (cmd=="WWW" || cmd=="POST" || cmd=="HEADERS")
 	{
 		if (arg.isEmpty())
 		{

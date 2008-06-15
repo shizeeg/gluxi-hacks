@@ -31,8 +31,6 @@ void WWWRequest::launch()
 void WWWRequest::run()
 {
 	QMutexLocker locker(&deleteMutex);
-
-	
 	if (myDest.toUpper().startsWith("EXP"))
 	{
 		// We have RegExp
@@ -54,8 +52,15 @@ void WWWRequest::run()
 		}
 		qDebug() << "|| exp=" << myExp << "  || dest=" << myDest;
 	}
-
 	QRegExp exp(myExp);
+	
+	QStringList postList;	
+	if (myCmd=="POST")
+	{
+		QString tmp=myDest;
+		myDest=tmp.section('\n',0,0);
+		postList.append(tmp.section('\n',1).replace("\n","%0D%0A"));
+	}
 
 	DirectProxy proxy(0,0,"");
 	proxy.maxSize=2*1024*1024;
@@ -68,7 +73,13 @@ void WWWRequest::run()
 	QString referer="";
 	if (myDest.indexOf("://")<0)
 		myDest="http://"+myDest;
-	QString res=proxy.fetch(myDest,referer,&cookies,0);
+	
+	QString res;
+	if (postList.isEmpty())
+		res=proxy.fetch(myDest,referer,&cookies,0);
+	else
+		res=proxy.fetch(myDest, referer, &cookies, &postList);
+	
 	if (proxy.headersOnly)
 	{
 		if (proxy.headers.isEmpty())
@@ -149,7 +160,9 @@ void WWWRequest::run()
 		myString.clear();
 		for (int i=0; i<list.count(); ++i)
 		{
-			QString line=removeHtml(list[i]).trimmed();
+			QString line=removeHtml(list[i]);
+			if (!line.isEmpty())
+				line=line.trimmed();
 			if (!line.isEmpty())
 			{
 				if (!myString.isEmpty())

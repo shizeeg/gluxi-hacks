@@ -20,7 +20,7 @@ class BasePlugin : public QObject
 	Q_OBJECT
 public:
 	BasePlugin(GluxiBot *parent);
-	~BasePlugin();
+	virtual ~BasePlugin();
 	int id() const {return pluginId;};
 	virtual QString name() const { return "BasePlugin"; };
 	virtual QString prefix() const { return "base"; };

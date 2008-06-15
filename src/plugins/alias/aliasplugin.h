@@ -25,7 +25,9 @@ public:
 	virtual bool parseCommands(gloox::Stanza* s);
 private:
 	AliasList aliases;
+	QString replacePattern(const QString& str, const QString& name, const QString& repl, int* offset);
 	QString expandAlias(const QString&alias, MessageParser parser);
+	QString transform(const QString& str, const QString& flags);
 };
 
 #endif

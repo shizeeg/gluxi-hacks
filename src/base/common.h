@@ -12,4 +12,6 @@ QString removeHtml(const QString&);
 bool isBareJidValid(const QString& jid);
 bool isServerValid(const QString& server);
 
+QString urlEncode(const QString& s, const QString& encoding);
+
 #endif
