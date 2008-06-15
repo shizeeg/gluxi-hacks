@@ -1041,7 +1041,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		else
 		{
 			parser.back(1);
-			arg2=parser.nextToken();
+			arg2=parser.nextToken().toUpper();
 			isRemoving=true;
 		}		
 	}
