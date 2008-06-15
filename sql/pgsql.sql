@@ -1,6 +1,7 @@
 CREATE TABLE aliases (
   plugin smallint NOT NULL,
   storage smallint NOT NULL,
+  global boolean NOT NULL DEFAULT false,
   name varchar(50) NOT NULL,
   value varchar(200) NOT NULL,
   PRIMARY KEY (plugin,storage,name)

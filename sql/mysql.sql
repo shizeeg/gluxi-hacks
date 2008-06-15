@@ -23,6 +23,7 @@ DROP TABLE IF EXISTS `aliases`;
 CREATE TABLE `aliases` (
   `plugin` tinyint(4) NOT NULL,
   `storage` tinyint(4) NOT NULL,
+  `global` tinyint(1) NOT NULL DEFAULT '0',
   `name` varchar(50) collate utf8_bin NOT NULL,
   `value` varchar(200) collate utf8_bin NOT NULL,
   PRIMARY KEY  (`plugin`,`storage`,`name`)
