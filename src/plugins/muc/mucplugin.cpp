@@ -1319,10 +1319,19 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 			return;
 		action=expandMacro(s,c,n,action,item);
 		QString from(c->name()+"/"+c->nick());
+		QString type="groupchat";
+		if (s)
+		{
+			QString t1=QString::fromStdString(s->findAttribute("type"));
+			if (!t1.isEmpty())
+				type=t1;
+			if (type!="groupchat")
+				from=QString::fromStdString(s->from().full());
+		}
 		gloox::Stanza* st=gloox::Stanza::createMessageStanza(from.toStdString(),
 				action.toStdString());
 		st->addAttribute("from", from.toStdString());
-		st->addAttribute("type", "groupchat");
+		st->addAttribute("type", type.toStdString());
 		bot()->client()->handleMessage(st, 0);
 		delete st;
 		
