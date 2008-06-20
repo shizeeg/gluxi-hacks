@@ -192,8 +192,8 @@ void GluxiBot::handleIq(const MyStanza& st)
 	plugin=pluginByStanzaId(s);
 	if (plugin)
 	{
-		plugin->onIq(s);
-		return;
+		if (plugin->onIq(s))
+			return;
 	}
 
 	QListIterator<BasePlugin*> it(myPlugins);

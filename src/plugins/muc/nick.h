@@ -24,6 +24,9 @@ public:
 	Conference* conference() const { return myParent; };
 	Jid* jid() const { return myJid; };
 	bool validateRequired() const { return myValidateRequired; };
+	QString versionName() const { return versionName_; }
+	QString versionOs() const { return versionOs_; }
+	QString versionClient() const { return versionClient_; }
 
 	QStringList similarNicks();
 	
@@ -39,7 +42,11 @@ public:
 	void commit();
 	static void setAllOffline (Conference* conf);
 	bool isDevoicedNoVCard() const {return devoicedNoVCard_; }
-	void setDevoicedNoVCard(bool v) { devoicedNoVCard_ = v; } 
+	void setDevoicedNoVCard(bool v) { devoicedNoVCard_ = v; }
+	void setVersionName(const QString& name) { versionName_=name; };
+	void setVersionOs(const QString& os) { versionOs_=os; };
+	void setVersionClient(const QString& client) { versionClient_=client; };
+	
 private:
 	int myId;
 	bool myLazyLeave;
@@ -55,6 +62,9 @@ private:
 	QString myShow;
 	QString myStatus;
 	bool devoicedNoVCard_;
+	QString versionName_;
+	QString versionOs_;
+	QString versionClient_;
 };
 
 #endif

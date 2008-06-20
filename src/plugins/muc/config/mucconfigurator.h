@@ -33,11 +33,13 @@ public:
 	bool isCheckAlistsEveryPresence() const { return checkAlistsEveryPresence_; }
 	bool isDevoiceNoVCard() const { return devoiceNoVCard_; }
 	QString devoiceNoVCardReason() const { return devoiceNoVCardReason_; }
+	bool isQueryVersionOnJoin() const { return queryVersionOnJoin_; }
 private:
 	bool applyAlistsToMembers_;
 	bool checkAlistsEveryPresence_;
 	bool devoiceNoVCard_;
 	QString devoiceNoVCardReason_;
+	bool queryVersionOnJoin_;
 	void parse();
 	
 };

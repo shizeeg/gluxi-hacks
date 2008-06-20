@@ -63,8 +63,10 @@ private:
 	QString affiliationByCommand(const QString& cmd);
 	int getStatus(gloox::Stanza* s);
 	bool warnImOwner(gloox::Stanza* s);
+	int getRoleForNick(Conference* conf, Nick* nick);
 	QString expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QString& str, const AListItem* item=0);
 	void requestVCard(gloox::Stanza* s, Conference* conf, Nick* nick);
+	void requestVersion(gloox::Stanza* s, Conference* conf, Nick* nick);
 private slots:
 	void sltAutoLeaveTimerTimeout();
 };

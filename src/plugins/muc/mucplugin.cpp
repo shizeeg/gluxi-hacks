@@ -32,7 +32,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 			<< "KICK" << "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN"
 			<< "BANJID" << "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
 	commands << "ABAN" << "AKICK" << "AVISITOR" << "ACMD" << "AMODERATOR" << "AFIND"
-			<< "SEEN" << "CLIENTS" << "SETNICK" << "CHECKVCARD";
+			<< "SEEN" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
 	commands << "HERE";
 	pluginId=1;
 	lazyOffline=DataStorage::instance()->getInt("muc/lazyoffline");
@@ -253,6 +253,11 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 
 		}		
 	}
+	else
+	{
+		if (n->validateRequired())
+			newNick=true;
+	}
 	if (role=="none" || type=="unavailable")
 	{
 		n->updateLastActivity();
@@ -305,8 +310,15 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		if (newNick || conf->configurator()->isCheckAlistsEveryPresence())
 			checkMember(s, conf, n);
 		
-		if (newNick && conf->configurator()->isDevoiceNoVCard())
-			requestVCard(s, conf, n);
+		if (newNick)
+		{
+			if (conf->configurator()->isDevoiceNoVCard())
+				requestVCard(s, conf, n);
+			if (conf->configurator()->isQueryVersionOnJoin())
+			{
+				requestVersion(s, conf, n);
+			}
+		}
 	}
 }
 
@@ -460,13 +472,14 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 
 		QString
 				nickInfo=
-						QString("Nick \"%1\": Affiliation: %2; Role: %3; Registered: %4; Joined: %5; Idle: %6; Status: %7 (%8)")
+						QString("Nick \"%1\": Affiliation: %2; Role: %3; Registered: %4; Joined: %5; Idle: %6; Role: %7; Status: %8 (%9)")
 						.arg(n->nick())
 						.arg(n->affiliation())
 						.arg(n->role())
 						.arg(jidCreated)
 						.arg(n->joined().toString(Qt::LocaleDate))
 						.arg(secsToString(n->lastActivity().secsTo(QDateTime::currentDateTime())))
+						.arg(getRoleForNick(conf, n))
 						.arg(n->show())
 						.arg(n->status());
 		reply(s, nickInfo);
@@ -482,6 +495,32 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		return true;
 	}
 
+	if (cmd=="ROLE")
+	{
+		Nick *n=getNickVerbose(s, arg);
+		if (!n)
+			return true;
+		reply(s,QString("Role for \"%1\" is %2").arg(n->nick()).arg(getRoleForNick(conf, n)));
+		return true;
+	}
+	
+	if (cmd=="VERSION")
+	{
+		Nick *n=getNickVerbose(s, arg);
+		if (!n)
+			return true;
+		QString res=n->versionName();
+		if (!n->versionClient().isEmpty())
+			res+=QString(" %1").arg(n->versionClient());
+		if (!n->versionOs().isEmpty())
+			res+=QString(" // %1").arg(n->versionOs());
+		if (res.isEmpty())
+			reply(s, QString("No version stored for \"%1\"").arg(n->nick()));
+		else
+			reply(s, QString("%1 uses %2").arg(n->nick()).arg(res));
+		return true;
+	}
+	
 	if (cmd=="CHECKVCARD")
 	{
 		Nick *n=getNick(s);
@@ -913,8 +952,37 @@ bool MucPlugin::onIq(gloox::Stanza* s)
 	Conference *conf = getConf(s);
 	if (!conf)
 		return false;
-	QString reason=getIqError(s);
+	Nick *nick=getNick(s);
+	if (!nick)
+		return false;
 
+	AsyncRequest* req=bot()->asyncRequests()->byStanza(s);
+	if (!req)
+		return false;
+
+	QString xmlns=QString::fromStdString(s->xmlns());
+	if (s->subtype()!=gloox::StanzaIqResult || xmlns!="jabber:iq:version")
+	return false;
+
+	gloox::Tag* query=s->findChild("query", "xmlns", xmlns.toStdString());
+	nick->setVersionName(QString::null);
+	nick->setVersionClient(QString::null);
+	nick->setVersionOs(QString::null);
+	if (query)
+	{ 
+		gloox::Tag* t;
+		t=query->findChild("name");
+		if (t)
+			nick->setVersionName(QString::fromStdString(t->cdata()));
+		t=query->findChild("version");
+		if (t)
+			nick->setVersionClient(QString::fromStdString(t->cdata()));
+		t=query->findChild("os");
+		if (t)
+			nick->setVersionOs(QString::fromStdString(t->cdata()));
+	}
+	delete req;
+	bot()->asyncRequests()->removeAll(req);
 	return true;
 }
 
@@ -1583,4 +1651,34 @@ void MucPlugin::sltAutoLeaveTimerTimeout()
 	gloox::Stanza *outgoing=gloox::Stanza::createMessageStanza(ownerJid,
 		QString("I'm leaving followed died conferneces:\n%1").arg(report.join("\n")).toStdString());
 	bot()->client()->send(outgoing);
+}
+
+void MucPlugin::requestVersion(gloox::Stanza* s, Conference* conf, Nick* nick)
+{
+	QString jid=conf->name()+"/"+nick->nick();
+	std::string id=bot()->client()->getID();
+
+	gloox::Stanza *st=gloox::Stanza::createIqStanza(
+			gloox::JID(jid.toStdString()), id, gloox::StanzaIqGet,
+			"jabber:iq:version");
+
+	gloox::Stanza *sf=new gloox::Stanza(s);
+	sf->addAttribute("id", id);
+
+	AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
+	req->setName("muc::version");
+	bot()->asyncRequests()->append(req);
+	bot()->client()->send(st);
+	return;
+}
+
+int MucPlugin::getRoleForNick(Conference* conf, Nick* nick)
+{
+	if (!conf || !nick)
+		return 0;
+	QString jid1=nick->jidStr();
+	QString jid2=conf->name()+"/"+nick->nick();
+	int role1=bot()->roles()->get(jid1);
+	int role2=bot()->roles()->get(jid2);
+	return (role1>role2) ? role1: role2;
 }
