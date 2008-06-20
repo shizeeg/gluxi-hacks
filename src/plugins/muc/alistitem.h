@@ -65,6 +65,7 @@ public:
 	
 	bool operator==(const AListItem& other);
 	bool isSameCondition(const AListItem& other);
+	QString toString() const;
 private:
 	int id_;
 	MatcherType matcherType_;

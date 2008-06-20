@@ -151,58 +151,8 @@ QString AList::toString()
 	int idx=1;
 	for (Iterator it=begin(); it!=end(); ++it)
 	{
-		QString flags;
 		AListItem* item=(*it);
-		
-		flags+=item->isInvert() ? "!" : " ";
-		
-		switch (item->matcherType())
-		{
-		case AListItem::MatcherUnknown:
-			flags+="?";
-			break;
-		case AListItem::MatcherNick:
-			flags+="N";
-			break;
-		case AListItem::MatcherJid:
-			flags+="J";
-			break;
-		case AListItem::MatcherBody:
-			flags+="B";
-			break;
-		case AListItem::MatcherResource:
-			flags+="R";
-			break;
-		};
-		
-		switch (item->testType())
-		{
-			case AListItem::TestUnknown:
-				flags+="?";
-				break;
-			case AListItem::TestExact:
-				flags+=" ";
-				break;
-			case AListItem::TestRegExp:
-				flags+="E";
-				break;
-			case AListItem::TestSubstring:
-				flags+="S";
-				break;
-		}
-		
-
-		QString line=QString("%1) %2 %3").arg(idx++).arg(flags).arg(item->value());
-		if (item->expire().isValid())
-		{
-			int delta=QDateTime::currentDateTime().secsTo(item->expire());
-			if (delta>0)
-				line+=QString("	[%1]").arg(secsToString(delta));
-			else
-				line+=QString(" [EXPIRED]");
-		}
-		if (!item->reason().isEmpty())
-			line+=" // "+item->reason();
+		QString line=QString("%1) %2").arg(idx++).arg(item->toString());
 		res.append(line);
 	}
 	return res.join("\n");

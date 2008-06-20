@@ -954,16 +954,17 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 			return true;
 		}
 
-		if (aFind(conf->aban(), n, 0L))
-			answer+=QString("\"%1\" is in aban list\n").arg(arg2.toLower());
-		if (aFind(conf->akick(), n, 0L))
-			answer+=QString("\"%1\" is in akick list\n").arg(arg2.toLower());
-		if (aFind(conf->avisitor(), n, 0L))
-			answer+=QString("\"%1\" is in avisitor list\n").arg(arg2.toLower());
-		if (aFind(conf->amoderator(), n, 0L))
-			answer+=QString("\"%1\" is in amoderator list\n").arg(arg2.toLower());
-		if (aFind(conf->acommand(), n, 0L))
-			answer+=QString("\"%1\" is in acmd list\n").arg(arg2.toLower());
+		AListItem* item=0;
+		if (item=aFind(conf->aban(), n, 0L))
+			answer+=QString("\"%1\" is in aban list: %2\n").arg(arg2.toLower()).arg(item->toString());
+		if (item=aFind(conf->akick(), n, 0L))
+			answer+=QString("\"%1\" is in akick list: %2\n").arg(arg2.toLower()).arg(item->toString());
+		if (item=aFind(conf->avisitor(), n, 0L))
+			answer+=QString("\"%1\" is in avisitor list: %2\n").arg(arg2.toLower()).arg(item->toString());
+		if (item=aFind(conf->amoderator(), n, 0L))
+			answer+=QString("\"%1\" is in amoderator list: %2\n").arg(arg2.toLower()).arg(item->toString());
+		if (item=aFind(conf->acommand(), n, 0L))
+			answer+=QString("\"%1\" is in acmd list: %2\n").arg(arg2.toLower()).arg(item->toString());
 		if (answer.endsWith("\n"))
 			answer.remove(answer.length()-1, 1);
 		if (answer.isEmpty())
