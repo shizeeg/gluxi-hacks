@@ -24,6 +24,7 @@ public:
 	Conference* conference() const { return myParent; };
 	Jid* jid() const { return myJid; };
 	bool validateRequired() const { return myValidateRequired; };
+	bool isVersionStored() const { return versionStored_; }
 	QString versionName() const { return versionName_; }
 	QString versionOs() const { return versionOs_; }
 	QString versionClient() const { return versionClient_; }
@@ -42,6 +43,7 @@ public:
 	void commit();
 	static void setAllOffline (Conference* conf);
 	bool isDevoicedNoVCard() const {return devoicedNoVCard_; }
+	bool setVersionStored(bool v) { versionStored_=v; }
 	void setDevoicedNoVCard(bool v) { devoicedNoVCard_ = v; }
 	void setVersionName(const QString& name) { versionName_=name; };
 	void setVersionOs(const QString& os) { versionOs_=os; };
@@ -62,6 +64,7 @@ private:
 	QString myShow;
 	QString myStatus;
 	bool devoicedNoVCard_;
+	bool versionStored_;
 	QString versionName_;
 	QString versionOs_;
 	QString versionClient_;

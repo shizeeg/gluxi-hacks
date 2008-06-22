@@ -17,6 +17,7 @@ Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 	myNick=nick;
 	myLazyLeave=false;
 	myJoined=QDateTime::currentDateTime();
+	versionStored_=false;
 	qDebug() << "[NICK] created: " << myNick;
 
 	myJid=new Jid(this, jid);
@@ -82,7 +83,7 @@ Nick::Nick(Conference* parent, int id)
 	myLazyLeave=false;
 	myId=id;
 	myValidateRequired=false;
-		
+	versionStored_=false;
 	
 	QSqlQuery query=DataStorage::instance()
 			->prepareQuery("SELECT nick, jid, joined, lastaction FROM conference_nicks WHERE conference_id = ? AND id = ?");

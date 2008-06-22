@@ -3,6 +3,7 @@
 
 #include "base/baseplugin.h"
 #include "conferencelist.h"
+#include "alistitem.h"
 
 class MessageParser;
 class AListItem;
@@ -53,10 +54,10 @@ private:
 	void setAffiliation(gloox::Stanza* s, Nick*, const QString& affiliation, const QString& reason=QString::null);
 	void setAffiliation(Conference* conf, const QString& jid, const QString& affiliation, const QString& reason=QString::null);
 	QString getIqError(gloox::Stanza* s);
-	AListItem* aFind(AList* list, Nick *n, gloox::Stanza* s);
+	AListItem* aFind(AList* list, Nick *n, gloox::Stanza* s, AListItem::MatcherType matcher=AListItem::MatcherUnknown);
 	// Advanced commands
 	bool autoLists(gloox::Stanza* s, MessageParser& parser);
-	void checkMember(gloox::Stanza* s, Conference* c, Nick*);
+	void checkMember(gloox::Stanza* s, Conference* c, Nick*, AListItem::MatcherType matcher=AListItem::MatcherUnknown);
 	void recheckJIDs(Conference* c);
 	void sendMessage(Conference* conf, const QString&msg);
 	QRegExp getConfExp(const QString&);

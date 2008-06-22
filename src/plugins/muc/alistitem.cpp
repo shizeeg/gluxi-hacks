@@ -63,19 +63,31 @@ QString AListItem::toString() const
 	switch (matcherType())
 	{
 	case AListItem::MatcherUnknown:
-		flags+="?";
+		flags+="? ";
 		break;
 	case AListItem::MatcherNick:
-		flags+="N";
+		flags+="N ";
 		break;
 	case AListItem::MatcherJid:
-		flags+="J";
+		flags+="J ";
 		break;
 	case AListItem::MatcherBody:
-		flags+="B";
+		flags+="B ";
 		break;
 	case AListItem::MatcherResource:
-		flags+="R";
+		flags+="R ";
+		break;
+	case AListItem::MatcherVersion:
+		flags+="V ";
+		break;
+	case AListItem::MatcherVersionName:
+		flags+="Vn";
+		break;
+	case AListItem::MatcherVersionClient:
+		flags+="Vn";
+		break;
+	case AListItem::MatcherVersionOs:
+		flags+="Vo";
 		break;
 	};
 	

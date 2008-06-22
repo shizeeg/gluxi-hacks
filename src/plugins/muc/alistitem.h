@@ -28,11 +28,16 @@ class AListItem
 public:
 	enum MatcherType
 	{
+		MatcherAll=-1,
 		MatcherUnknown=0,
 		MatcherNick=1,
 		MatcherJid=2,
 		MatcherBody=3,
-		MatcherResource=4
+		MatcherResource=4,
+		MatcherVersion=5,
+		MatcherVersionName=6,
+		MatcherVersionClient=7,
+		MatcherVersionOs=8
 	};
 	
 	enum TestType
@@ -40,7 +45,7 @@ public:
 		TestUnknown=0,
 		TestExact=1,
 		TestRegExp=2,
-		TestSubstring=3		
+		TestSubstring=3
 	};
 	
 	AListItem(int id=-1);

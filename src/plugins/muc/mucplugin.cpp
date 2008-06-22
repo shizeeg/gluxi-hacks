@@ -992,6 +992,8 @@ bool MucPlugin::onIq(gloox::Stanza* s)
 	}
 	delete req;
 	bot()->asyncRequests()->removeAll(req);
+	nick->setVersionStored(true);
+	checkMember(0L, conf, nick, AListItem::MatcherVersion);
 	return true;
 }
 
@@ -1032,15 +1034,15 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		}
 
 		AListItem* item=0;
-		if (item=aFind(conf->aban(), n, 0L))
+		if (item=aFind(conf->aban(), n, 0L, AListItem::MatcherAll))
 			answer+=QString("\"%1\" is in aban list: %2\n").arg(arg2.toLower()).arg(item->toString());
-		if (item=aFind(conf->akick(), n, 0L))
+		if (item=aFind(conf->akick(), n, 0L, AListItem::MatcherAll))
 			answer+=QString("\"%1\" is in akick list: %2\n").arg(arg2.toLower()).arg(item->toString());
-		if (item=aFind(conf->avisitor(), n, 0L))
+		if (item=aFind(conf->avisitor(), n, 0L, AListItem::MatcherAll))
 			answer+=QString("\"%1\" is in avisitor list: %2\n").arg(arg2.toLower()).arg(item->toString());
-		if (item=aFind(conf->amoderator(), n, 0L))
+		if (item=aFind(conf->amoderator(), n, 0L, AListItem::MatcherAll))
 			answer+=QString("\"%1\" is in amoderator list: %2\n").arg(arg2.toLower()).arg(item->toString());
-		if (item=aFind(conf->acommand(), n, 0L))
+		if (item=aFind(conf->acommand(), n, 0L, AListItem::MatcherAll))
 			answer+=QString("\"%1\" is in acmd list: %2\n").arg(arg2.toLower()).arg(item->toString());
 		if (answer.endsWith("\n"))
 			answer.remove(answer.length()-1, 1);
@@ -1166,7 +1168,9 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	
 	qDebug() << "1: " << arg2;
 	
-	if (arg2=="NICK" || arg2=="BODY" || arg2=="RES")
+	if (arg2=="NICK" || arg2=="BODY" || arg2=="RES" 
+		|| arg2=="VERSION" || arg2=="VERSION.NAME" 
+		|| arg2=="VERSION.CLIENT" || arg2=="VERSION.OS")
 	{
 		if (arg2=="NICK")
 			item.setMatcherType(AListItem::MatcherNick);
@@ -1174,6 +1178,14 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 			item.setMatcherType(AListItem::MatcherBody);
 		else if (arg2=="RES")
 			item.setMatcherType(AListItem::MatcherResource);
+		else if (arg2=="VERSION")
+			item.setMatcherType(AListItem::MatcherVersion);
+		else if (arg2=="VERSION.NAME")
+			item.setMatcherType(AListItem::MatcherVersionName);
+		else if (arg2=="VERSION.CLIENT")
+			item.setMatcherType(AListItem::MatcherVersionClient);
+		else if (arg2=="VERSION.OS")
+			item.setMatcherType(AListItem::MatcherVersionOs);
 
 		arg2=parser.nextToken().toUpper();
 	} 
@@ -1274,7 +1286,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 }
 
 // Stanza can be null here
-AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
+AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem::MatcherType matcher)
 {
 	int cnt=list->count();
 	QString line;
@@ -1284,17 +1296,45 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
 	QString lBody;
 	if (s)
 		lBody=QString::fromStdString(s->body()).toLower();
+	QString version;
+	if (nick->isVersionStored())
+		version=nick->versionName()+" "+nick->versionClient()+" // "+nick->versionOs();
 	
 	bool isPresence=!s || (s->type()==gloox::StanzaPresence);
 	
 	for (int i=0; i<cnt; i++)
 	{
 		AListItem* item=list->at(i);
+		
+		if (matcher!=AListItem::MatcherUnknown && matcher!=AListItem::MatcherAll && 
+				!item->matcherType()!=matcher)
+		{
+			if (matcher=AListItem::MatcherVersion)
+			{
+				if (!(item->matcherType()==AListItem::MatcherVersionName
+								|| item->matcherType()==AListItem::MatcherVersionClient
+								|| item->matcherType()==AListItem::MatcherVersionOs))
+					continue;
+			}
+			else
+				continue;
+		}
 	
 		QString testValue;
 		if (!isPresence && (item->matcherType() == AListItem::MatcherNick 
 				|| item->matcherType()==AListItem::MatcherJid || item->matcherType()==AListItem::MatcherResource))
 			continue;
+		
+		if (item->matcherType() == AListItem::MatcherVersion 
+			|| item->matcherType()==AListItem::MatcherVersionName
+			|| item->matcherType()==AListItem::MatcherVersionClient
+			|| item->matcherType()==AListItem::MatcherVersionOs)
+		{
+			if (matcher!=AListItem::MatcherVersion && matcher!=AListItem::MatcherAll)
+				continue;
+			if (!nick || !nick->isVersionStored())
+				continue;
+		}
 		
 		switch (item->matcherType())
 		{
@@ -1303,7 +1343,13 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
 			case AListItem::MatcherJid: testValue=lJid; break;
 			case AListItem::MatcherResource: testValue=lResource; break;
 			case AListItem::MatcherBody: testValue=lBody; break;
+			case AListItem::MatcherVersion: testValue=version; break;
+			case AListItem::MatcherVersionName: testValue=nick->versionName(); break;
+			case AListItem::MatcherVersionClient: testValue=nick->versionClient(); break;
+			case AListItem::MatcherVersionOs: testValue=nick->versionOs(); break;
+			default: continue;
 		}
+		
 		if (testValue.isEmpty())
 			continue;
 		
@@ -1327,7 +1373,7 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
 			}
 			case AListItem::TestSubstring:
 			{
-				if (item->isInvert() ^ (testValue.indexOf(item->value())>=0))
+				if (item->isInvert() ^ (testValue.toLower().indexOf(item->value().toLower())>=0))
 					return item;
 				break;
 			}
@@ -1336,7 +1382,7 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s)
 	return 0L;
 }
 
-void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
+void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::MatcherType matcher)
 {
 	if (!n || !c)
 		return;
@@ -1353,7 +1399,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 	AListItem* item;
 	if (((aff!="OWNER") && !aff.startsWith("ADMIN") && aff!="MEMBER")|| c->configurator()->isApplyAlistsToMembers())
 	{
-		if (item=aFind(c->aban(), n, s))
+		if (item=aFind(c->aban(), n, s, matcher))
 		{
 			if (s && warnImOwner(s))
 				return;
@@ -1364,7 +1410,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 			return;
 		}
 
-		if (item=aFind(c->akick(), n, s))
+		if (item=aFind(c->akick(), n, s, matcher))
 		{
 			QString reason=item->reason();
 			if (reason.isEmpty())
@@ -1372,7 +1418,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 			setRole(c, n, "none", reason);
 			return;
 		}
-		if (item=aFind(c->avisitor(), n, s))
+		if (item=aFind(c->avisitor(), n, s, matcher))
 		{
 			QString reason=item->reason();
 			if (reason.isEmpty())
@@ -1381,7 +1427,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 			return;
 		}
 	}
-	if (item=aFind(c->amoderator(), n, s))
+	if (item=aFind(c->amoderator(), n, s, matcher))
 	{
 		QString reason=item->reason();
 		if (reason.isEmpty())
@@ -1390,7 +1436,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n)
 		return;
 	}
 	
-	if (item=aFind(c->acommand(), n, s))
+	if (item=aFind(c->acommand(), n, s, matcher))
 	{
 		QString action=item->reason();
 		if (action.isEmpty())
