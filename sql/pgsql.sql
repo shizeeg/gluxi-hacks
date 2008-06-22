@@ -52,6 +52,8 @@ CREATE TABLE conferences (
   autojoin boolean NOT NULL default true,
   online boolean NOT NULL default false,
   joined timestamp default NULL,
+  autoleave boolean NOT NULL default true,
+  owner varchar(200) NULL,
   PRIMARY KEY (name),
   UNIQUE (id)
 );

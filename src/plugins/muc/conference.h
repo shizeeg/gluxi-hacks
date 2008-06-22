@@ -40,6 +40,7 @@ public:
 	
 	void loadOnlineNicks();
 	void cleanNonValidNicks();
+	void markOffline();
 
 	MucConfigurator* configurator() const { return configurator_; }
 	void setConfigurator(MucConfigurator* configurator) { configurator_=configurator; }

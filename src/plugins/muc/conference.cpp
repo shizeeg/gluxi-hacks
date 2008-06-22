@@ -89,10 +89,7 @@ Conference::~Conference()
 	qDebug() << "~Conference";
 	if (!myLazyLeave)
 	{
-		QSqlQuery query=DataStorage::instance()
-			->prepareQuery("UPDATE conferences SET online = false WHERE id = ?");
-		query.addBindValue(myId);
-		query.exec();
+		markOffline();
 	}
 	else
 	{
@@ -104,6 +101,14 @@ Conference::~Conference()
 	delete myModerator;
 	delete myCommand;
 	delete configurator_;
+}
+
+void Conference::markOffline()
+{
+	QSqlQuery query=DataStorage::instance()
+				->prepareQuery("UPDATE conferences SET online = false WHERE id = ?");
+	query.addBindValue(myId);
+	query.exec();	
 }
 
 QStringList Conference::autoJoinList()
@@ -261,7 +266,7 @@ QStringList Conference::autoLeaveList()
 				" (select count(distinct jid) from conference_nicks"
 				" where conference_nicks.conference_id=conferences.id and"
 				" lastaction > ?) as cnt"
-				" from conferences where autojoin=true and online=true order by cnt");
+				" from conferences where autojoin=true and online=true and autoleave=true order by cnt");
 	QDateTime currentDate=QDateTime::currentDateTime();
 	currentDate=currentDate.addSecs(-deltaTime);
 	query.addBindValue(currentDate);

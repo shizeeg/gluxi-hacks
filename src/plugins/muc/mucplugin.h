@@ -40,7 +40,7 @@ private:
 	ConferenceList conferences;
 	QStringList confInProgress;
 	QString getItem(gloox::Stanza*, const QString& name);
-	void join(const QString& name);
+	void join(const QString& name, const QString& joinerBareJid=QString::null);
 	void leave(const QString& name);
 	Conference* getConf(gloox::Stanza* s);
 	Nick* getNick(gloox::Stanza* s, const QString& nick=QString::null);

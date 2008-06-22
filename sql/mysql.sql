@@ -94,6 +94,8 @@ CREATE TABLE `conferences` (
   `autojoin` tinyint(1) NOT NULL default '1',
   `online` tinyint(1) NOT NULL default '0',
   `joined` datetime default NULL,
+  `autoleave` tinyint(1) NOT NULL default '1',
+  `owner` varchar(200) NULL,
   PRIMARY KEY  (`name`),
   UNIQUE KEY `id` (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;

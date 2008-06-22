@@ -373,6 +373,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 				return true;
 			}
 			reply(s, "Ok");
+			//!!!!!!!!!!!!!!!!!!!!
 			join(arg);
 			return true;
 		}
@@ -824,7 +825,7 @@ Nick* MucPlugin::getNickVerbose(gloox::Stanza* s, const QString& nn)
 	return nick;
 }
 
-void MucPlugin::join(const QString& name)
+void MucPlugin::join(const QString& name, const QString& joinerBareJid)
 {
 	qDebug() << "MucPlugin::join: " << name;
 	QString cname;
@@ -849,6 +850,10 @@ void MucPlugin::join(const QString& name)
 	}
 
 	confInProgress.append(confName);
+	if (!joinerBareJid.isEmpty())
+	{
+		
+	}
 
 	// Don't create "Conference" object, because it's possible that we can't join it
 	// 	Conference *conf=new Conference(cname,cnick);
@@ -885,7 +890,11 @@ void MucPlugin::leave(const QString& name)
 
 	Conference*conf=conferences.byName(cname);
 	if (conf)
+	{
 		conf->setAutoJoin(FALSE);
+		conf->markOffline();
+	}
+	
 
 	/*	Conference *conf=new Conference(cname,cnick);
 	 conferences.append(conf); */
