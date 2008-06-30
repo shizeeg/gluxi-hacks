@@ -1316,11 +1316,12 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 		if (matcher!=AListItem::MatcherUnknown && matcher!=AListItem::MatcherAll &&
 				!item->matcherType()!=matcher)
 		{
-			if (matcher=AListItem::MatcherVersion)
+			if (matcher==AListItem::MatcherVersion)
 			{
 				if (!(item->matcherType()==AListItem::MatcherVersionName
 								|| item->matcherType()==AListItem::MatcherVersionClient
-								|| item->matcherType()==AListItem::MatcherVersionOs))
+								|| item->matcherType()==AListItem::MatcherVersionOs
+								|| item->matcherType()==AListItem::MatcherVersion))
 					continue;
 			}
 			else
