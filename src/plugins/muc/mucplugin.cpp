@@ -1304,7 +1304,7 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 			version+=" "+nick->versionClient();
 		if (!nick->versionOs().isEmpty())
 			version+=" // "+nick->versionOs();
-		version=version.trimmed();
+		version=version.trimmed().toLower();
 	}
 
 	bool isPresence=!s || (s->type()==gloox::StanzaPresence);
@@ -1351,9 +1351,9 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 			case AListItem::MatcherResource: testValue=lResource; break;
 			case AListItem::MatcherBody: testValue=lBody; break;
 			case AListItem::MatcherVersion: testValue=version; break;
-			case AListItem::MatcherVersionName: testValue=nick->versionName(); break;
-			case AListItem::MatcherVersionClient: testValue=nick->versionClient(); break;
-			case AListItem::MatcherVersionOs: testValue=nick->versionOs(); break;
+			case AListItem::MatcherVersionName: testValue=nick->versionName().toLower(); break;
+			case AListItem::MatcherVersionClient: testValue=nick->versionClient().toLower(); break;
+			case AListItem::MatcherVersionOs: testValue=nick->versionOs().toLower(); break;
 			default: continue;
 		}
 
