@@ -36,7 +36,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 	commands << "HERE";
 	pluginId=1;
 	lazyOffline=DataStorage::instance()->getInt("muc/lazyoffline");
-	
+
 	int leaveCheckInterval=DataStorage::instance()->getInt("muc/leave_checkinterval");
 	if (leaveCheckInterval>0)
 	{
@@ -45,7 +45,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 		connect(timer,SIGNAL(timeout()), SLOT(sltAutoLeaveTimerTimeout()));
 		timer->start(leaveCheckInterval);
 	}
-	
+
 }
 
 MucPlugin::~MucPlugin()
@@ -177,7 +177,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 	if (type=="error")
 	{
 		qDebug()
-				<< "[MUC] Got type='error' in onPresence. Looks like we can't join conference: " << confFull << "Nick: " << nick; 
+				<< "[MUC] Got type='error' in onPresence. Looks like we can't join conference: " << confFull << "Nick: " << nick;
 		int idx=confInProgress.indexOf(getConfExp(confFull));
 		if (idx>=0)
 			confInProgress.removeAt(idx);
@@ -235,7 +235,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		}
 
 	}
-	
+
 	bool newNick=false;
 	if (!n)
 	{
@@ -246,12 +246,12 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		newNick=true;
 		n=new Nick(conf, nick,getItem(s,"jid"));
 		conf->nicks()->append(n);
-		
+
 		if (nick==conf->nick())
 		{
 			// Got own presence after renaming
 
-		}		
+		}
 	}
 	else
 	{
@@ -309,7 +309,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		conf->removeExpired();
 		if (newNick || conf->configurator()->isCheckAlistsEveryPresence())
 			checkMember(s, conf, n);
-		
+
 		if (newNick)
 		{
 			if (conf->configurator()->isDevoiceNoVCard())
@@ -486,7 +486,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		reply(s, nickInfo);
 		return true;
 	}
-	
+
 	if (cmd=="IDLE")
 	{
 		Nick *n=getNickVerbose(s, arg);
@@ -504,7 +504,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		reply(s,QString("Role for \"%1\" is %2").arg(n->nick()).arg(getRoleForNick(conf, n)));
 		return true;
 	}
-	
+
 	if (cmd=="VERSION")
 	{
 		Nick *n=getNickVerbose(s, arg);
@@ -521,7 +521,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 			reply(s, QString("%1 uses %2").arg(n->nick()).arg(res));
 		return true;
 	}
-	
+
 	if (cmd=="CHECKVCARD")
 	{
 		Nick *n=getNick(s);
@@ -531,7 +531,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		reply(s,"Ok");
 		return true;
 	}
-	
+
 	if (cmd=="SEEN")
 	{
 		reply(s, conf->seen(arg));
@@ -561,7 +561,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 
 		QString target=arg;
 		QString reason=parser.nextToken();
-		
+
 		Nick *n=getNickVerbose(s, target);
 		if (!n)
 			return true;
@@ -630,7 +630,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		return true;
 	}
 
-	if (cmd=="ABAN" || cmd=="AKICK" || cmd=="AVISITOR" || cmd=="AMODERATOR" 
+	if (cmd=="ABAN" || cmd=="AKICK" || cmd=="AVISITOR" || cmd=="AMODERATOR"
 		|| cmd=="ACMD" || cmd=="AEDIT" || cmd=="AFIND")
 	{
 		if (!isFromConfAdmin(s))
@@ -852,7 +852,7 @@ void MucPlugin::join(const QString& name, const QString& joinerBareJid)
 	confInProgress.append(confName);
 	if (!joinerBareJid.isEmpty())
 	{
-		
+
 	}
 
 	// Don't create "Conference" object, because it's possible that we can't join it
@@ -894,7 +894,7 @@ void MucPlugin::leave(const QString& name)
 		conf->setAutoJoin(FALSE);
 		conf->markOffline();
 	}
-	
+
 
 	/*	Conference *conf=new Conference(cname,cnick);
 	 conferences.append(conf); */
@@ -978,7 +978,7 @@ bool MucPlugin::onIq(gloox::Stanza* s)
 	nick->setVersionClient(QString::null);
 	nick->setVersionOs(QString::null);
 	if (query)
-	{ 
+	{
 		gloox::Tag* t;
 		t=query->findChild("name");
 		if (t)
@@ -1062,7 +1062,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		alist=conf->amoderator();
 	if (arg=="ACMD")
 		alist=conf->acommand();
-	
+
 	if (!alist)
 	{
 		reply(s, QString("Try \"!muc help\""));
@@ -1123,7 +1123,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 			parser.back(1);
 			arg2=parser.nextToken().toUpper();
 			isRemoving=true;
-		}		
+		}
 	}
 
 	int howLong=0;
@@ -1165,11 +1165,11 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		item.setInvert(true);
 		arg2=parser.nextToken().toUpper();
 	}
-	
+
 	qDebug() << "1: " << arg2;
-	
-	if (arg2=="NICK" || arg2=="BODY" || arg2=="RES" 
-		|| arg2=="VERSION" || arg2=="VERSION.NAME" 
+
+	if (arg2=="NICK" || arg2=="BODY" || arg2=="RES"
+		|| arg2=="VERSION" || arg2=="VERSION.NAME"
 		|| arg2=="VERSION.CLIENT" || arg2=="VERSION.OS")
 	{
 		if (arg2=="NICK")
@@ -1188,7 +1188,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 			item.setMatcherType(AListItem::MatcherVersionOs);
 
 		arg2=parser.nextToken().toUpper();
-	} 
+	}
 	else if (arg2=="JID")
 	{
 		item.setMatcherType(AListItem::MatcherJid);
@@ -1196,7 +1196,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	}
 
 	qDebug() << "2: " << arg2;
-	
+
 	if (arg2=="EXP")
 	{
 		QString expStr=parser.nextToken();
@@ -1244,7 +1244,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	}
 
 	qDebug() << "3: " << arg2;
-	
+
 	arg2=arg2.toLower();
 	item.setValue(arg2);
 
@@ -1272,7 +1272,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 			return true;
 		}
 	}
-	
+
 	qDebug() << "4: " << arg2;
 	QString reason=parser.joinBody().trimmed();
 	if (!reason.isEmpty())
@@ -1298,15 +1298,22 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 		lBody=QString::fromStdString(s->body()).toLower();
 	QString version;
 	if (nick->isVersionStored())
-		version=nick->versionName()+" "+nick->versionClient()+" // "+nick->versionOs();
-	
+	{
+		version=nick->versionName();
+		if (!nick->versionClient().isEmpty())
+			version+=" "+nick->versionClient();
+		if (!nick->versionOs().isEmpty())
+			version+=" // "+nick->versionOs();
+		version=version.trimmed();
+	}
+
 	bool isPresence=!s || (s->type()==gloox::StanzaPresence);
-	
+
 	for (int i=0; i<cnt; i++)
 	{
 		AListItem* item=list->at(i);
-		
-		if (matcher!=AListItem::MatcherUnknown && matcher!=AListItem::MatcherAll && 
+
+		if (matcher!=AListItem::MatcherUnknown && matcher!=AListItem::MatcherAll &&
 				!item->matcherType()!=matcher)
 		{
 			if (matcher=AListItem::MatcherVersion)
@@ -1319,13 +1326,13 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 			else
 				continue;
 		}
-	
+
 		QString testValue;
-		if (!isPresence && (item->matcherType() == AListItem::MatcherNick 
+		if (!isPresence && (item->matcherType() == AListItem::MatcherNick
 				|| item->matcherType()==AListItem::MatcherJid || item->matcherType()==AListItem::MatcherResource))
 			continue;
-		
-		if (item->matcherType() == AListItem::MatcherVersion 
+
+		if (item->matcherType() == AListItem::MatcherVersion
 			|| item->matcherType()==AListItem::MatcherVersionName
 			|| item->matcherType()==AListItem::MatcherVersionClient
 			|| item->matcherType()==AListItem::MatcherVersionOs)
@@ -1335,7 +1342,7 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 			if (!nick || !nick->isVersionStored())
 				continue;
 		}
-		
+
 		switch (item->matcherType())
 		{
 			case AListItem::MatcherUnknown: break;
@@ -1349,10 +1356,10 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 			case AListItem::MatcherVersionOs: testValue=nick->versionOs(); break;
 			default: continue;
 		}
-		
+
 		if (testValue.isEmpty())
 			continue;
-		
+
 		switch (item->testType())
 		{
 			case AListItem::TestUnknown: break;
@@ -1386,12 +1393,12 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 {
 	if (!n || !c)
 		return;
-	
+
 	// Don't process our own presences
 	if (c && n->nick()==c->nick())
 		return;
-	
-	// We should not parse own messages, since this can create loop 
+
+	// We should not parse own messages, since this can create loop
 	if (s && (s->from() == s->to() || isMyMessage(s)))
 		s=0l;
 
@@ -1435,7 +1442,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 		setRole(c, n, "moderator", reason);
 		return;
 	}
-	
+
 	if (item=aFind(c->acommand(), n, s, matcher))
 	{
 		QString action=item->reason();
@@ -1458,7 +1465,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 		st->addAttribute("type", type.toStdString());
 		bot()->client()->handleMessage(st, 0);
 		delete st;
-		
+
 		return;
 	}
 }
@@ -1481,7 +1488,7 @@ StorageKey MucPlugin::getStorage(gloox::Stanza *s)
 	Conference* conf=getConf(s);
 	if (!conf)
 		return StorageKey();
-	
+
 	return StorageKey(pluginId, conf->id());
 }
 
@@ -1492,7 +1499,7 @@ AbstractConfigurator* MucPlugin::getConfigurator(gloox::Stanza* s)
 		return 0;
 	if (getRole(s)<ROLE_ADMIN)
 		return 0;
-	
+
 	return conf->configurator();
 }
 
@@ -1600,11 +1607,11 @@ QString MucPlugin::expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QS
 	{
 		QString body=QString::fromStdString(s->body());
 		msg.replace("${BODY}", body);
-		
+
 		if (item)
 		{
 			QString value=item->value();
-			
+
 			if (!value.isEmpty() && msg.indexOf("${BODYARG}")>=0)
 			{
 				if (body.startsWith(value))
@@ -1631,7 +1638,7 @@ void MucPlugin::requestVCard(gloox::Stanza* s, Conference* conf, Nick* nick)
 {
 	if (nick->jidStr().isEmpty())
 		return;
-	
+
 	QString jid=conf->name()+"/"+nick->nick();
 	QString vcardId=bot()->client()->fetchVCard(jid);
 	gloox::Stanza *sf=new gloox::Stanza(s);
@@ -1655,12 +1662,12 @@ bool MucPlugin::onVCard(const VCardWrapper& vcardWrapper)
 	{
 		return false;
 	}
-	
+
 	gloox::Stanza* src=req->stanza();
 	Conference* conf=getConf(src);
 	Nick* nick=getNick(src);
 	QString stored_jid=QString::fromStdString(src->findAttribute("gluxi_jid"));
-	
+
 	if (conf && nick && stored_jid==nick->jidStr())
 	{
 		if (vcardWrapper.isEmpty() || vcardWrapper.vcardStr().isEmpty())
@@ -1689,7 +1696,7 @@ bool MucPlugin::onVCard(const VCardWrapper& vcardWrapper)
 void MucPlugin::sltAutoLeaveTimerTimeout()
 {
 	qDebug() << "Checking for died conferences";
-	
+
 	QStringList conferencesToLeave=Conference::autoLeaveList();
 	if (conferencesToLeave.isEmpty())
 		return;
