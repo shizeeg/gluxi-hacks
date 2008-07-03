@@ -971,7 +971,7 @@ bool MucPlugin::onIq(gloox::Stanza* s)
 
 	QString xmlns=QString::fromStdString(s->xmlns());
 	if (s->subtype()!=gloox::StanzaIqResult || xmlns!="jabber:iq:version")
-	return false;
+		return false;
 
 	gloox::Tag* query=s->findChild("query", "xmlns", xmlns.toStdString());
 	nick->setVersionName(QString::null);
@@ -1312,6 +1312,7 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 	for (int i=0; i<cnt; i++)
 	{
 		AListItem* item=list->at(i);
+		bool processEmpty=false;
 
 		if (matcher!=AListItem::MatcherUnknown && matcher!=AListItem::MatcherAll &&
 				!item->matcherType()!=matcher)
@@ -1342,6 +1343,7 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 				continue;
 			if (!nick || !nick->isVersionStored())
 				continue;
+			processEmpty=true;
 		}
 
 		switch (item->matcherType())
@@ -1358,7 +1360,7 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 			default: continue;
 		}
 
-		if (testValue.isEmpty())
+		if (!processEmpty && testValue.isEmpty())
 			continue;
 
 		switch (item->testType())
