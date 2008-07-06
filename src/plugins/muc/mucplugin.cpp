@@ -188,6 +188,15 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 			confFull=confFull.section('/',0,0);
 			join(confFull);
 		}
+		else
+		{
+			gloox::JID ownerJid(DataStorage::instance()->getStdString("access/owner"));
+			gloox::Stanza *outgoing=gloox::Stanza::createMessageStanza(ownerJid,
+				QString("Error presence from \"%1\". Looks like I can't join:\n%2")
+				.arg(QString::fromStdString(s->from().bare()))
+				.arg(QString::fromStdString(s->xml())).toStdString());
+			bot()->client()->send(outgoing);
+		}
 		return;
 	}
 
