@@ -45,7 +45,7 @@ bool BasePlugin::onMessage(gloox::Stanza* s )
 	MessageParser parser(s, getMyNick(s));
 	parser.nextToken();
 	QString cmd=parser.nextToken().toUpper();
-	
+
 	if (BasePlugin::canHandleMessage(s))
 	{
 		if (cmd.isEmpty())
@@ -159,7 +159,7 @@ void BasePlugin::reply(gloox::Stanza* to, const QString& body, bool forcePrivate
 		int maxmsglines=DataStorage::instance()->getInt("muc/maxmsglines");
 		if (bodyToSend.count('\n')>maxmsglines)
 		{
-			bodyToSend=bodyToSend.section('\n',0,maxmsglines-1)+"[...]";	
+			bodyToSend=bodyToSend.section('\n',0,maxmsglines-1)+"[...]";
 		}
 		dest=to->from().bare();
 		if (quoteNick)
@@ -227,7 +227,7 @@ QString BasePlugin::getNick(gloox::Stanza*s)
 
 QString BasePlugin::getJID(gloox::Stanza*s, const QString& nick)
 {
-	return QString::null;	
+	return QString::null;
 }
 
 QString BasePlugin::getBotJID(gloox::Stanza* s)
@@ -237,7 +237,7 @@ QString BasePlugin::getBotJID(gloox::Stanza* s)
 
 QString BasePlugin::JIDtoNick(const QString& /* jid*/)
 {
-	return QString::null;	
+	return QString::null;
 }
 
 void BasePlugin::onQuit(const QString&)
@@ -252,7 +252,7 @@ QString BasePlugin::getPresence(const gloox::Presence& pr)
         case gloox::PresenceAway: return "Away";
         case gloox::PresenceChat: return "Chat";
         case gloox::PresenceDnd: return "Dnd";
-        case gloox::PresenceUnavailable: return "Unavailiable";
+        case gloox::PresenceUnavailable: return "Unavailable";
         case gloox::PresenceXa: return "Xa";
         case gloox::PresenceUnknown: return "Unknown";
         }
