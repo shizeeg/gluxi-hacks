@@ -109,6 +109,7 @@ CREATE TABLE `webstatus` (
   `jid` varchar(50) collate utf8_unicode_ci NOT NULL,
   `hash` varchar(50) collate utf8_unicode_ci NOT NULL,
   `status` varchar(15) collate utf8_unicode_ci default NULL,
+  `display` varchar(300) collate utf8_unicode_ci default NULL,
   `available` varchar(100) collate utf8_unicode_ci default NULL,
   `away` varchar(100) collate utf8_unicode_ci default NULL,
   `chat` varchar(100) collate utf8_unicode_ci default NULL,

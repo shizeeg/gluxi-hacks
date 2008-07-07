@@ -63,14 +63,19 @@ int main(void)
 
 		res=read(fd,buf+bsize,sizeof(buf)-bsize-1);
 		if (res<=0)
-			reportForbidden("Failed to read from gluxi socket");
-		for (i=bsize; i<bsize+res; i++)
+		{
+			responseFinished=1;
+			break;
+		}
+		/*for (i=bsize; i<bsize+res; i++)
 			if (buf[i]==13 || buf[i]==10)
 			{
 				responseFinished=1;
 				buf[i]=0;
 				break;
 			}
+		*/
+		buf[bsize+res]=0;
 		bsize+=res;
 		if (responseFinished)
 			break;
@@ -79,11 +84,20 @@ int main(void)
 
 	if (!responseFinished)
 		reportForbidden("Failed to read response from gluxi socket");
-	if (strlen(buf)==0)
+	if (strlen(buf)<3)
 		reportForbidden("Unable to find URL");
 
-	printf("Content-type: text/html\r\n");
-	printf("Location: %s\r\n",buf);
-	printf("\r\n");
-}
+	char* bufReal=buf+2;
+	buf[1]=0;
 
+	if (buf[0]=='1')
+	{
+		printf("Content-type: text/html; charset=utf-8\r\n");
+		printf("Location: %s\r\n",bufReal);
+		printf("\r\n");
+	}
+	else if (buf[0]=='0')
+	{
+		printf("%s",bufReal);
+	}
+}

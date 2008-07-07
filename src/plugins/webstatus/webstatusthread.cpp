@@ -18,6 +18,8 @@ WebStatusThread::WebStatusThread()
 	:QThread()
 {
 	socketName=DataStorage::instance()->getString("webstatus/socket");
+	if (socketName.isEmpty())
+		return;
 	shouldWork=1;
 	db=QSqlDatabase::cloneDatabase(QSqlDatabase::database(),"webStatus");
 	if (!db.open())
@@ -62,7 +64,7 @@ void WebStatusThread::run()
 			break;
 		int fd_client=accept(fd_srv, NULL, 0);
 		if (fd_client<0) continue;
-		
+
 		bsize=0;
 
 		bool requestFinished=false;
@@ -101,14 +103,22 @@ void WebStatusThread::run()
 
 		buf[bsize]=0;
 		QString request(buf);
-		
+
 		QString answer;
 
-		if (request.indexOf('\"')<0 && request.indexOf('\'')<0 
+		if (request.indexOf('\"')<0 && request.indexOf('\'')<0
 			&& request.startsWith("id=") && request.indexOf('&')<0)
 		{
 			request.remove(0,3); // Delete id=
-			qDebug() << request;
+			int ps=request.indexOf('_');
+			QString requestType;
+			if (ps>0)
+			{
+				requestType=request.section('_', -1, -1);
+				request=request.section('_', 0, -2);
+			}
+			qDebug() << "request: " << request << " type: " << requestType;
+
 			QSqlQuery query(db);
 			query.prepare("SELECT LOWER(status) FROM webstatus WHERE hash=?");
 			query.addBindValue(request);
@@ -116,16 +126,35 @@ void WebStatusThread::run()
 			{
 				QString status=query.value(0).toString();
 				qDebug() << "st=" << status;
-				query.prepare(QString("SELECT %1 FROM webstatus WHERE hash=?").arg(status));
+				query.prepare(QString("SELECT %1, status, display FROM webstatus WHERE hash=?").arg(status));
 				query.addBindValue(request);
 				if (query.exec() && query.next())
-					answer=query.value(0).toString();
+				{
+					QString url=query.value(0).toString();
+					QString status=query.value(1).toString();
+					QString display=query.value(2).toString();
+					if (requestType=="all")
+					{
+						answer=QString("0:")+url+"\n"+status+"\n"+display;
+					}
+					else if (requestType=="text")
+					{
+						answer=QString("0:")+status;
+						if (!display.isEmpty())
+							answer+=QString(" (%1)").arg(display);
+					}
+					else
+					{
+						answer="1:"+url;
+					}
+
+				}
 			}
 			else
 				qDebug() << query.lastError().text();
 		}
 		answer+='\n';
-		qDebug() << answer;
+		qDebug() << "Response: "+answer;
 		write(fd_client,answer.toLocal8Bit().data(), answer.toLocal8Bit().size());
 		close(fd_client);
 	}

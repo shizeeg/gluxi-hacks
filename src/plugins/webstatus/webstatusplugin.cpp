@@ -15,7 +15,7 @@
 WebstatusPlugin::WebstatusPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
-	commands << "INVITE" << "INFO" << "AVAILABLE" << "AWAY" 
+	commands << "INVITE" << "INFO" << "AVAILABLE" << "AWAY"
 		<< "CHAT" << "DND" << "UNAVAILABLE" << "XA";
 
 	url=DataStorage::instance()->getString("webstatus/url");
@@ -29,7 +29,7 @@ WebstatusPlugin::~WebstatusPlugin()
 {
 	thread->stop();
 	thread->terminate();
-	thread->wait(1);
+	thread->wait(10000);
 	delete thread;
 	thread=0;
 }
@@ -44,7 +44,7 @@ bool WebstatusPlugin::parseMessage(gloox::Stanza* s)
 	{
 		if (!isFromBotOwner(s,true))
 			return true;
-			
+
 		if (arg.isEmpty())
 		{
 			reply(s,"Usage: INVITE <JID>");
@@ -60,7 +60,7 @@ bool WebstatusPlugin::parseMessage(gloox::Stanza* s)
 			return true;
 		}
 		gloox::Stanza* st;
-		st=gloox::Stanza::createSubscriptionStanza(arg.toStdString(), 
+		st=gloox::Stanza::createSubscriptionStanza(arg.toStdString(),
 			"GluxiBot WebStatus service", gloox::StanzaS10nSubscribe);
 		bot()->client()->send(st);
 		reply(s,"Subscription request sent");
@@ -146,10 +146,17 @@ void WebstatusPlugin::onPresence(gloox::Stanza *s)
 
 	qDebug() << "Got presence from " << from;
 	QString status=getPresence(s->presence());
+	QString display;
+	gloox::Tag* showTag=s->findChild("status");
+	if (showTag)
+		display=QString::fromStdString(showTag->cdata());
+
 	if (status.isEmpty())
 		return;
-	query.prepare("UPDATE webstatus SET status=? WHERE jid=?");
+	display.replace	("\n"," ");
+	query.prepare("UPDATE webstatus SET status=?, display=? WHERE jid=?");
 	query.addBindValue(status);
+	query.addBindValue(display);
 	query.addBindValue(from);
 	query.exec();
 }

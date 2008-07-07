@@ -62,6 +62,7 @@ CREATE TABLE webstatus (
   jid varchar(50) NOT NULL,
   hash varchar(50) NOT NULL,
   status varchar(15) default NULL,
+  display varchar(300) default NULL,
   available varchar(100) default NULL,
   away varchar(100) default NULL,
   chat varchar(100) default NULL,
