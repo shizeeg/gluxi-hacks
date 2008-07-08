@@ -59,7 +59,7 @@ QString AListItem::toString() const
 {
 	QString flags;
 	flags+=isInvert() ? "!" : " ";
-			
+
 	switch (matcherType())
 	{
 	case AListItem::MatcherUnknown:
@@ -89,8 +89,10 @@ QString AListItem::toString() const
 	case AListItem::MatcherVersionOs:
 		flags+="Vo";
 		break;
+	case AListItem::MatcherVCardPhotoSize:
+		flags+="Ps";
 	};
-	
+
 	switch (testType())
 	{
 		case AListItem::TestUnknown:
@@ -105,8 +107,14 @@ QString AListItem::toString() const
 		case AListItem::TestSubstring:
 			flags+="S";
 			break;
+		case AListItem::TestGreater:
+			flags+=">";
+			break;
+		case AListItem::TestLesser:
+			flags+="<";
+			break;
 	}
-	
+
 
 	QString line=QString("%1 %2").arg(flags).arg(value());
 	if (expire().isValid())

@@ -18,6 +18,7 @@ public:
 	bool isEmpty() const { return empty; }
 	QString id() const {return id_; }
 	QString vcardStr() const;
+	int photoSize() const;
 private:
 	QString id_;
 	bool empty;

@@ -37,21 +37,24 @@ public:
 		MatcherVersion=5,
 		MatcherVersionName=6,
 		MatcherVersionClient=7,
-		MatcherVersionOs=8
+		MatcherVersionOs=8,
+		MatcherVCardPhotoSize=9,
 	};
-	
+
 	enum TestType
 	{
 		TestUnknown=0,
 		TestExact=1,
 		TestRegExp=2,
-		TestSubstring=3
+		TestSubstring=3,
+		TestGreater=4,
+		TestLesser=5
 	};
-	
+
 	AListItem(int id=-1);
 	AListItem(int id, MatcherType matcherType, TestType testType, const QString& value=QString::null, const QDateTime& expire=QDateTime());
 	virtual ~AListItem();
-	
+
 	int id() const { return id_; }
 	MatcherType matcherType() const { return matcherType_; }
 	TestType testType() const { return testType_; }
@@ -59,7 +62,7 @@ public:
 	QString value() const { return value_; }
 	QString reason() const { return reason_; }
 	QDateTime expire() const { return expire_; }
-	
+
 	void setId(int id) { id_=id; }
 	void setMatcherType(MatcherType matcherType) { matcherType_=matcherType; }
 	void setTestType(TestType testType) { testType_=testType; }
@@ -67,7 +70,7 @@ public:
 	void setValue(const QString& value) { value_=value; }
 	void setReason(const QString& reason) { reason_=reason; }
 	void setExpire(const QDateTime& expire) { expire_=expire; }
-	
+
 	bool operator==(const AListItem& other);
 	bool isSameCondition(const AListItem& other);
 	QString toString() const;

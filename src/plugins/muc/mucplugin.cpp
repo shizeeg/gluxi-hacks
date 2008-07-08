@@ -1179,7 +1179,8 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 
 	if (arg2=="NICK" || arg2=="BODY" || arg2=="RES"
 		|| arg2=="VERSION" || arg2=="VERSION.NAME"
-		|| arg2=="VERSION.CLIENT" || arg2=="VERSION.OS")
+		|| arg2=="VERSION.CLIENT" || arg2=="VERSION.OS"
+		|| arg2=="VCARD.PHOTOSIZE")
 	{
 		if (arg2=="NICK")
 			item.setMatcherType(AListItem::MatcherNick);
@@ -1195,6 +1196,8 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 			item.setMatcherType(AListItem::MatcherVersionClient);
 		else if (arg2=="VERSION.OS")
 			item.setMatcherType(AListItem::MatcherVersionOs);
+		else if (arg2=="VCARD.PHOTOSIZE")
+			item.setMatcherType(AListItem::MatcherVCardPhotoSize);
 
 		arg2=parser.nextToken().toUpper();
 	}
@@ -1225,6 +1228,16 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	else if (arg2=="SUB")
 	{
 		item.setTestType(AListItem::TestSubstring);
+		arg2=parser.nextToken().toUpper();
+	}
+	else if (arg2==">")
+	{
+		item.setTestType(AListItem::TestGreater);
+		arg2=parser.nextToken().toUpper();
+	}
+	else if (arg2=="<")
+	{
+		item.setTestType(AListItem::TestLesser);
 		arg2=parser.nextToken().toUpper();
 	}
 	else if (item.matcherType()==AListItem::MatcherJid)
@@ -1315,6 +1328,7 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 			version+=" // "+nick->versionOs();
 		version=version.trimmed().toLower();
 	}
+	QString vcardPhotoSize=QString::number(nick->vcardPhotoSize());
 
 	bool isPresence=!s || (s->type()==gloox::StanzaPresence);
 
@@ -1366,6 +1380,7 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 			case AListItem::MatcherVersionName: testValue=nick->versionName().toLower(); break;
 			case AListItem::MatcherVersionClient: testValue=nick->versionClient().toLower(); break;
 			case AListItem::MatcherVersionOs: testValue=nick->versionOs().toLower(); break;
+			case AListItem::MatcherVCardPhotoSize: testValue=vcardPhotoSize; break;
 			default: continue;
 		}
 
@@ -1395,6 +1410,33 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 				if (item->isInvert() ^ (testValue.toLower().indexOf(item->value().toLower())>=0))
 					return item;
 				break;
+			}
+			case AListItem::TestGreater:
+			case AListItem::TestLesser:
+			{
+				bool ok1=true;
+				bool ok2=true;
+				int v1=testValue.toInt(&ok1);
+				int v2=item->value().toInt(&ok2);
+				bool cmpResult=false;
+				if (ok1 && ok2)
+				{
+					//Compare as numbers
+					if (item->testType()==AListItem::TestGreater)
+						cmpResult=(v1>v2);
+					else
+						cmpResult=(v1<v2);
+				}
+				else
+				{
+					//Compare strings
+					if (item->testType()==AListItem::TestGreater)
+						cmpResult=(testValue > item->value());
+					else
+						cmpResult=(testValue < item->value());
+				}
+				if (item->isInvert() ^ cmpResult)
+					return item;
 			}
 		}
 	}
@@ -1684,6 +1726,7 @@ bool MucPlugin::onVCard(const VCardWrapper& vcardWrapper)
 	{
 		if (vcardWrapper.isEmpty() || vcardWrapper.vcardStr().isEmpty())
 		{
+			nick->setVCardPhotoSize(0);
 			if (conf->configurator()->isDevoiceNoVCard())
 			{
 				reply(src, conf->configurator()->devoiceNoVCardReason(),true, true);
@@ -1693,12 +1736,14 @@ bool MucPlugin::onVCard(const VCardWrapper& vcardWrapper)
 		}
 		else
 		{
+			nick->setVCardPhotoSize(vcardWrapper.photoSize());
 			if (nick->isDevoicedNoVCard() && conf->configurator()->isDevoiceNoVCard() && nick->role().toUpper()=="VISITOR")
 			{
 				setRole(conf, nick, "participant","");
 				nick->setDevoicedNoVCard(false);
 			}
 		}
+		checkMember(0, conf, nick, AListItem::MatcherVCardPhotoSize);
 	}
 	delete req;
 	bot()->asyncRequests()->removeAll(req);

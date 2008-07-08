@@ -18,7 +18,7 @@ VCardWrapper::VCardWrapper(const std::string& id, const gloox::JID &jid, gloox::
 	{
 		empty=true;
 	}
-	
+
 }
 
 VCardWrapper::VCardWrapper(const VCardWrapper& other)
@@ -30,13 +30,20 @@ VCardWrapper::VCardWrapper(const VCardWrapper& other)
 }
 
 VCardWrapper::~VCardWrapper()
-{		
+{
+}
+
+int VCardWrapper::photoSize() const
+{
+	gloox::VCard vcard=gloox::VCard(vcard_);
+	std::string photoContentStd=vcard.photo().binval;
+	return photoContentStd.size();
 }
 
 QString VCardWrapper::vcardStr() const
 {
 	gloox::VCard vcard=gloox::VCard(vcard_);
-	
+
 	QString fullName=QString::fromStdString(vcard.formattedname()).trimmed();
 	QString nickName=QString::fromStdString(vcard.nickname()).trimmed();
 	QString birthday=QString::fromStdString(vcard.bday()).trimmed();

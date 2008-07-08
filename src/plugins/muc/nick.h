@@ -28,9 +28,10 @@ public:
 	QString versionName() const { return versionName_; }
 	QString versionOs() const { return versionOs_; }
 	QString versionClient() const { return versionClient_; }
+	int vcardPhotoSize() const { return vcardPhotoSize_; }
 
 	QStringList similarNicks();
-	
+
 	void setJid(const QString& jid);
 	void setNick(const QString& nick);
 	void setAffiliation(const QString& affiliation) { myAffiliation=affiliation; };
@@ -39,7 +40,7 @@ public:
 	void updateLastActivity();
 	void setShow(const QString& show) { myShow=show; };
 	void setStatus(const QString& status) { myStatus=status; };
-	void setValidateRequired(const bool value) { myValidateRequired=value; }; 
+	void setValidateRequired(const bool value) { myValidateRequired=value; };
 	void commit();
 	static void setAllOffline (Conference* conf);
 	bool isDevoicedNoVCard() const {return devoicedNoVCard_; }
@@ -48,7 +49,7 @@ public:
 	void setVersionName(const QString& name) { versionName_=name; };
 	void setVersionOs(const QString& os) { versionOs_=os; };
 	void setVersionClient(const QString& client) { versionClient_=client; };
-	
+	void setVCardPhotoSize(int vcardPhotoSize) { vcardPhotoSize_=vcardPhotoSize; };
 private:
 	int myId;
 	bool myLazyLeave;
@@ -68,6 +69,7 @@ private:
 	QString versionName_;
 	QString versionOs_;
 	QString versionClient_;
+	int vcardPhotoSize_;
 };
 
 #endif

@@ -18,6 +18,7 @@ Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 	myLazyLeave=false;
 	myJoined=QDateTime::currentDateTime();
 	versionStored_=false;
+	vcardPhotoSize_=-1;
 	qDebug() << "[NICK] created: " << myNick;
 
 	myJid=new Jid(this, jid);
@@ -65,7 +66,7 @@ Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 			query.addBindValue(myParent->id());
 			query.addBindValue(myNick);
 			query.addBindValue(myJid->id());
-			if (!query.exec() || !query.next()) 
+			if (!query.exec() || !query.next())
 			{
 				qDebug() << "[NICK] " << QSqlDatabase::database().lastError().text();
 				return;
@@ -84,7 +85,8 @@ Nick::Nick(Conference* parent, int id)
 	myId=id;
 	myValidateRequired=false;
 	versionStored_=false;
-	
+	vcardPhotoSize_=-1;
+
 	QSqlQuery query=DataStorage::instance()
 			->prepareQuery("SELECT nick, jid, joined, lastaction FROM conference_nicks WHERE conference_id = ? AND id = ?");
 	query.addBindValue(parent->id());
