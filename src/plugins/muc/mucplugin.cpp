@@ -1352,6 +1352,10 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 				continue;
 		}
 
+		if (item->matcherType()==AListItem::MatcherVCardPhotoSize
+				&& matcher!=item->matcherType() && matcher!=AListItem::MatcherAll)
+			continue;
+
 		QString testValue;
 		if (!isPresence && (item->matcherType() == AListItem::MatcherNick
 				|| item->matcherType()==AListItem::MatcherJid || item->matcherType()==AListItem::MatcherResource))
