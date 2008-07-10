@@ -23,7 +23,9 @@ public:
 	bool validated() const { return myValidated; }
 
 	static QStringList autoJoinList(); // List conferences to autojoin
-	static QStringList autoLeaveList(); // List 'died' conferences to leave 
+	static QStringList autoLeaveList(); // List 'died' conferences to leave
+	static void disableAutoJoin(const QString& conference);
+
 	void setAutoJoin(bool b);
 	void removeExpired();
 
@@ -37,7 +39,7 @@ public:
 	void setNick(const QString& name);
 	void setLazyLeave(bool value);
 	void setValidated(bool value) { myValidated=value; }
-	
+
 	void loadOnlineNicks();
 	void cleanNonValidNicks();
 	void markOffline();

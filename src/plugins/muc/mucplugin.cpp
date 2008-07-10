@@ -196,6 +196,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 				.arg(QString::fromStdString(s->from().bare()))
 				.arg(QString::fromStdString(s->xml())).toStdString());
 			bot()->client()->send(outgoing);
+			Conference::disableAutoJoin(confFull.section('/',0,0));
 		}
 		return;
 	}
@@ -285,6 +286,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 			else
 			{
 				qDebug() <<"!!! I'm kicked/banned";
+				conf->setAutoJoin(false);
 				conferences.remove(conf);
 			}
 		}

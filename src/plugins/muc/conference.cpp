@@ -108,7 +108,7 @@ void Conference::markOffline()
 	QSqlQuery query=DataStorage::instance()
 				->prepareQuery("UPDATE conferences SET online = false WHERE id = ?");
 	query.addBindValue(myId);
-	query.exec();	
+	query.exec();
 }
 
 QStringList Conference::autoJoinList()
@@ -284,4 +284,13 @@ QStringList Conference::autoLeaveList()
 		res.append(QString("%1 %2").arg(cnt).arg(name));
 	}
 	return res;
+}
+
+void Conference::disableAutoJoin(const QString& conference)
+{
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("UPDATE conferences SET autojoin=? WHERE name=?");
+	query.addBindValue(false);
+	query.addBindValue(conference);
+	query.exec();
 }
