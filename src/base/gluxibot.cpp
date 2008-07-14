@@ -35,12 +35,12 @@ GluxiBot::GluxiBot()
 	{
 		new Logger(logFile);
 	}
-	
+
 	storage->connect();
 	qRegisterMetaType<MyStanza>("MyStanza");
 	qRegisterMetaType<VCardWrapper>("VCardWrapper");
 	myGloox=new GlooxWrapper();
-	connect(myGloox, SIGNAL(sigConnect()), 
+	connect(myGloox, SIGNAL(sigConnect()),
 		this, SLOT(onConnect()),Qt::QueuedConnection);
 	connect(myGloox, SIGNAL(sigDisconnect()),
 		this, SLOT(onDisconnect()), Qt::QueuedConnection);
@@ -52,7 +52,7 @@ GluxiBot::GluxiBot()
 		this, SLOT(handleIq(const MyStanza&)), Qt::QueuedConnection);
 	connect(myGloox, SIGNAL(sigVCard(const VCardWrapper&)),
 			this, SLOT(handleVCard(const VCardWrapper&)), Qt::QueuedConnection);
-	
+
 	myRoles=new RoleList();
 	myRoles->insert(storage->getString("access/owner"),ROLE_BOTOWNER);
 	int i=1;
@@ -66,7 +66,7 @@ GluxiBot::GluxiBot()
 /*	myOwners.append(storage->getString("access/owner"));*/
 
 	rootDiscoHandler_=new RootDiscoHandler(this);
-	
+
 	myAsyncRequests=new AsyncRequestList();
 	PluginLoader::loadPlugins(&myPlugins,this);
 
@@ -156,7 +156,7 @@ void GluxiBot::handlePresence(const MyStanza& st)
 	gloox::Stanza *s=st.stanza();
 
 	qDebug() << "[IN ] " << s->xml().data();
-	
+
 	BasePlugin *plugin;
 	plugin=pluginByStanzaId(s);
 	if (plugin)
@@ -186,8 +186,8 @@ void GluxiBot::handleIq(const MyStanza& st)
 	{
 		myGloox->send(iqReply);
 		return;
-	} 
-	
+	}
+
 	BasePlugin *plugin;
 	plugin=pluginByStanzaId(s);
 	if (plugin)
@@ -210,8 +210,11 @@ void GluxiBot::handleIq(const MyStanza& st)
 			}
 		}
 	}
-	gloox::Stanza* errStanza=gloox::Stanza::createIqStanza(s->from(),s->id(),gloox::StanzaIqError,s->xmlns());
-	client()->send(errStanza);
+	if (s->findAttribute("type")!="error")
+	{
+		gloox::Stanza* errStanza=gloox::Stanza::createIqStanza(s->from(),s->id(),gloox::StanzaIqError,s->xmlns());
+		client()->send(errStanza);
+	}
 }
 
 void GluxiBot::handleVCard(const VCardWrapper& vcard)
@@ -327,7 +330,7 @@ QString GluxiBot::getMyNick(gloox::Stanza* s)
 		if (!res.isEmpty())
 			return res;
 	}
-	
+
 	return QString::fromStdString(client()->jid().username());
 }
 
