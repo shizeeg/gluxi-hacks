@@ -177,6 +177,7 @@ void GluxiBot::handlePresence(const MyStanza& st)
 
 void GluxiBot::handleIq(const MyStanza& st)
 {
+	static QString lastIqErrorId;
 	gloox::Stanza *s=st.stanza();
 
 	qDebug() << "[IN ] " << s->xml().data();
@@ -212,6 +213,12 @@ void GluxiBot::handleIq(const MyStanza& st)
 	}
 	if (s->findAttribute("type")!="error")
 	{
+		// Workaround Talisman bug, that sends strange replies to <iq type='error' /> stanzas
+		QString sid=QString::fromStdString(s->id());
+		if (lastIqErrorId==sid)
+			return;
+		lastIqErrorId=sid;
+
 		gloox::Stanza* errStanza=gloox::Stanza::createIqStanza(s->from(),s->id(),gloox::StanzaIqError,s->xmlns());
 		client()->send(errStanza);
 	}
