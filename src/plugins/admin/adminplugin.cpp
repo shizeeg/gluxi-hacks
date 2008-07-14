@@ -15,7 +15,7 @@
 #include <QSqlRecord>
 #include <QVariant>
 
-QString restrictedTerms[]={"DELETE", "UPDATE", "TRUNCATE", "DROP", "CREATE", 
+QString restrictedTerms[]={"DELETE", "UPDATE", "TRUNCATE", "DROP", "CREATE",
 			"GRANT", "ALTER", "INSERT", "TRANSACTION", ""};
 
 const int TAB_SIZE=1;
@@ -102,7 +102,7 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 						stanza=QString::fromStdString(req->stanza()->body());
 						stanza.replace('\n', ' ');
 					}
-					res+=QString("\n%1: %2").arg(plugin).arg(stanza);
+					res+=QString("\n%1: %2 | %3").arg(plugin).arg(req->name()).arg(stanza);
 				}
 				reply(s, "Active async requests: "+res);
 			}
@@ -168,9 +168,9 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 			reply(s, "Syntax: subscribe JID");
 		}
 		else
-		{	
+		{
 			gloox::Stanza* st;
-			st=gloox::Stanza::createSubscriptionStanza(target.toStdString(), 
+			st=gloox::Stanza::createSubscriptionStanza(target.toStdString(),
 					"GluxiBot subscribed", gloox::StanzaS10nSubscribed);
 			bot()->client()->send(st);
 			st=gloox::Stanza::createSubscriptionStanza(target.toStdString(),
@@ -181,7 +181,7 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 		}
 		return true;
 	}
-	
+
 	if (cmd=="SQL")
 	{
 		if (!isFromBotOwner(s))
@@ -189,7 +189,7 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 			reply(s, "Only bot owner can do this");
 			return true;
 		}
-		
+
 		QString query=parser.joinBody();
 		QString queryUp=query.toUpper();
 		int idx=0;
@@ -204,7 +204,7 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 			}
 			++idx;
 		}
-		
+
 		QSqlQuery sql=DataStorage::instance()->prepareQuery(query);
 		if (!sql.exec())
 		{
@@ -212,20 +212,20 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 			return true;
 		}
 		QSqlRecord rec = sql.record();
-		
+
 		int cnt=rec.count();
 		QVector<QVector<QString> > resultTable;
-		
+
 		QVector<QString> line;
 		line.reserve(cnt);
 		for (int i=0; i<cnt; ++i)
 		{
 			line.append(rec.fieldName(i));
 		}
-		
+
 		resultTable.append(line);
 		line.clear();
-		
+
 		int totalRows=0;
 		while (sql.next())
 		{
@@ -236,15 +236,15 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 			if (++totalRows==10)
 				break;
 		}
-		
+
 		QVector<int> colWidth(cnt);
 		colWidth.fill(0);
-		
+
 		for (int row=0; row<resultTable.count(); ++row)
 			for (int col=0; col<cnt; ++col)
 				if (resultTable[row][col].length()>colWidth[col])
 					colWidth[col]=resultTable[row][col].length();
-				
+
 		QString result;
 		for (int row=0; row<resultTable.count(); ++row)
 		{
@@ -259,8 +259,8 @@ bool AdminPlugin::parseMessage(gloox::Stanza* s)
 				line+=QString().fill(' ',(maxL-l)/TAB_SIZE + 1);
 			}
 			result+="\n"+line;
-		}		
-		
+		}
+
 		reply(s,QString("Result:")+result);
 		return true;
 	}
