@@ -16,7 +16,7 @@ class AsyncRequest: public QThread
 {
 	Q_OBJECT
 public:
-	AsyncRequest(int id, BasePlugin *plugin, gloox::Stanza *from, int timeout=600);
+	AsyncRequest(int id, BasePlugin *plugin, gloox::Stanza *from, int timeout=600, bool notifyOnTimeout=false);
 	virtual ~AsyncRequest();
 	int id() const { return myId; };
 	BasePlugin* plugin() const { return myPlugin; };
@@ -41,10 +41,12 @@ private:
 	int myTimeout;
 	QDateTime myTime;
 	bool notified;
+	bool notifyOnTimeout_;
 private slots:
 	void sltThreadTerminated();
 	void sltThreadFinished();
-	
+	void sltTimerTimeout();
+
 protected:
 	virtual void run();
 signals:
@@ -52,6 +54,7 @@ signals:
 	void onExpire();
 	void onTerminated(AsyncRequest*);
 	void onFinished(AsyncRequest*);
+	void onTimeout(AsyncRequest*);
 };
 
 #endif

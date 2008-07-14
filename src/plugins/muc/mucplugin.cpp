@@ -5,6 +5,7 @@
 #include "alistitem.h"
 #include "jid.h"
 #include "config/mucconfigurator.h"
+#include "nickasyncrequest.h"
 
 #include "base/common.h"
 #include "base/gluxibot.h"
@@ -1790,8 +1791,14 @@ void MucPlugin::requestVersion(gloox::Stanza* s, Conference* conf, Nick* nick)
 	gloox::Stanza *sf=new gloox::Stanza(s);
 	sf->addAttribute("id", id);
 
-	AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
-	req->setName("muc::version");
+	int timeout=conf->configurator()->queryVersionTimeout();
+	NickAsyncRequest *req=new NickAsyncRequest(-1, this, sf,
+			timeout==0 ? 3600: timeout, timeout!=0);
+	connect(req, SIGNAL(onTimeout(AsyncRequest*)), SLOT(sltVersionQueryTimeout(AsyncRequest*)));
+	req->setName("muc::version: "+jid);
+	req->setNick(nick->nick());
+	req->setJid(nick->jidStr());
+	req->setConference(conf->name());
 	bot()->asyncRequests()->append(req);
 	bot()->client()->send(st);
 	return;
@@ -1806,4 +1813,24 @@ int MucPlugin::getRoleForNick(Conference* conf, Nick* nick)
 	int role1=bot()->roles()->get(jid1);
 	int role2=bot()->roles()->get(jid2);
 	return (role1>role2) ? role1: role2;
+}
+
+void MucPlugin::sltVersionQueryTimeout(AsyncRequest* req)
+{
+	qDebug() << "Version query timeout: " << req->name();
+	if (!req->name().startsWith("muc::version"))
+	{
+		qDebug() << "[BUG] Incorrect request";
+	}
+	NickAsyncRequest* nickReq=static_cast<NickAsyncRequest*>(req);
+	Conference *conf=conferences.byName(nickReq->conference());
+	if (!conf)
+		return;
+	Nick* nick=conf->nicks()->byName(nickReq->nick());
+	if (!nick)
+		return;
+	if (nick->jidStr()!=nickReq->jid())
+		return;
+	nick->setVersionStored(true);
+	checkMember(0L, conf, nick, AListItem::MatcherVersion);
 }

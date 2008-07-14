@@ -3,16 +3,20 @@
 #include <gloox/stanza.h>
 
 #include <QtDebug>
+#include <QTimer>
 
-AsyncRequest::AsyncRequest(int id, BasePlugin *plugin, gloox::Stanza *from, int timeout)
+AsyncRequest::AsyncRequest(int id, BasePlugin *plugin, gloox::Stanza *from, int timeout, bool notifyOnTimeout)
 {
 	myId=id;
 	myPlugin=plugin;
 	myStanza=from;
 	myTimeout=timeout;
+	notifyOnTimeout_=notifyOnTimeout;
 	update();
 	connect(this, SIGNAL(terminated()), SLOT(sltThreadTerminated()));
 	connect(this, SIGNAL(finished()), SLOT(sltThreadFinished()));
+	if (notifyOnTimeout)
+		QTimer::singleShot(timeout*1000, this, SLOT(sltTimerTimeout()));
 }
 
 AsyncRequest::~AsyncRequest()
@@ -49,7 +53,7 @@ QString AsyncRequest::stanzaId() const
 
 void AsyncRequest::run()
 {
-}	
+}
 
 void AsyncRequest::sltThreadTerminated()
 {
@@ -58,5 +62,11 @@ void AsyncRequest::sltThreadTerminated()
 
 void AsyncRequest::sltThreadFinished()
 {
+	emit onFinished(this);
+}
+
+void AsyncRequest::sltTimerTimeout()
+{
+	emit onTimeout(this);
 	emit onFinished(this);
 }

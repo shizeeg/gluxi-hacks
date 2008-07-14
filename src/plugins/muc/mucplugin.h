@@ -7,6 +7,7 @@
 
 class MessageParser;
 class AListItem;
+class AsyncRequest;
 
 class MucPlugin : public BasePlugin
 {
@@ -33,7 +34,7 @@ public:
 	virtual QString getBotJID(gloox::Stanza* s);
 	virtual QString JIDtoNick(const QString& jid);
 	virtual QString getMyNick(gloox::Stanza* s);
-	virtual QString resolveMyNick(gloox::Stanza* s); 
+	virtual QString resolveMyNick(gloox::Stanza* s);
 	virtual void onQuit(const QString& reason);
 	virtual AbstractConfigurator* getConfigurator(gloox::Stanza* s);
 private:
@@ -70,6 +71,7 @@ private:
 	void requestVersion(gloox::Stanza* s, Conference* conf, Nick* nick);
 private slots:
 	void sltAutoLeaveTimerTimeout();
+	void sltVersionQueryTimeout(AsyncRequest* req);
 };
 
 #endif

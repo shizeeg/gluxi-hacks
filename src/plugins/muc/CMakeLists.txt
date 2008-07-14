@@ -2,6 +2,7 @@
 
 set (plugin_HDR_MOC
 	mucplugin.h
+	nickasyncrequest.h
 )
 
 set (plugin_HDR
@@ -25,6 +26,7 @@ set (plugin_SRC
 	nick.cpp
 	nicklist.cpp
 	config/mucconfigurator.cpp
+	nickasyncrequest.cpp
 )
 
 GLUXI_PLUGIN()

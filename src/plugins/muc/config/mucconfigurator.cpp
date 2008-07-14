@@ -51,5 +51,7 @@ void MucConfigurator::parse()
 			devoiceNoVCardReason_=field.value();
 		if (field.name()=="query_version_on_join")
 			queryVersionOnJoin_=field.boolValue();
+		if (field.name()=="query_version_timeout")
+			queryVersionTimeout_=field.value().toInt();
 	}
 }

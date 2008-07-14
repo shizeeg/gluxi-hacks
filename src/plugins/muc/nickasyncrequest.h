@@ -17,33 +17,30 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef MUCCONFIGURATOR_H_
-#define MUCCONFIGURATOR_H_
+#ifndef NICKASYNCREQUEST_H_
+#define NICKASYNCREQUEST_H_
 
-#include "base/config/sqlbasedconfigurator.h"
+#include "base/asyncrequest.h"
 
-class MucConfigurator: public SqlBasedConfigurator
+class NickAsyncRequest: public AsyncRequest
 {
+	Q_OBJECT
 public:
-	MucConfigurator(const QString& targetJid, StorageKey key);
-	virtual ~MucConfigurator();
-	virtual void saveFields(QList<ConfigField> fields);
+	NickAsyncRequest(int id, BasePlugin *plugin, gloox::Stanza *from,
+			int timeout=600, bool notifyOnTimeout=false);
+	virtual ~NickAsyncRequest();
 
-	bool isApplyAlistsToMembers() const { return applyAlistsToMembers_; }
-	bool isCheckAlistsEveryPresence() const { return checkAlistsEveryPresence_; }
-	bool isDevoiceNoVCard() const { return devoiceNoVCard_; }
-	QString devoiceNoVCardReason() const { return devoiceNoVCardReason_; }
-	bool isQueryVersionOnJoin() const { return queryVersionOnJoin_; }
-	int queryVersionTimeout() const { return queryVersionTimeout_; }
+	QString conference() const { return conference_ ; }
+	QString jid() const { return jid_; }
+	QString nick() const { return nick_; }
+
+	void setConference(const QString& conference) { conference_=conference; }
+	void setJid(const QString& jid) { jid_=jid; }
+	void setNick(const QString& nick) { nick_=nick; }
 private:
-	bool applyAlistsToMembers_;
-	bool checkAlistsEveryPresence_;
-	bool devoiceNoVCard_;
-	QString devoiceNoVCardReason_;
-	bool queryVersionOnJoin_;
-	int queryVersionTimeout_;
-	void parse();
-
+	QString conference_;
+	QString jid_;
+	QString nick_;
 };
 
-#endif /*MUCCONFIGURATOR_H_*/
+#endif /* NICKASYNCREQUEST_H_ */
