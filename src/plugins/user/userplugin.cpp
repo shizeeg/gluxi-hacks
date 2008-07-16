@@ -232,20 +232,21 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 					name=jid;
 				if (name.isEmpty())
 					continue;
-				QString cnt=getValue(name, "^.*\\(([0-9]+)\\)$");
+				QString cnt=getValue(name, "^.*\\(([^\\)]+)\\)$");
 				if (cnt.isEmpty())
 				{
 					cnt="0";
 					noval++;
 				}
 				else
-					name=getValue(name,"^(.*)\\([0-9]+\\)$").trimmed();
+					name=getValue(name,"^(.*)\\([^\\)]+\\)$").trimmed();
+				if (cnt=="n/a")
+					cnt="0";
 				cnt=cnt.rightJustified(8, '0', true);
 				if (name!=jid && safeJid)
 					name+=QString(" [%1]").arg(jid);
 				strings.append(QString("%1 %2").arg(cnt).arg(name));
 			}
-			qDebug() << strings;
 			strings.sort();
 			QStringList replyList;
 			bool haveValues;
@@ -345,8 +346,8 @@ bool UserPlugin::onVCard(const VCardWrapper& vcardWrapper)
 		if (!white.isEmpty() && white.length()<=5)
 			img2ascii.setWhite(white);
 		if (!black.isEmpty() && black.length()<=5)
-			img2ascii.setBlack(black);		
-		
+			img2ascii.setBlack(black);
+
 		QString ascii=img2ascii.ascii();
 		if (ascii.isEmpty())
 			reply(req->stanza(), "Can't convert image to ASCII");
