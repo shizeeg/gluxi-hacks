@@ -240,7 +240,9 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 				}
 				else
 					name=getValue(name,"^(.*)\\([^\\)]+\\)$").trimmed();
-				if (cnt=="n/a")
+				bool ok=true;
+				cnt.toInt(&ok);
+				if (!ok)
 					cnt="0";
 				cnt=cnt.rightJustified(8, '0', true);
 				if (name!=jid && safeJid)
