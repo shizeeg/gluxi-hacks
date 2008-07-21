@@ -96,7 +96,7 @@ int DataStorage::getInt(const QString& name)
 
 bool DataStorage::connect()
 {
-	database = QSqlDatabase::addDatabase(myType, "gluxi");
+	database = QSqlDatabase::addDatabase(myType);
 	database.setHostName(myServer);
 	database.setPort(myPort);
 	database.setDatabaseName(myDatabase);
