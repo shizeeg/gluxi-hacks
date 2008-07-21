@@ -15,6 +15,7 @@ public:
 	static DataStorage* instance();
 	static DataStorage* instance(const QString& configFile);
 	bool connect();
+	void disconnect();
 	QString getString(const QString& name);
 	std::string getStdString(const QString& name);
 	int getInt(const QString& name);
@@ -25,7 +26,7 @@ private:
 	DataStorage();
 	DataStorage(const QString& configFile);
 	~DataStorage();
-	
+
 	QSqlDatabase database;
 	QSettings *settings;
 	QString myType;
@@ -35,6 +36,7 @@ private:
 	QString myPassword;
 	QString myDatabase;
 	QString configFile_;
+	bool checkDbVersion();
 	void loadSettings();
 // 	void saveSettings();
 };

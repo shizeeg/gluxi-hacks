@@ -35,8 +35,6 @@ GluxiBot::GluxiBot()
 	{
 		new Logger(logFile);
 	}
-
-	storage->connect();
 	qRegisterMetaType<MyStanza>("MyStanza");
 	qRegisterMetaType<VCardWrapper>("VCardWrapper");
 	myGloox=new GlooxWrapper();

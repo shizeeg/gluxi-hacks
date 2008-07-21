@@ -1,5 +1,7 @@
 #include "datastorage.h"
 
+#include "dbversion.h"
+
 #include <QtDebug>
 #include <QSettings>
 
@@ -94,7 +96,7 @@ int DataStorage::getInt(const QString& name)
 
 bool DataStorage::connect()
 {
-	database = QSqlDatabase::addDatabase(myType);
+	database = QSqlDatabase::addDatabase(myType, "gluxi");
 	database.setHostName(myServer);
 	database.setPort(myPort);
 	database.setDatabaseName(myDatabase);
@@ -106,7 +108,14 @@ bool DataStorage::connect()
 		return false;
 	}
 	qDebug() << "DataStorage:: Connect to database success";
-	return true;
+	return checkDbVersion();
+}
+
+void DataStorage::disconnect()
+{
+	qDebug() << "Disconnecting from database";
+	database.close();
+	QSqlDatabase::removeDatabase("gluxi");
 }
 
 QSqlQuery DataStorage::prepareQuery(const QString& query)
@@ -120,4 +129,22 @@ QSqlQuery DataStorage::prepareQuery(const QString& query)
 	QSqlQuery q;
 	q.prepare(query);
 	return q;
+}
+
+bool DataStorage::checkDbVersion()
+{
+	QSqlQuery query=prepareQuery("SELECT value FROM version WHERE name=? LIMIT 1");
+	query.addBindValue("dbversion");
+	if (!query.exec() || !query.next()) {
+		qDebug() << "Unable to query for database version: " << query.lastError().text();
+		return false;
+	}
+	int version=query.value(0).toInt();
+	if (version!=GLUXI_DB_VERSION)
+	{
+		qDebug() << "Database version mismatch: this version of GluxiBot require "
+			"version" << GLUXI_DB_VERSION << " however your database version is" << version;
+		return false;
+	}
+	return true;
 }

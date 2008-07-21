@@ -11,6 +11,7 @@ set (base_HDR_MOC
 )
 
 set (base_HDR
+	dbversion.h
 	common.h
 	mystanza.h
 	datastorage.h	

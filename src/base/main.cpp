@@ -34,7 +34,7 @@ void quitHandler(int)
 	if (!wasSignal)
 	{
 		wasSignal=1;
-		QCoreApplication::postEvent(bot, 
+		QCoreApplication::postEvent(bot,
 			new QuitEvent("got SIGINT signal. Possible Ctrl+C from console"));
 	}
 	else
@@ -60,16 +60,26 @@ int main(int argc, char*argv[])
 	QCoreApplication app(argc, argv);
 	QLocale::setDefault(QLocale("en_US"));
 	QTextCodec::setCodecForCStrings (QTextCodec::codecForName("UTF-8"));
-	
+
 	QStringList arguments=app.arguments();
 
 	if (arguments.count()>1)
 		DataStorage::instance(arguments[1]);
-	
-	installSigHandlers();	
-	bot=new GluxiBot();
-	int res=app.exec();
-	delete bot;
+
+	int res=0;
+	if (DataStorage::instance()->connect())
+	{
+		installSigHandlers();
+		bot=new GluxiBot();
+		res=app.exec();
+		delete bot;
+	}
+	else
+	{
+		res=1;
+	}
+
+	DataStorage::instance()->disconnect();
 	return res;
 }
 

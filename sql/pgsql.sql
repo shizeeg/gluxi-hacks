@@ -102,3 +102,9 @@ CREATE TABLE configuration_fields (
   PRIMARY KEY (plugin,name)
 );
 
+CREATE TABLE version (
+  name varchar(50) NOT NULL,
+  value varchar(50) NOT NULL
+);
+
+INSERT INTO version (name, value) VALUES ('dbversion', 303);
