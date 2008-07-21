@@ -104,7 +104,8 @@ CREATE TABLE configuration_fields (
 
 CREATE TABLE version (
   name varchar(50) NOT NULL,
-  value varchar(50) NOT NULL
+  value varchar(50) NOT NULL,
+  PRIMARY KEY (name)
 );
 
 INSERT INTO version (name, value) VALUES ('dbversion', 303);
