@@ -17,19 +17,19 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef PLUGINLIST_H
-#define PLUGINLIST_H
+#ifndef PLUGINREF_H_
+#define PLUGINREF_H_
 
-#include "pluginref.h"
+#include "baseplugin.h"
 
-#include <QList>
+#include <QPointer>
 
-class PluginList: public QList<PluginRef>
+class PluginRef: public QPointer<BasePlugin>
 {
 public:
-	PluginList();
-	~PluginList();
-	void clear();
+	PluginRef(BasePlugin* plugin);
+	virtual ~PluginRef();
+	bool operator<(const PluginRef& other) const;
 };
 
-#endif
+#endif /* PLUGINREF_H_ */

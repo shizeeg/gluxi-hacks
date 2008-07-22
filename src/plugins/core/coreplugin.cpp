@@ -35,7 +35,6 @@ bool CorePlugin::onMessage(gloox::Stanza* s)
 			if (!pr.isEmpty())
 				plg << pr;
 		}
-		qSort(plg.begin(), plg.end());
 		reply(s,QString("Available plugins: %1").arg(plg.join(", ")));
 		return true;
 	}

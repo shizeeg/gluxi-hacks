@@ -22,6 +22,7 @@ public:
 	BasePlugin(GluxiBot *parent);
 	virtual ~BasePlugin();
 	int id() const {return pluginId;};
+	int priority() const { return priority_; };
 	virtual QString name() const { return "BasePlugin"; };
 	virtual QString prefix() const { return "base"; };
 	virtual QString help() const { return QString::null; };
@@ -50,6 +51,7 @@ public:
 	virtual AbstractConfigurator* getConfigurator(gloox::Stanza* s);
 protected:
 	int pluginId;
+	int priority_;
 	bool myShouldIgnoreError;
 	QStringList commands;
 	QString lprefix() const { return prefix().toLower(); };

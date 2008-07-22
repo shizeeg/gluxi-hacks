@@ -16,6 +16,7 @@ BasePlugin::BasePlugin(GluxiBot* parent)
 {
 	commands << "HELP" << "LIST";
 	pluginId=0;
+	priority_=100;
 	myShouldIgnoreError=false;
 }
 

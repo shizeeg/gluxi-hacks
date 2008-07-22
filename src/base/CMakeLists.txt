@@ -14,7 +14,8 @@ set (base_HDR
 	dbversion.h
 	common.h
 	mystanza.h
-	datastorage.h	
+	datastorage.h
+	pluginref.h	
 	pluginlist.h
 	rolelist.h
 	segfault.h
@@ -46,6 +47,7 @@ set (base_SRC
 	glooxwrapper.cpp
 	vcardwrapper.cpp
 	main.cpp
+	pluginref.cpp
 	pluginlist.cpp
 	asyncrequest.cpp
 	asyncrequestlist.cpp

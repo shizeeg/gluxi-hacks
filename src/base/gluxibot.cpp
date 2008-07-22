@@ -67,6 +67,7 @@ GluxiBot::GluxiBot()
 
 	myAsyncRequests=new AsyncRequestList();
 	PluginLoader::loadPlugins(&myPlugins,this);
+	qSort(myPlugins.begin(),myPlugins.end());
 
 	// Launch Gloox thread
 	myGloox->start();
@@ -88,7 +89,7 @@ void GluxiBot::onConnect()
 {
 	std::cout << "Connected" << std::endl;
 
-	QListIterator<BasePlugin*> it(myPlugins);
+	QListIterator<PluginRef> it(myPlugins);
 	BasePlugin *plugin;
 	while (it.hasNext())
 	{
@@ -103,7 +104,7 @@ void GluxiBot::onDisconnect()
 {
 	std::cout << "Disconnected" << std::endl;
 
-	QListIterator<BasePlugin*> it(myPlugins);
+	QListIterator<PluginRef> it(myPlugins);
 	BasePlugin *plugin;
 	while (it.hasNext())
 	{
@@ -120,7 +121,7 @@ void GluxiBot::handleMessage(const MyStanza& st)
 	qDebug() << "[IN ] " << s->xml().data();
 
 // TODO: Implement Async message handler by ID if required
-	QListIterator<BasePlugin*> it(myPlugins);
+	QListIterator<PluginRef> it(myPlugins);
 	BasePlugin *plugin;
 	bool parsed=false;
 	while (it.hasNext())
@@ -137,7 +138,7 @@ void GluxiBot::handleMessage(const MyStanza& st)
 
 bool GluxiBot::isMyMessage(gloox::Stanza *s)
 {
-	QListIterator<BasePlugin*> it(myPlugins);
+	QListIterator<PluginRef> it(myPlugins);
 	BasePlugin *plugin;
 	while (it.hasNext())
 	{
@@ -163,7 +164,7 @@ void GluxiBot::handlePresence(const MyStanza& st)
 		return;
 	}
 
-	QListIterator<BasePlugin*> it(myPlugins);
+	QListIterator<PluginRef> it(myPlugins);
 	while (it.hasNext())
 	{
 		plugin=it.next();
@@ -195,7 +196,7 @@ void GluxiBot::handleIq(const MyStanza& st)
 			return;
 	}
 
-	QListIterator<BasePlugin*> it(myPlugins);
+	QListIterator<PluginRef> it(myPlugins);
 	while (it.hasNext())
 	{
 		plugin=it.next();
@@ -224,7 +225,7 @@ void GluxiBot::handleIq(const MyStanza& st)
 
 void GluxiBot::handleVCard(const VCardWrapper& vcard)
 {
-	QListIterator<BasePlugin*> it(myPlugins);
+	QListIterator<PluginRef> it(myPlugins);
 	BasePlugin *plugin;
 	while (it.hasNext())
 	{
@@ -236,7 +237,7 @@ void GluxiBot::handleVCard(const VCardWrapper& vcard)
 
 StorageKey GluxiBot::getStorage(gloox::Stanza*s)
 {
-	QListIterator<BasePlugin*> it(myPlugins);
+	QListIterator<PluginRef> it(myPlugins);
 	BasePlugin *plugin;
 	while (it.hasNext())
 	{
@@ -251,7 +252,7 @@ StorageKey GluxiBot::getStorage(gloox::Stanza*s)
 
 QString GluxiBot::getJID(gloox::Stanza* s, const QString& nick)
 {
-	QListIterator<BasePlugin*> it(myPlugins);
+	QListIterator<PluginRef> it(myPlugins);
 	BasePlugin *plugin;
 	while (it.hasNext())
 	{
@@ -268,7 +269,7 @@ QString GluxiBot::getJID(gloox::Stanza* s, const QString& nick)
 
 QString GluxiBot::getBotJID(gloox::Stanza* s)
 {
-	QListIterator<BasePlugin*> it(myPlugins);
+	QListIterator<PluginRef> it(myPlugins);
 	BasePlugin *plugin;
 	while (it.hasNext())
 	{
@@ -283,7 +284,7 @@ QString GluxiBot::getBotJID(gloox::Stanza* s)
 
 QString GluxiBot::JIDtoNick(const QString& jid)
 {
-	QListIterator<BasePlugin*> it(myPlugins);
+	QListIterator<PluginRef> it(myPlugins);
 	BasePlugin *plugin;
 	while (it.hasNext())
 	{
@@ -311,7 +312,7 @@ void GluxiBot::customEvent(QEvent *event)
 
 void GluxiBot::onQuit(const QString& reason)
 {
-	QListIterator<BasePlugin*> it(myPlugins);
+	QListIterator<PluginRef> it(myPlugins);
 	BasePlugin *plugin;
 	while (it.hasNext())
 	{
@@ -325,7 +326,7 @@ void GluxiBot::onQuit(const QString& reason)
 
 QString GluxiBot::getMyNick(gloox::Stanza* s)
 {
-	QListIterator<BasePlugin*> it(myPlugins);
+	QListIterator<PluginRef> it(myPlugins);
 	BasePlugin *plugin;
 	while (it.hasNext())
 	{
@@ -341,7 +342,7 @@ QString GluxiBot::getMyNick(gloox::Stanza* s)
 
 AbstractConfigurator* GluxiBot::getConfigurator(gloox::Stanza* s)
 {
-	QListIterator<BasePlugin*> it(myPlugins);
+	QListIterator<PluginRef> it(myPlugins);
 	BasePlugin *plugin;
 	while (it.hasNext())
 	{
