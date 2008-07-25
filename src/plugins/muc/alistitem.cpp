@@ -101,6 +101,8 @@ QString AListItem::toString() const
 		break;
 	case AListItem::MatcherVCardPhotoSize:
 		flags+="Ps";
+	case AListItem::MatcherAge:
+		flags+="Ag";
 	};
 
 	switch (testType())
