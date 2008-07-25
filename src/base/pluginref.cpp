@@ -31,6 +31,6 @@ PluginRef::~PluginRef()
 
 bool PluginRef::operator<(const PluginRef& other) const
 {
-	return ((data()->priority() < other.data()->priority())
-		 || (data()->name() < other.data()->name()));
+	return (((*this)->priority() < other->priority())
+		 || ((*this)->name() < other->name()));
 }
