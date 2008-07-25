@@ -14,7 +14,11 @@ PluginList::~PluginList()
 void PluginList::clear()
 {
 	while (count())
-		delete takeAt(0).data();
+	{
+		PluginRef ref=takeAt(0);
+		BasePlugin* plugin=&(*ref);
+		delete plugin;
+	}
 	QList<PluginRef>::clear();
 }
 
