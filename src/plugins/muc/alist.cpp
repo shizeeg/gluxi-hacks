@@ -9,6 +9,9 @@
 #include <QVariant>
 #include <QDateTime>
 #include <QSqlError>
+#include <QStack>
+
+const static int CHILD_ALIST=9999;
 
 AList::AList(Conference* conf, int type) :
 	QList<AListItem*>()
@@ -68,10 +71,10 @@ AListItem* AList::at(int idx)
 
 void AList::load()
 {
-	clear();
+	QList<AListItem*>::clear();
 	QSqlQuery query= DataStorage::instance()
-	->prepareQuery("SELECT id, matcher, test, inv, value,"
-		" reason, expire FROM conference_alists"
+		->prepareQuery("SELECT id, matcher, test, inv, value,"
+		" reason, expire, child_id FROM conference_alists"
 		" WHERE conference_id=? AND list=?");
 
 	query.addBindValue(myParent->id());
@@ -85,64 +88,77 @@ void AList::removeAt(int idx)
 {
 	if (idx>count()-1)
 		return;
-	QSqlQuery query= DataStorage::instance()
-	->prepareQuery("DELETE FROM conference_alists"
-		" WHERE id=? AND conference_id=? AND list=?");
+	AListItem* item=QList<AListItem*>::takeAt(idx);
+	removeItem(item);
+}
 
-	query.addBindValue(QList<AListItem*>::at(idx)->id());
-	query.addBindValue(myParent->id());
-	query.addBindValue(myType);
-	query.exec();
-	delete QList<AListItem*>::takeAt(idx);
+void AList::removeItem(AListItem* item)
+{
+	AListItem* it=item;
+	while (it)
+	{
+		QSqlQuery query=DataStorage::instance()
+			->prepareQuery("DELETE FROM conference_alists"
+			" WHERE id=?");
+		query.addBindValue(it->id());
+		query.exec();
+		it=it->child();
+	}
+	delete item;
 }
 
 bool AList::removeExpired()
 {
-	QSqlQuery query= DataStorage::instance()
-	->prepareQuery("DELETE FROM conference_alists"
-		" WHERE conference_id=? AND list=? AND expire<=?");
-
-	query.addBindValue(myParent->id());
-	query.addBindValue(myType);
-	query.addBindValue(QDateTime::currentDateTime());
-	query.exec();
-	if (query.numRowsAffected())
+	int numRemoved=0;
+	QDateTime cur=QDateTime::currentDateTime();
+	for (AList::iterator it=begin(); it!=end(); ++it)
 	{
-		load();
-		return true;
+		AListItem* item=*it;
+		if (item->expire().isValid() && (item->expire() < cur))
+		{
+			removeItem(item);
+			++numRemoved;
+		}
 	}
-	return false;
+	if (numRemoved)
+	{
+		QList<AListItem*>::clear();
+		load();
+	}
+	return (numRemoved>0);
 }
 
-void AList::append(const AListItem& item)
+void AList::append(AListItem& item)
 {
-	QSqlQuery query= DataStorage::instance()
-	->prepareQuery("INSERT INTO conference_alists"
-		" (conference_id, list, matcher, test, inv, value, reason, expire)"
-		" VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-	query.addBindValue(myParent->id());
-	query.addBindValue(myType);
-	query.addBindValue(item.matcherType());
-	query.addBindValue(item.testType());
-	query.addBindValue(item.isInvert());
-	query.addBindValue(item.value().toLower());
-	query.addBindValue(item.reason().isEmpty() ? QVariant(QVariant::String) : item.reason());
-	query.addBindValue(item.expire().isValid() ? item.expire() : QVariant(QVariant::DateTime));
-
-	query.exec();
+	if (item.child())
+	{
+		//Save child item first
+		QStack<AListItem*> stack;
+		AListItem* child=item.child();
+		while (child)
+		{
+			stack.push(child);
+			child=child->child();
+		}
+		while (!stack.isEmpty())
+		{
+			child=stack.pop();
+			appendPrivate(*child, CHILD_ALIST);
+		}
+	}
+	appendPrivate(item, myType);
 	//TODO: Use some more optimezed way to update List
 	load();
 }
 
 void AList::removeItems()
 {
-	QSqlQuery query= DataStorage::instance()
-	->prepareQuery("DELETE FROM conference_alists"
-		" WHERE conference_id=? AND list=?");
-	query.addBindValue(myParent->id());
-	query.addBindValue(myType);
-	query.exec();
-	clear();
+	for (Iterator it=begin(); it!=end(); ++it)
+	{
+		AListItem* item=(*it);
+		removeItem(item);
+	}
+	QList<AListItem*>::clear();
 }
 
 QString AList::toString()
@@ -168,7 +184,56 @@ AListItem* AList::itemFromQuery(QSqlQuery& query)
 	item->setValue(query.value(4).toString());
 	item->setReason(query.value(5).toString());
 	item->setExpire(query.value(6).toDateTime());
+
+	int childId=query.value(7).toInt();
+	if (childId>0)
+	{
+		QSqlQuery childQuery=DataStorage::instance()
+				->prepareQuery("SELECT id, matcher, test, inv, value,"
+				" reason, expire, child_id FROM conference_alists"
+				" WHERE id=?");
+		childQuery.addBindValue(childId);
+		if (childQuery.exec() && childQuery.next())
+			item->setChild(itemFromQuery(childQuery));
+	}
 	return item;
+}
+
+void AList::appendPrivate(AListItem& item, int type)
+{
+	QSqlQuery query= DataStorage::instance()
+		->prepareQuery("INSERT INTO conference_alists"
+		" (conference_id, list, matcher, test, inv, value, reason, expire, child_id)"
+		" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+	query.addBindValue(myParent->id());
+	query.addBindValue(type);
+	query.addBindValue(item.matcherType());
+	query.addBindValue(item.testType());
+	query.addBindValue(item.isInvert());
+	query.addBindValue(item.value().toLower());
+	query.addBindValue(item.reason().isEmpty() ? QVariant(QVariant::String) : item.reason());
+	query.addBindValue(item.expire().isValid() ? item.expire() : QVariant(QVariant::DateTime));
+	query.addBindValue(item.child() ? item.child()->id() : 0);
+	if (!query.exec())
+	{
+		qDebug() << "Unable to append alist item: " << query.lastError().text();
+		return;
+	}
+	item.setId(query.lastInsertId().toInt());
+	if (item.id()<=0)
+	{
+		// Let's try PostgreSQL way to get ID
+		query=DataStorage::instance()->prepareQuery("select currval('conference_alists_id_seq')");
+		if (query.exec() && query.next())
+			item.setId(query.value(0).toInt());
+		else
+		{
+			qDebug() << "Unable to append alist item: " << query.lastError().text();
+		}
+
+		if (item.id()<=0)
+			qDebug() << "Unable to get item id. Something happens";
+	}
 }
 
 void AList::convertUnknown()

@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS aliases CASCADE;
 CREATE TABLE aliases (
   plugin smallint NOT NULL,
   storage smallint NOT NULL,
@@ -7,6 +8,7 @@ CREATE TABLE aliases (
   PRIMARY KEY (plugin,storage,name)
 );
 
+DROP TABLE IF EXISTS conference_alists CASCADE;
 CREATE TABLE conference_alists (
   id SERIAL,
   conference_id int NOT NULL,
@@ -15,13 +17,14 @@ CREATE TABLE conference_alists (
   test smallint NOT NULL DEFAULT 0,
   inv boolean NOT NULL DEFAULT false,
   value varchar(50) NOT NULL,
+  child_id int NOT NULL DEFAULT 0,
   reason varchar(100) NULL,
   expire timestamp default NULL,
   PRIMARY KEY (id),
-  UNIQUE (conference_id,list,matcher,test,value)
+  UNIQUE (conference_id,list,matcher,test,value, child_id)
 );
 
-
+DROP TABLE IF EXISTS conference_jids CASCADE;
 CREATE TABLE conference_jids (
   id SERIAL,
   conference_id int NOT NULL,
@@ -32,6 +35,7 @@ CREATE TABLE conference_jids (
   PRIMARY KEY (id)
 );
 
+DROP TABLE IF EXISTS conference_nicks CASCADE;
 CREATE TABLE conference_nicks (
   id SERIAL,
   conference_id int NOT NULL,
@@ -44,6 +48,7 @@ CREATE TABLE conference_nicks (
   PRIMARY KEY (id)
 );
 
+DROP TABLE IF EXISTS conferences CASCADE;
 CREATE TABLE conferences (
   name varchar(50) NOT NULL,
   id SERIAL,
@@ -58,6 +63,7 @@ CREATE TABLE conferences (
   UNIQUE (id)
 );
 
+DROP TABLE IF EXISTS webstatus CASCADE;
 CREATE TABLE webstatus (
   jid varchar(50) NOT NULL,
   hash varchar(50) NOT NULL,
@@ -73,7 +79,7 @@ CREATE TABLE webstatus (
   UNIQUE (hash)
 );
 
-
+DROP TABLE IF EXISTS words CASCADE;
 CREATE TABLE words (
   plugin smallint NOT NULL,
   storage smallint NOT NULL,
@@ -84,6 +90,7 @@ CREATE TABLE words (
   PRIMARY KEY (plugin,storage,name,nick)
 );
 
+DROP TABLE IF EXISTS configuration CASCADE;
 CREATE TABLE configuration (
   plugin smallint NOT NULL,
   storage smallint NOT NULL,
@@ -92,6 +99,7 @@ CREATE TABLE configuration (
   PRIMARY KEY (plugin,storage,name)
 );
 
+DROP TABLE IF EXISTS configuration_fields;
 CREATE TABLE configuration_fields (
   plugin smallint NOT NULL,
   name varchar(50) NOT NULL,
@@ -102,6 +110,7 @@ CREATE TABLE configuration_fields (
   PRIMARY KEY (plugin,name)
 );
 
+DROP TABLE IF EXISTS version CASCADE;
 CREATE TABLE version (
   name varchar(50) NOT NULL,
   value varchar(50) NOT NULL,

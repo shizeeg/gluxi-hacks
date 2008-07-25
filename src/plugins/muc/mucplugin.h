@@ -58,6 +58,9 @@ private:
 	AListItem* aFind(AList* list, Nick *n, gloox::Stanza* s, AListItem::MatcherType matcher=AListItem::MatcherUnknown);
 	// Advanced commands
 	bool autoLists(gloox::Stanza* s, MessageParser& parser);
+	AList* alistByName(Conference* conf, const QString& name);
+	int parseAListItem(gloox::Stanza* s, MessageParser& parser, AListItem& item);
+
 	void checkMember(gloox::Stanza* s, Conference* c, Nick*, AListItem::MatcherType matcher=AListItem::MatcherUnknown);
 	void recheckJIDs(Conference* c);
 	void sendMessage(Conference* conf, const QString&msg);

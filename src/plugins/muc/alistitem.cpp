@@ -26,6 +26,7 @@ AListItem::AListItem(int id)
 	matcherType_=MatcherUnknown;
 	testType_=TestExact;
 	invert_=false;
+	child_=0;
 }
 
 AListItem::AListItem(int id, MatcherType matcherType, TestType testType,
@@ -37,10 +38,13 @@ AListItem::AListItem(int id, MatcherType matcherType, TestType testType,
 	value_=value;
 	expire_=expire;
 	invert_=false;
+	child_=0;
 }
 
 AListItem::~AListItem()
 {
+	if (child_)
+		delete child_;
 }
 
 bool AListItem::operator==(const AListItem& other)
@@ -51,6 +55,12 @@ bool AListItem::operator==(const AListItem& other)
 
 bool AListItem::isSameCondition(const AListItem& other)
 {
+	if (other.child() && !child_)
+		return false;
+	if (child_ && !other.child())
+		return false;
+	if (child_ && !child_->isSameCondition(*other.child()))
+		return false;
 	return matcherType_==other.matcherType() && testType_ == other.testType()
 			&& value_==other.value();
 }
@@ -115,7 +125,6 @@ QString AListItem::toString() const
 			break;
 	}
 
-
 	QString line=QString("%1 %2").arg(flags).arg(value());
 	if (expire().isValid())
 	{
@@ -127,5 +136,7 @@ QString AListItem::toString() const
 	}
 	if (!reason().isEmpty())
 		line+=" // "+reason();
+	if (child_)
+		line+="\n   && "+child_->toString();
 	return line;
 }

@@ -62,6 +62,7 @@ public:
 	QString value() const { return value_; }
 	QString reason() const { return reason_; }
 	QDateTime expire() const { return expire_; }
+	AListItem* child() const { return child_; }
 
 	void setId(int id) { id_=id; }
 	void setMatcherType(MatcherType matcherType) { matcherType_=matcherType; }
@@ -70,10 +71,12 @@ public:
 	void setValue(const QString& value) { value_=value; }
 	void setReason(const QString& reason) { reason_=reason; }
 	void setExpire(const QDateTime& expire) { expire_=expire; }
+	void setChild(AListItem* child) { child_=child; }
 
 	bool operator==(const AListItem& other);
 	bool isSameCondition(const AListItem& other);
 	QString toString() const;
+
 private:
 	int id_;
 	MatcherType matcherType_;
@@ -82,6 +85,7 @@ private:
 	QString value_;
 	QString reason_;
 	QDateTime expire_;
+	AListItem* child_;
 };
 
 #endif /*ALISTITEM_H_*/

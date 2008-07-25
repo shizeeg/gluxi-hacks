@@ -643,7 +643,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	}
 
 	if (cmd=="ABAN" || cmd=="AKICK" || cmd=="AVISITOR" || cmd=="AMODERATOR"
-		|| cmd=="ACMD" || cmd=="AEDIT" || cmd=="AFIND")
+		|| cmd=="ACMD" || cmd=="AEDIT" || cmd=="AFIND" || cmd=="AAND")
 	{
 		if (!isFromConfAdmin(s))
 			return true;
@@ -1029,12 +1029,6 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 
 	QString nickName=QString::fromStdString(s->from().resource());
 
-	AList* alist=0;
-
-	//	QString body="";
-	//	int narg=0;
-	//	QString args="";
-
 	if (arg=="AFIND")
 	{
 		QString answer;
@@ -1064,18 +1058,14 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		return true;
 	}
 
-	if (arg=="ABAN")
-		alist=conf->aban();
-	if (arg=="AKICK")
-		alist=conf->akick();
-	if (arg=="AVISITOR")
-		alist=conf->avisitor();
-	if (arg=="AMODERATOR")
-		alist=conf->amoderator();
-	if (arg=="ACMD")
-		alist=conf->acommand();
+	AList* alist;
+	bool isAndCondition=false;
 
+	alist=alistByName(conf, arg);
 	if (!alist)
+		isAndCondition=(arg.toUpper()=="AAND");
+
+	if (!alist && !isAndCondition)
 	{
 		reply(s, QString("Try \"!muc help\""));
 		return TRUE;
@@ -1092,6 +1082,11 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	}
 	if (arg2=="SHOW")
 	{
+		if (!alist)
+		{
+			reply(s, "No alist specified");
+			return true;
+		}
 		alist->removeExpired();
 		if (!alist->count())
 			reply(s, QString("\"%1\" list is empty").arg(arg));
@@ -1103,11 +1098,21 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 	}
 	if (arg2=="COUNT")
 	{
+		if (!alist)
+		{
+			reply(s, "No alist specified");
+			return true;
+		}
 		reply(s, QString("Currntly list \"%1\" contains %2 items").arg(arg).arg(alist->count()));
 		return true;
 	}
 	if (arg2=="CLEAR")
 	{
+		if (!alist)
+		{
+			reply(s, "No alist specified");
+			return true;
+		}
 		alist->removeItems();
 		reply(s, "Cleared");
 		return TRUE;
@@ -1120,6 +1125,11 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		int n;
 		if (ok)
 		{
+			if (!alist)
+			{
+				reply(s, "No alist specified");
+				return true;
+			}
 			if (idx>alist->count() || idx<1)
 			{
 				reply(s, "List index out of bounds");
@@ -1167,18 +1177,119 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		howLong=dt*k;
 		arg2=parser.nextToken().toUpper();
 	}
-
+	parser.back();
 	AListItem item;
+	int res=parseAListItem(s, parser, item);
+	if (res<0)
+		return true;
+	if (isAndCondition)
+	{
+		// Multiple 'AND' conditions
+		AListItem* child=new AListItem();
+		item.setChild(child);
+		for (;;)
+		{
+			QString alistType=parser.nextToken();
+			alist=alistByName(conf, alistType);
+			if (alist==0)
+			{
+				isAndCondition=(alistType.toUpper()=="AAND");
+				if (!isAndCondition)
+				{
+					reply(s, QString("Unable to parse alist definition at \"%1\"").arg(alistType));
+					return true;
+				}
+			}
+			int childRes=parseAListItem(s, parser, *child);
+			if (childRes<0) return true;
+			if (!alist && isAndCondition)
+			{
+				AListItem* newChild=new AListItem();
+				child->setChild(newChild);
+				child=newChild;
+			}
+			else
+				break;
+		}
+	}
+
+	if (howLong)
+	{
+		QDateTime t=QDateTime::currentDateTime().addSecs(howLong*60);
+		item.setExpire(t);
+	}
+
+	if (!alist)
+	{
+		reply(s, "No alist specified");
+		return true;
+	}
+
+	int existsIdx=alist->indexOfSameCondition(item);
+	if (existsIdx>=0)
+	{
+		alist->removeAt(existsIdx);
+		if (isRemoving)
+		{
+			reply(s, "Removed");
+			return true;
+		}
+	}
+	else
+	{
+		if (isRemoving)
+		{
+			reply(s,"Can't find item to remove");
+			return true;
+		}
+	}
+	QString reason=parser.joinBody().trimmed();
+	if (!reason.isEmpty())
+	{
+		item.setReason(reason);
+	}
+	alist->append(item);
+	QString response((existsIdx>=0) ? "Updated" : "Added");
+	response+=": ";
+	response+=item.toString();
+	reply(s, response);
+	recheckJIDs(conf);
+	return true;
+}
+
+AList* MucPlugin::alistByName(Conference* conf, const QString& name)
+{
+	AList* alist=0l;
+	QString arg=name.toUpper();
+
+	if (arg=="ABAN")
+		alist=conf->aban();
+	if (arg=="AKICK")
+		alist=conf->akick();
+	if (arg=="AVISITOR")
+		alist=conf->avisitor();
+	if (arg=="AMODERATOR")
+		alist=conf->amoderator();
+	if (arg=="ACMD")
+		alist=conf->acommand();
+	return alist;
+}
+
+/**
+ * @return -1 -- incorrect input, 0 -- alist finished, 1 -- more conditions available
+ */
+int MucPlugin::parseAListItem(gloox::Stanza* s, MessageParser& parser, AListItem& item)
+{
 	item.setMatcherType(AListItem::MatcherJid);
 	item.setTestType(AListItem::TestExact);
+
+	QString arg2=parser.nextToken().toUpper();
 
 	if (arg2=="!")
 	{
 		item.setInvert(true);
 		arg2=parser.nextToken().toUpper();
 	}
-
-	qDebug() << "1: " << arg2;
 
 	if (arg2=="NICK" || arg2=="BODY" || arg2=="RES"
 		|| arg2=="VERSION" || arg2=="VERSION.NAME"
@@ -1210,8 +1321,6 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		arg2=parser.nextToken().toUpper();
 	}
 
-	qDebug() << "2: " << arg2;
-
 	if (arg2=="EXP")
 	{
 		QString expStr=parser.nextToken();
@@ -1225,7 +1334,7 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		else
 		{
 			reply(s, "QRegExp is not valid");
-			return true;
+			return -1;
 		}
 	}
 	else if (arg2=="SUB")
@@ -1257,57 +1366,21 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		else
 		{
 			qDebug() << args;
+			Conference *conf=getConf(s);
 			Nick *n=conf->nicks()->byName(args);
 			if (n && !n->jidStr().isEmpty())
 				arg2=n->jidStr().section('/', 0, 0);
 			else
 			{
 				reply(s, "JID or nick is not valid: "+args);
-				return true;
+				return -1;
 			}
 		}
 	}
 
-	qDebug() << "3: " << arg2;
-
 	arg2=arg2.toLower();
 	item.setValue(arg2);
-
-	if (howLong)
-	{
-		QDateTime t=QDateTime::currentDateTime().addSecs(howLong*60);
-		item.setExpire(t);
-	}
-
-	int existsIdx=alist->indexOfSameCondition(item);
-	if (existsIdx>=0)
-	{
-		alist->removeAt(existsIdx);
-		if (isRemoving)
-		{
-			reply(s, "Removed");
-			return true;
-		}
-	}
-	else
-	{
-		if (isRemoving)
-		{
-			reply(s,"Can't find item to remove");
-			return true;
-		}
-	}
-
-	qDebug() << "4: " << arg2;
-	QString reason=parser.joinBody().trimmed();
-	if (!reason.isEmpty())
-	{
-		item.setReason(reason);
-	}
-	alist->append(item);
-	reply(s, "Updated");
-	recheckJIDs(conf);
-	return true;
+	return 0;
 }
 
 // Stanza can be null here
@@ -1337,115 +1410,130 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 
 	for (int i=0; i<cnt; i++)
 	{
-		AListItem* item=list->at(i);
-		bool processEmpty=false;
-
-		if (matcher!=AListItem::MatcherUnknown && matcher!=AListItem::MatcherAll &&
-				!item->matcherType()!=matcher)
+		AListItem* topItem=list->at(i);
+		AListItem* item=topItem;
+		bool multiMatch=(topItem->child()!=0);
+		bool chainMatches=true;
+		while (item)
 		{
-			if (matcher==AListItem::MatcherVersion)
+			bool partMatches=false;
+			bool processEmpty=false;
+			if (!multiMatch && matcher!=AListItem::MatcherUnknown && matcher!=AListItem::MatcherAll &&
+					!item->matcherType()!=matcher)
 			{
-				if (!(item->matcherType()==AListItem::MatcherVersionName
-								|| item->matcherType()==AListItem::MatcherVersionClient
-								|| item->matcherType()==AListItem::MatcherVersionOs
-								|| item->matcherType()==AListItem::MatcherVersion))
-					continue;
-			}
-			else
-				continue;
-		}
-
-		if (item->matcherType()==AListItem::MatcherVCardPhotoSize
-				&& matcher!=item->matcherType() && matcher!=AListItem::MatcherAll)
-			continue;
-
-		QString testValue;
-		if (!isPresence && (item->matcherType() == AListItem::MatcherNick
-				|| item->matcherType()==AListItem::MatcherJid || item->matcherType()==AListItem::MatcherResource))
-			continue;
-
-		if (item->matcherType() == AListItem::MatcherVersion
-			|| item->matcherType()==AListItem::MatcherVersionName
-			|| item->matcherType()==AListItem::MatcherVersionClient
-			|| item->matcherType()==AListItem::MatcherVersionOs)
-		{
-			if (matcher!=AListItem::MatcherVersion && matcher!=AListItem::MatcherAll)
-				continue;
-			if (!nick || !nick->isVersionStored())
-				continue;
-			processEmpty=true;
-		}
-
-		switch (item->matcherType())
-		{
-			case AListItem::MatcherUnknown: break;
-			case AListItem::MatcherNick: testValue=lNick; break;
-			case AListItem::MatcherJid: testValue=lJid; break;
-			case AListItem::MatcherResource: testValue=lResource; break;
-			case AListItem::MatcherBody: testValue=lBody; break;
-			case AListItem::MatcherVersion: testValue=version; break;
-			case AListItem::MatcherVersionName: testValue=nick->versionName().toLower(); break;
-			case AListItem::MatcherVersionClient: testValue=nick->versionClient().toLower(); break;
-			case AListItem::MatcherVersionOs: testValue=nick->versionOs().toLower(); break;
-			case AListItem::MatcherVCardPhotoSize: testValue=vcardPhotoSize; break;
-			default: continue;
-		}
-
-		if (!processEmpty && testValue.isEmpty())
-			continue;
-
-		switch (item->testType())
-		{
-			case AListItem::TestUnknown: break;
-			case AListItem::TestRegExp:
-			{
-				QRegExp exp(item->value());
-				exp.setMinimal(FALSE);
-				exp.setCaseSensitivity(Qt::CaseInsensitive);
-				if (item->isInvert() ^ exp.exactMatch(testValue))
-					return item;
-				break;
-			}
-			case AListItem::TestExact:
-			{
-				if (item->isInvert() ^ testValue==item->value())
-					return item;
-				break;
-			}
-			case AListItem::TestSubstring:
-			{
-				if (item->isInvert() ^ (testValue.toLower().indexOf(item->value().toLower())>=0))
-					return item;
-				break;
-			}
-			case AListItem::TestGreater:
-			case AListItem::TestLesser:
-			{
-				bool ok1=true;
-				bool ok2=true;
-				int v1=testValue.toInt(&ok1);
-				int v2=item->value().toInt(&ok2);
-				bool cmpResult=false;
-				if (ok1 && ok2)
+				if (matcher==AListItem::MatcherVersion)
 				{
-					//Compare as numbers
-					if (item->testType()==AListItem::TestGreater)
-						cmpResult=(v1>v2);
-					else
-						cmpResult=(v1<v2);
+					if (!(item->matcherType()==AListItem::MatcherVersionName
+									|| item->matcherType()==AListItem::MatcherVersionClient
+									|| item->matcherType()==AListItem::MatcherVersionOs
+									|| item->matcherType()==AListItem::MatcherVersion))
+						break;
 				}
 				else
-				{
-					//Compare strings
-					if (item->testType()==AListItem::TestGreater)
-						cmpResult=(testValue > item->value());
-					else
-						cmpResult=(testValue < item->value());
-				}
-				if (item->isInvert() ^ cmpResult)
-					return item;
+					break;
 			}
+
+			if (!multiMatch && item->matcherType()==AListItem::MatcherVCardPhotoSize
+					&& matcher!=item->matcherType() && matcher!=AListItem::MatcherAll)
+				break;
+
+			QString testValue;
+			if (!multiMatch && !isPresence && (item->matcherType() == AListItem::MatcherNick
+					|| item->matcherType()==AListItem::MatcherJid || item->matcherType()==AListItem::MatcherResource))
+				break;
+
+			if (!multiMatch && (item->matcherType() == AListItem::MatcherVersion
+				|| item->matcherType()==AListItem::MatcherVersionName
+				|| item->matcherType()==AListItem::MatcherVersionClient
+				|| item->matcherType()==AListItem::MatcherVersionOs))
+			{
+				if (matcher!=AListItem::MatcherVersion && matcher!=AListItem::MatcherAll)
+					break;
+				if (!nick || !nick->isVersionStored())
+					break;
+				processEmpty=true;
+			}
+
+			bool shouldBreak=false;
+			switch (item->matcherType())
+			{
+				case AListItem::MatcherUnknown: break;
+				case AListItem::MatcherNick: testValue=lNick; break;
+				case AListItem::MatcherJid: testValue=lJid; break;
+				case AListItem::MatcherResource: testValue=lResource; break;
+				case AListItem::MatcherBody: testValue=lBody; break;
+				case AListItem::MatcherVersion: testValue=version; break;
+				case AListItem::MatcherVersionName: testValue=nick->versionName().toLower(); break;
+				case AListItem::MatcherVersionClient: testValue=nick->versionClient().toLower(); break;
+				case AListItem::MatcherVersionOs: testValue=nick->versionOs().toLower(); break;
+				case AListItem::MatcherVCardPhotoSize: testValue=vcardPhotoSize; break;
+				default: shouldBreak=true; break;
+			}
+			if (shouldBreak)
+				break;
+
+			if (!processEmpty && testValue.isEmpty())
+				break;
+
+			switch (item->testType())
+			{
+				case AListItem::TestUnknown: break;
+				case AListItem::TestRegExp:
+				{
+					QRegExp exp(item->value());
+					exp.setMinimal(FALSE);
+					exp.setCaseSensitivity(Qt::CaseInsensitive);
+					if (item->isInvert() ^ exp.exactMatch(testValue))
+						partMatches=true;
+					break;
+				}
+				case AListItem::TestExact:
+				{
+					if (item->isInvert() ^ testValue==item->value())
+						partMatches=true;
+					break;
+				}
+				case AListItem::TestSubstring:
+				{
+					if (item->isInvert() ^ (testValue.toLower().indexOf(item->value().toLower())>=0))
+						partMatches=true;
+					break;
+				}
+				case AListItem::TestGreater:
+				case AListItem::TestLesser:
+				{
+					bool ok1=true;
+					bool ok2=true;
+					int v1=testValue.toInt(&ok1);
+					int v2=item->value().toInt(&ok2);
+					bool cmpResult=false;
+					if (ok1 && ok2)
+					{
+						//Compare as numbers
+						if (item->testType()==AListItem::TestGreater)
+							cmpResult=(v1>v2);
+						else
+							cmpResult=(v1<v2);
+					}
+					else
+					{
+						//Compare strings
+						if (item->testType()==AListItem::TestGreater)
+							cmpResult=(testValue > item->value());
+						else
+							cmpResult=(testValue < item->value());
+					}
+					if (item->isInvert() ^ cmpResult)
+						partMatches=true;
+				}
+			}
+			chainMatches=chainMatches && partMatches;
+			if (!chainMatches)
+				break;
+			item=item->child();
 		}
+		if (chainMatches && !item)
+			return topItem;
 	}
 	return 0L;
 }

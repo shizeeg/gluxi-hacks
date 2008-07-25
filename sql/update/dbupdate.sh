@@ -19,14 +19,15 @@ if [ -z "$QUERYCMD" ]; then
 	fi
 
 	if [ "$DBTYPE" == "mysql" ]; then
-		QUERYCMD="mysql -h $DBHOST -u $DBUSER -p${DBPASS} $DBNAME --skip-column-names -A -B -e"
+		QUERYCMD="mysql -h $DBHOST -u $DBUSER -p${DBPASS} $DBNAME --skip-column-names -A -B"
 		INLINE_SUFFIX="-e"
 	fi
 	
 	if [ "$DBTYPE" == "psql" ] || [ "$DBTYPE" == "pgsql" ]; then
+		export ON_ERROR_STOP="true"
 		DBTYPE="pgsql"
-		QUERYCMD="psql -U $DBUSER -h $DBHOST $DBNAME -A -t"
-		INLINE_SUFFIX="-q --command"
+		QUERYCMD="psql -U $DBUSER -h $DBHOST $DBNAME -A -t -q"
+		INLINE_SUFFIX="--command"
 	fi
 
 	if [ -z "$QUERYCMD" ]; then
@@ -46,13 +47,14 @@ ALIGNED_VERSION=`printf "%05d\n" $CURRENT_VERSION`
 for FILE in `ls $DBTYPE | sed -e 's/\\.sql$//g' | sort`; do
 	if [ $FILE -gt $ALIGNED_VERSION ]; then
 		echo "==> Applying database update: $FILE.sql"
-		RESULT="`$QUERYCMD < $DBTYPE/$FILE.sql 2>&1`" || exit 1
+		RESULT="`$QUERYCMD < $DBTYPE/$FILE.sql 2>&1 | grep -v 'NOTICE:'`"
 		if [ "z$RESULT" != "z" ]; then
 			echo "--> Something happens:"
 			echo "$RESULT"
 			exit 1
 		fi
 		UPDATED_VERSION="`echo $FILE | sed -e 's/0\\+//'`"
+		echo "Writing info: $UPDATED_VERSION"
 		RESULT="`$QUERYCMD $INLINE_SUFFIX "UPDATE version SET value='$UPDATED_VERSION' WHERE name='dbversion'"`"
 		if [ "z$RESULT" != "z" ]; then
 			echo "--> Something happens:"

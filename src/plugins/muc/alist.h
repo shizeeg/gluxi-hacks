@@ -22,7 +22,7 @@ public:
 	bool removeExpired();
 // 	QString at(int idx);
 	void removeAt(int idx);
-	void append(const AListItem& item);
+	void append(AListItem& item);
 	void removeItems();
 	QString toString();
 	void clear();
@@ -36,6 +36,8 @@ private:
 	void load();
 	void convertUnknown();
 	static AListItem* itemFromQuery(QSqlQuery& query);
+	void appendPrivate(AListItem& item, int type);
+	void removeItem(AListItem* item);
 };
 
 #endif
