@@ -72,6 +72,7 @@ void Jid::loadJid()
 	}
 	else
 	{
+		myCreated=QDateTime::currentDateTime();
 		query=DataStorage::instance()
 			->prepareQuery("INSERT INTO conference_jids ( conference_id, jid, resource, temporary, created) "
 			"VALUES ( ?, ?, ?, ?, ? )");
@@ -79,12 +80,12 @@ void Jid::loadJid()
 		query.addBindValue(myJid);
 		query.addBindValue(myResource);
 		query.addBindValue(myTemporary);
-		query.addBindValue(QDateTime::currentDateTime());
+		query.addBindValue(myCreated);
 		if  (!query.exec())
 		{
 			qDebug() << "[JID] " << QSqlDatabase::database().lastError().text();
 		}
-		myId=query.lastInsertId().toInt();			 
+		myId=query.lastInsertId().toInt();
 		if (myId==0)
 		{
 			// lastInsertId don't work. Probably postgreSQL
@@ -92,7 +93,7 @@ void Jid::loadJid()
 				->prepareQuery("SELECT id FROM conference_jids WHERE conference_id=? AND jid=?");
 			query.addBindValue(myParent->conference()->id());
 			query.addBindValue(myJid);
-			if (!query.exec() || !query.next()) 
+			if (!query.exec() || !query.next())
 			{
 				qDebug() << "[JID] " << QSqlDatabase::database().lastError().text();
 				return;
@@ -108,10 +109,10 @@ void Jid::setFullJid(const QString& fullJid)
 	// Changed JID from emtpy to empty
 	if (myTemporary && fullJid.isEmpty())
 		return;
-	
+
 	if (fullJid.toUpper()==QString(myJid+"/"+myResource).toUpper())
 		return;
-	
+
 	if (myTemporary)
 	{
 		// Changed from unknown to known

@@ -1294,7 +1294,7 @@ int MucPlugin::parseAListItem(gloox::Stanza* s, MessageParser& parser, AListItem
 	if (arg2=="NICK" || arg2=="BODY" || arg2=="RES"
 		|| arg2=="VERSION" || arg2=="VERSION.NAME"
 		|| arg2=="VERSION.CLIENT" || arg2=="VERSION.OS"
-		|| arg2=="VCARD.PHOTOSIZE")
+		|| arg2=="VCARD.PHOTOSIZE" || arg2=="AGE")
 	{
 		if (arg2=="NICK")
 			item.setMatcherType(AListItem::MatcherNick);
@@ -1312,6 +1312,8 @@ int MucPlugin::parseAListItem(gloox::Stanza* s, MessageParser& parser, AListItem
 			item.setMatcherType(AListItem::MatcherVersionOs);
 		else if (arg2=="VCARD.PHOTOSIZE")
 			item.setMatcherType(AListItem::MatcherVCardPhotoSize);
+		else if (arg2=="AGE")
+			item.setMatcherType(AListItem::MatcherAge);
 
 		arg2=parser.nextToken().toUpper();
 	}
@@ -1405,6 +1407,9 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 		version=version.trimmed().toLower();
 	}
 	QString vcardPhotoSize=QString::number(nick->vcardPhotoSize());
+	QString age("?");
+	if (nick->jid())
+		age=QString::number(nick->jid()->created().secsTo(QDateTime::currentDateTime()));
 
 	bool isPresence=!s || (s->type()==gloox::StanzaPresence);
 
@@ -1439,7 +1444,8 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 
 			QString testValue;
 			if (!multiMatch && !isPresence && (item->matcherType() == AListItem::MatcherNick
-					|| item->matcherType()==AListItem::MatcherJid || item->matcherType()==AListItem::MatcherResource))
+					|| item->matcherType()==AListItem::MatcherJid || item->matcherType()==AListItem::MatcherResource
+					|| item->matcherType()==AListItem::MatcherAge))
 				break;
 
 			if (!multiMatch && (item->matcherType() == AListItem::MatcherVersion
@@ -1467,6 +1473,7 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 				case AListItem::MatcherVersionClient: testValue=nick->versionClient().toLower(); break;
 				case AListItem::MatcherVersionOs: testValue=nick->versionOs().toLower(); break;
 				case AListItem::MatcherVCardPhotoSize: testValue=vcardPhotoSize; break;
+				case AListItem::MatcherAge: testValue=age; break;
 				default: shouldBreak=true; break;
 			}
 			if (shouldBreak)
