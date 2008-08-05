@@ -142,3 +142,33 @@ QString AListItem::toString() const
 		line+="\n   && "+child_->toString();
 	return line;
 }
+
+bool AListItem::isSubVersionMatcher() const
+{
+	return (matcherType_ == AListItem::MatcherVersion
+					|| matcherType_==AListItem::MatcherVersionName
+					|| matcherType_==AListItem::MatcherVersionClient
+					|| matcherType_==AListItem::MatcherVersionOs);
+}
+
+bool AListItem::isSubPresenceDepends() const
+{
+	return (matcherType_ == AListItem::MatcherNick
+						|| matcherType_==AListItem::MatcherJid
+						|| matcherType_==AListItem::MatcherResource
+						|| matcherType_==AListItem::MatcherAge);
+}
+
+bool AListItem::isSubBodyDepends() const
+{
+	return (matcherType_ == AListItem::MatcherBody);
+}
+
+bool AListItem::isBodyDepends() const
+{
+	if (isSubBodyDepends())
+		return true;
+	if (child_ && child_->isSubBodyDepends())
+		return true;
+	return false;
+}

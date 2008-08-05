@@ -78,6 +78,13 @@ public:
 	bool isSameCondition(const AListItem& other);
 	QString toString() const;
 
+	// Some AList queries. if contains "Sub" then it's not recursive query
+	bool isSubVersionMatcher() const;
+
+	bool isSubPresenceDepends() const;
+	bool isSubBodyDepends() const;
+
+	bool isBodyDepends() const;
 private:
 	int id_;
 	MatcherType matcherType_;

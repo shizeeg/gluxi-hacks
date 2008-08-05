@@ -485,7 +485,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 
 		QString
 				nickInfo=
-						QString("Nick \"%1\": Affiliation: %2; Role: %3; Registered: %4; Joined: %5; Idle: %6; Role: %7; Status: %8 (%9)")
+						QString("Nick \"%1\": Affiliation: %2; Role: %3; Registered: %4; Joined: %5; Idle: %6; Role: %7; Age: %8; Status: %9 (%10)")
 						.arg(n->nick())
 						.arg(n->affiliation())
 						.arg(n->role())
@@ -493,6 +493,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 						.arg(n->joined().toString(Qt::LocaleDate))
 						.arg(secsToString(n->lastActivity().secsTo(QDateTime::currentDateTime())))
 						.arg(getRoleForNick(conf, n))
+						.arg(n->jid() ? n->jid()->created().secsTo(QDateTime::currentDateTime()) : 0)
 						.arg(n->show())
 						.arg(n->status());
 		reply(s, nickInfo);
@@ -1419,6 +1420,10 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 		AListItem* item=topItem;
 		bool multiMatch=(topItem->child()!=0);
 		bool chainMatches=true;
+
+		if (multiMatch && !lBody.isEmpty() && !item->isBodyDepends())
+			continue;
+
 		while (item)
 		{
 			bool partMatches=false;
@@ -1428,10 +1433,7 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 			{
 				if (matcher==AListItem::MatcherVersion)
 				{
-					if (!(item->matcherType()==AListItem::MatcherVersionName
-									|| item->matcherType()==AListItem::MatcherVersionClient
-									|| item->matcherType()==AListItem::MatcherVersionOs
-									|| item->matcherType()==AListItem::MatcherVersion))
+					if (!item->isSubVersionMatcher())
 						break;
 				}
 				else
@@ -1443,17 +1445,12 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 				break;
 
 			QString testValue;
-			if (!multiMatch && !isPresence && (item->matcherType() == AListItem::MatcherNick
-					|| item->matcherType()==AListItem::MatcherJid || item->matcherType()==AListItem::MatcherResource
-					|| item->matcherType()==AListItem::MatcherAge))
+			if (!multiMatch && !isPresence && item->isSubPresenceDepends())
 				break;
 
-			if (!multiMatch && (item->matcherType() == AListItem::MatcherVersion
-				|| item->matcherType()==AListItem::MatcherVersionName
-				|| item->matcherType()==AListItem::MatcherVersionClient
-				|| item->matcherType()==AListItem::MatcherVersionOs))
+			if (item->isSubVersionMatcher())
 			{
-				if (matcher!=AListItem::MatcherVersion && matcher!=AListItem::MatcherAll)
+				if (!multiMatch && matcher!=AListItem::MatcherVersion && matcher!=AListItem::MatcherAll)
 					break;
 				if (!nick || !nick->isVersionStored())
 					break;
