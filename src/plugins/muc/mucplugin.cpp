@@ -34,7 +34,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 			<< "BANJID" << "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
 	commands << "ABAN" << "AKICK" << "AVISITOR" << "ACMD" << "AMODERATOR" << "AFIND"
 			<< "SEEN" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
-	commands << "HERE";
+	commands << "HERE" << "AGE" << "AGESTAT";
 	pluginId=1;
 	lazyOffline=DataStorage::instance()->getInt("muc/lazyoffline");
 
@@ -677,6 +677,43 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		}
 		else
 			reply(s, "never");
+		return true;
+	}
+
+	if (cmd=="AGE")
+	{
+		Nick *n=getNickVerbose(s, arg);
+		if (!n)
+			return true;
+		reply(s,QString::number(n->jid() ? n->jid()->created().secsTo(QDateTime::currentDateTime()) : 0));
+		return true;
+	}
+
+	if (cmd=="AGESTAT")
+	{
+		QList<Nick*> tmpList;
+		NickList* nickList=conf->nicks();
+		for (NickList::iterator it=nickList->begin(); it!=nickList->end(); ++it) {
+			Nick* n=*it;
+			tmpList.append(n);
+		}
+		qSort(tmpList.begin(), tmpList.end(), ageLessThan);
+		QString r("Age statistic:");
+		int idx=1;
+		for (QList<Nick*>::iterator it=tmpList.begin(); it!=tmpList.end(); ++it)
+		{
+			Nick* n=*it;
+			if (!r.isEmpty())
+				r+="\n";
+			r+=QString("%1) %2: %3 (%4)").arg(idx).arg(n->nick())
+				.arg(n->jid() ? n->jid()->created().secsTo(QDateTime::currentDateTime()) : 0)
+				.arg(n->jid() ? n->jid()->created().toString() : QDateTime::currentDateTime().toString());
+
+			if (++idx>10)
+				break;
+		}
+		reply(s, r);
+		tmpList.clear();
 		return true;
 	}
 
@@ -1925,4 +1962,16 @@ void MucPlugin::sltVersionQueryTimeout(AsyncRequest* req)
 		return;
 	nick->setVersionStored(true);
 	checkMember(0L, conf, nick, AListItem::MatcherVersion);
+}
+
+
+bool MucPlugin::ageLessThan(const Nick* nick1, const Nick* nick2)
+{
+	QDateTime date1=QDateTime::currentDateTime();
+	QDateTime date2=date1;
+	if (nick1->jid())
+		date1=nick1->jid()->created();
+	if (nick2->jid())
+			date2=nick2->jid()->created();
+	return date1 < date2;
 }

@@ -72,6 +72,8 @@ private:
 	QString expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QString& str, const AListItem* item=0);
 	void requestVCard(gloox::Stanza* s, Conference* conf, Nick* nick);
 	void requestVersion(gloox::Stanza* s, Conference* conf, Nick* nick);
+
+	static bool ageLessThan(const Nick* nick1, const Nick* nick2);
 private slots:
 	void sltAutoLeaveTimerTimeout();
 	void sltVersionQueryTimeout(AsyncRequest* req);
