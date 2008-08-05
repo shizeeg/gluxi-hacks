@@ -12,5 +12,6 @@
 .project
 .settings
 .externalToolBuilders
-
-
+.orig$
+.rej$
+.swp$
