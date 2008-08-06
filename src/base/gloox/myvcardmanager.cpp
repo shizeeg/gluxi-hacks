@@ -112,9 +112,13 @@ namespace gloox
             case MyVCardHandler::FetchVCard:
             {
               Tag *v = stanza->findChild( "vCard", "xmlns", XMLNS_VCARD_TEMP );
-              if( v )
-                (*it).second->handleVCard(id, stanza->from(), new VCard( v ) );
-              else
+              if( v ) {
+            	//TODO: original gloox VCardManager do NOT remove VCard instance here after
+            	//passing it to handler. Looks like bug.
+            	VCard* vcard = new VCard( v );
+                (*it).second->handleVCard(id, stanza->from(), vcard );
+                delete vcard;
+              } else
                 (*it).second->handleVCard(id, stanza->from(), 0 );
               break;
             }
