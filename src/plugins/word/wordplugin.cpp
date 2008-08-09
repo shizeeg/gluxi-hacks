@@ -9,7 +9,7 @@
 WordPlugin::WordPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "ADD" << "COUNT" << "NAMES" << "CLEAR" << "SHOW" << "SHOWPRIV" << "SHOWJID" << "DEL";
+	commands << "ADD" << "COUNT" << "NAMES" << "CLEAR" << "SHOW" << "SHOWPRIV" << "SHOWPRIVSILENT" << "SHOWJID" << "DEL";
 }
 
 WordPlugin::~WordPlugin()
@@ -28,7 +28,7 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 		reply(s, QString("Currently I know %1 words").arg(words.count(bot()->getStorage(s))));
 		return true;
 	}
-	
+
 	if (cmd=="NAMES")
 	{
 		QStringList list=words.getNames(bot()->getStorage(s));
@@ -54,7 +54,7 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 		return true;
 	}
 
-	if (cmd=="SHOWPRIV")
+	if (cmd=="SHOWPRIV" || cmd=="SHOWPRIVSILENT")
 	{
 		QString dest=parser.nextToken();
 		QString word=parser.nextToken();
@@ -100,7 +100,8 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 			reply(s, "I don't know");
 			return true;
 		}
-		reply(s, "Ok");
+		if (cmd!="SHOWPRIVSILENT")
+			reply(s, "Ok");
 		s->addAttribute("from", jid.toStdString());
 		s->finalize();
 		qDebug() << QString::fromStdString(s->xml());
@@ -135,12 +136,12 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 		reply(s, "Ok");
 		s->addAttribute("from", dest.toStdString());
 		s->finalize();
-		
+
 		QString toSay=QString("%1 says that %2 = %3").arg(nick).arg(word).arg(value);
 		reply(s, toSay, true);
 		return true;
 	}
-	
+
 	if (cmd=="SHOWALL")
 	{
 		QMap<QString,QString> all=words.getAll(bot()->getStorage(s), arg);
@@ -199,8 +200,8 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 			if (getRole(s)<ROLE_OWNER)
 			{
 				reply(s,"Only owner can do this");
-			} 
-			else 
+			}
+			else
 			{
 				words.clear(bot()->getStorage(s));
 				reply(s, "Ok");
