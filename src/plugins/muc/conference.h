@@ -33,6 +33,7 @@ public:
 	AList* akick() { return myKick; };
 	AList* avisitor() { return myVisitor; };
 	AList* amoderator() { return myModerator; };
+	AList* aparticipant() { return myParticipant; }
 	AList* acommand() { return myCommand; };
 	QString seen(const QString& nick);
 	QString clientStat();
@@ -61,6 +62,7 @@ private:
 	AList* myVisitor;
 	AList* myModerator;
 	AList* myCommand;
+	AList* myParticipant;
 	MucConfigurator* configurator_;
 };
 

@@ -32,7 +32,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 	commands << "WHEREAMI" << "NICK" << "IDLE" << "KNOWN" << "JOIN" << "LEAVE"
 			<< "KICK" << "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN"
 			<< "BANJID" << "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
-	commands << "ABAN" << "AKICK" << "AVISITOR" << "ACMD" << "AMODERATOR" << "AFIND"
+	commands << "ABAN" << "AKICK" << "AVISITOR" << "ACMD" << "AMODERATOR" << "APARTICIPANT" << "AFIND"
 			<< "SEEN" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
 	commands << "HERE" << "AGE" << "AGESTAT";
 	pluginId=1;
@@ -644,7 +644,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	}
 
 	if (cmd=="ABAN" || cmd=="AKICK" || cmd=="AVISITOR" || cmd=="AMODERATOR"
-		|| cmd=="ACMD" || cmd=="AEDIT" || cmd=="AFIND" || cmd=="AAND")
+		|| cmd=="APARTICIPANT" || cmd=="ACMD" || cmd=="AEDIT" || cmd=="AFIND" || cmd=="AAND")
 	{
 		if (!isFromConfAdmin(s))
 			return true;
@@ -1308,6 +1308,8 @@ AList* MucPlugin::alistByName(Conference* conf, const QString& name)
 		alist=conf->avisitor();
 	if (arg=="AMODERATOR")
 		alist=conf->amoderator();
+	if (arg=="APARTICIPANT")
+		alist=conf->aparticipant();
 	if (arg=="ACMD")
 		alist=conf->acommand();
 	return alist;
@@ -1624,6 +1626,16 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 			return;
 		}
 	}
+
+	if (item=aFind(c->aparticipant(), n, s, matcher))
+	{
+		QString reason=item->reason();
+		if (reason.isEmpty())
+			reason=DataStorage::instance()->getString("str/participant_reason");
+		setRole(c, n, "participant", reason);
+		return;
+	}
+
 	if (item=aFind(c->amoderator(), n, s, matcher))
 	{
 		QString reason=item->reason();

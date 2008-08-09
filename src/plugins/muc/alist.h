@@ -8,6 +8,7 @@
 #define ALIST_MODERATOR 3
 #define ALIST_BAN 4
 #define ALIST_CMD 5
+#define ALIST_PARTICIPANT 6
 
 class AListItem;
 
