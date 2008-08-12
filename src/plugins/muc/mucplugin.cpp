@@ -1591,7 +1591,11 @@ const QList<AListItem*> MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza*
 			item=item->child();
 		}
 		if (chainMatches && !item)
+		{
 			resultList.append(topItem);
+			if (onlyFirst)
+				return resultList;
+		}
 	}
 	return resultList;
 }
@@ -1612,7 +1616,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 	QString aff=n->affiliation().toUpper();
 	QList<AListItem*> itemList;
 
-	itemList=aFind(c->acommand(), n, s, matcher, true);
+	itemList=aFind(c->acommand(), n, s, matcher, false);
 	if (!itemList.isEmpty())
 	{
 		for (QList<AListItem*>::const_iterator it=itemList.begin(); it!=itemList.end();  ++it)
