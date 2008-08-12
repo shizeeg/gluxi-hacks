@@ -65,7 +65,7 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 				s->addAttribute("from", jid.toStdString());
 				s->finalize();
 			}
-			QString toSay=QString("%1 says that %2 = %3").arg(nick).arg(arg).arg(value);
+			QString toSay=QString("%1 says that %2 = %3").arg(nick).arg(wrd).arg(value);
 			reply(s, toSay,!dest.isEmpty());
 		}
 		return true;
