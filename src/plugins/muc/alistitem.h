@@ -22,6 +22,7 @@
 
 #include <QString>
 #include <QDateTime>
+#include <QList>
 
 class AListItem
 {
@@ -85,6 +86,8 @@ public:
 	bool isSubBodyDepends() const;
 
 	bool isBodyDepends() const;
+
+	static QString toStringAll(const QList<AListItem*>& list);
 private:
 	int id_;
 	MatcherType matcherType_;

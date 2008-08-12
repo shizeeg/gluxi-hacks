@@ -55,7 +55,7 @@ private:
 	void setAffiliation(gloox::Stanza* s, Nick*, const QString& affiliation, const QString& reason=QString::null);
 	void setAffiliation(Conference* conf, const QString& jid, const QString& affiliation, const QString& reason=QString::null);
 	QString getIqError(gloox::Stanza* s);
-	AListItem* aFind(AList* list, Nick *n, gloox::Stanza* s, AListItem::MatcherType matcher=AListItem::MatcherUnknown);
+	const QList<AListItem*> aFind(AList* list, Nick *n, gloox::Stanza* s, AListItem::MatcherType matcher=AListItem::MatcherUnknown, bool onlyFirst=false);
 	// Advanced commands
 	bool autoLists(gloox::Stanza* s, MessageParser& parser);
 	AList* alistByName(Conference* conf, const QString& name);

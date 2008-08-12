@@ -143,6 +143,19 @@ QString AListItem::toString() const
 	return line;
 }
 
+QString AListItem::toStringAll(const QList<AListItem*>& list)
+{
+	int idx=0;
+	QString res;
+	for (QList<AListItem*>::const_iterator it=list.begin(); it!=list.end(); ++it) {
+		AListItem* item=*it;
+		if (!res.isEmpty())
+			res+="\n";
+		res+=QString("%1) %2").arg(++idx).arg(item->toString());
+	}
+	return res;
+}
+
 bool AListItem::isSubVersionMatcher() const
 {
 	return (matcherType_ == AListItem::MatcherVersion

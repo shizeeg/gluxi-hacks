@@ -1077,17 +1077,31 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 			return true;
 		}
 
-		AListItem* item=0;
-		if (item=aFind(conf->aban(), n, 0L, AListItem::MatcherAll))
-			answer+=QString("\"%1\" is in aban list: %2\n").arg(arg2.toLower()).arg(item->toString());
-		if (item=aFind(conf->akick(), n, 0L, AListItem::MatcherAll))
-			answer+=QString("\"%1\" is in akick list: %2\n").arg(arg2.toLower()).arg(item->toString());
-		if (item=aFind(conf->avisitor(), n, 0L, AListItem::MatcherAll))
-			answer+=QString("\"%1\" is in avisitor list: %2\n").arg(arg2.toLower()).arg(item->toString());
-		if (item=aFind(conf->amoderator(), n, 0L, AListItem::MatcherAll))
-			answer+=QString("\"%1\" is in amoderator list: %2\n").arg(arg2.toLower()).arg(item->toString());
-		if (item=aFind(conf->acommand(), n, 0L, AListItem::MatcherAll))
-			answer+=QString("\"%1\" is in acmd list: %2\n").arg(arg2.toLower()).arg(item->toString());
+		QList<AListItem*> itemList;
+		itemList=aFind(conf->aban(), n, 0L, AListItem::MatcherAll,false);
+		if (!itemList.isEmpty())
+			answer+=QString("\"%1\" is in aban list:\n%2\n").arg(arg2.toLower()).arg(AListItem::toStringAll(itemList));
+
+		itemList=aFind(conf->akick(), n, 0L, AListItem::MatcherAll,false);
+		if (!itemList.isEmpty())
+			answer+=QString("\"%1\" is in akick list:\n%2\n").arg(arg2.toLower()).arg(AListItem::toStringAll(itemList));
+
+		itemList=aFind(conf->avisitor(), n, 0L, AListItem::MatcherAll,false);
+		if (!itemList.isEmpty())
+			answer+=QString("\"%1\" is in avisitor list:\n%2\n").arg(arg2.toLower()).arg(AListItem::toStringAll(itemList));
+
+		itemList=aFind(conf->aparticipant(), n, 0L, AListItem::MatcherAll,false);
+		if (!itemList.isEmpty())
+			answer+=QString("\"%1\" is in aparticipant list:\n%2\n").arg(arg2.toLower()).arg(AListItem::toStringAll(itemList));
+
+		itemList=aFind(conf->amoderator(), n, 0L, AListItem::MatcherAll,false);
+		if (!itemList.isEmpty())
+			answer+=QString("\"%1\" is in amoderator list:\n%2\n").arg(arg2.toLower()).arg(AListItem::toStringAll(itemList));
+
+		itemList=aFind(conf->acommand(), n, 0L, AListItem::MatcherAll,false);
+		if (!itemList.isEmpty())
+			answer+=QString("\"%1\" is in acmd list:\n%2\n").arg(arg2.toLower()).arg(AListItem::toStringAll(itemList));
+
 		if (answer.endsWith("\n"))
 			answer.remove(answer.length()-1, 1);
 		if (answer.isEmpty())
@@ -1426,8 +1440,9 @@ int MucPlugin::parseAListItem(gloox::Stanza* s, MessageParser& parser, AListItem
 }
 
 // Stanza can be null here
-AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem::MatcherType matcher)
+const QList<AListItem*> MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem::MatcherType matcher, bool onlyFirst)
 {
+	QList<AListItem*> resultList;
 	int cnt=list->count();
 	QString line;
 	QString lJid=nick->jidStr().toLower().section('/', 0, 0);
@@ -1576,9 +1591,9 @@ AListItem* MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza* s, AListItem
 			item=item->child();
 		}
 		if (chainMatches && !item)
-			return topItem;
+			resultList.append(topItem);
 	}
-	return 0L;
+	return resultList;
 }
 
 void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::MatcherType matcher)
@@ -1595,11 +1610,43 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 		s=0l;
 
 	QString aff=n->affiliation().toUpper();
-	AListItem* item;
+	QList<AListItem*> itemList;
+
+	itemList=aFind(c->acommand(), n, s, matcher, true);
+	if (!itemList.isEmpty())
+	{
+		for (QList<AListItem*>::const_iterator it=itemList.begin(); it!=itemList.end();  ++it)
+		{
+			AListItem* item=*it;
+			QString action=item->reason();
+			if (action.isEmpty())
+				return;
+			action=expandMacro(s,c,n,action,item);
+			QString from(c->name()+"/"+c->nick());
+			QString type="groupchat";
+			if (s)
+			{
+				QString t1=QString::fromStdString(s->findAttribute("type"));
+				if (!t1.isEmpty())
+					type=t1;
+				if (type!="groupchat")
+					from=QString::fromStdString(s->from().full());
+			}
+			gloox::Stanza* st=gloox::Stanza::createMessageStanza(from.toStdString(),
+					action.toStdString());
+			st->addAttribute("from", from.toStdString());
+			st->addAttribute("type", type.toStdString());
+			bot()->client()->handleMessage(st, 0);
+			delete st;
+		}
+	}
+
 	if (((aff!="OWNER") && !aff.startsWith("ADMIN") && aff!="MEMBER")|| c->configurator()->isApplyAlistsToMembers())
 	{
-		if (item=aFind(c->aban(), n, s, matcher))
+		itemList=aFind(c->aban(), n, s, matcher,true);
+		if (!itemList.isEmpty())
 		{
+			AListItem* item=itemList.first();
 			if (s && warnImOwner(s))
 				return;
 			QString reason=item->reason();
@@ -1609,16 +1656,21 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 			return;
 		}
 
-		if (item=aFind(c->akick(), n, s, matcher))
+		itemList=aFind(c->akick(), n, s, matcher, true);
+		if (!itemList.isEmpty())
 		{
+			AListItem* item=itemList.first();
 			QString reason=item->reason();
 			if (reason.isEmpty())
 				reason=DataStorage::instance()->getString("str/kick_reason");
 			setRole(c, n, "none", reason);
 			return;
 		}
-		if (item=aFind(c->avisitor(), n, s, matcher))
+
+		itemList=aFind(c->avisitor(), n, s, matcher, true);
+		if (!itemList.isEmpty())
 		{
+			AListItem* item=itemList.first();
 			QString reason=item->reason();
 			if (reason.isEmpty())
 				reason=DataStorage::instance()->getString("str/visitor_reason");
@@ -1627,8 +1679,10 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 		}
 	}
 
-	if (item=aFind(c->aparticipant(), n, s, matcher))
+	itemList=aFind(c->aparticipant(), n, s, matcher, true);
+	if (!itemList.isEmpty())
 	{
+		AListItem* item=itemList.first();
 		QString reason=item->reason();
 		if (reason.isEmpty())
 			reason=DataStorage::instance()->getString("str/participant_reason");
@@ -1636,38 +1690,14 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 		return;
 	}
 
-	if (item=aFind(c->amoderator(), n, s, matcher))
+	itemList=aFind(c->amoderator(), n, s, matcher, true);
+	if (!itemList.isEmpty())
 	{
+		AListItem* item=itemList.first();
 		QString reason=item->reason();
 		if (reason.isEmpty())
 			reason=DataStorage::instance()->getString("str/moderator_reason");
 		setRole(c, n, "moderator", reason);
-		return;
-	}
-
-	if (item=aFind(c->acommand(), n, s, matcher))
-	{
-		QString action=item->reason();
-		if (action.isEmpty())
-			return;
-		action=expandMacro(s,c,n,action,item);
-		QString from(c->name()+"/"+c->nick());
-		QString type="groupchat";
-		if (s)
-		{
-			QString t1=QString::fromStdString(s->findAttribute("type"));
-			if (!t1.isEmpty())
-				type=t1;
-			if (type!="groupchat")
-				from=QString::fromStdString(s->from().full());
-		}
-		gloox::Stanza* st=gloox::Stanza::createMessageStanza(from.toStdString(),
-				action.toStdString());
-		st->addAttribute("from", from.toStdString());
-		st->addAttribute("type", type.toStdString());
-		bot()->client()->handleMessage(st, 0);
-		delete st;
-
 		return;
 	}
 }
