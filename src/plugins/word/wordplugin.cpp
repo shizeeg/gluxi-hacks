@@ -41,15 +41,32 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 
 	if (cmd=="SHOW")
 	{
+		QString wrd=parser.nextToken();
 		QString nick;
-		QString value=words.get(bot()->getStorage(s), arg, &nick);
+		QString value=words.get(bot()->getStorage(s), wrd , &nick);
 		if (value.isEmpty())
 			reply(s, "I don't know");
 		else
 		{
+			QString dest=parser.nextToken();
+			if (!dest.isEmpty())
+			{
+				if (getRole(s)<ROLE_MODERATOR)
+				{
+					reply(s, "You should be moderator to do this");
+					return true;
+				}
+				QString jid=bot()->getJID(s, dest);
+				if (jid.isEmpty())
+				{
+					reply(s, "Nick not found: "+dest);
+					return true;
+				}
+				s->addAttribute("from", jid.toStdString());
+				s->finalize();
+			}
 			QString toSay=QString("%1 says that %2 = %3").arg(nick).arg(arg).arg(value);
-			qDebug() << toSay;
-			reply(s, toSay);
+			reply(s, toSay,!dest.isEmpty());
 		}
 		return true;
 	}
@@ -104,7 +121,6 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 			reply(s, "Ok");
 		s->addAttribute("from", jid.toStdString());
 		s->finalize();
-		qDebug() << QString::fromStdString(s->xml());
 		QString toSay=QString("%1 says that %2 = %3").arg(nick).arg(word).arg(value);
 		reply(s, toSay, true);
 		return true;
