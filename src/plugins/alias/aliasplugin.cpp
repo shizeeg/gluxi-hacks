@@ -71,7 +71,6 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 
 	if (!res.isEmpty())
 	{
-		//		QString expanded=expandAlias(res,arg);
 		while (1)
 		{
 			QString originalItem=res.section(";",0,0).trimmed();
@@ -83,9 +82,6 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 
 			res=res.section(";",1).trimmed();
 			QString item=expandAlias(originalItem, parser);
-
-			qDebug() << "------ Alias:\n| original: " << originalItem
-					<< "\n| expanded: " << item;
 
 			if (item.isEmpty())
 				continue;

@@ -9,13 +9,14 @@ MessageParser::MessageParser(gloox::Stanza* st, const QString& ownNick, const QC
 	QString body=QString::fromStdString(st->body()).trimmed();
 	int isec=0;
 	isForMe_=false;
+	firstEOLSeparatorTokenIdx_=-1;
 	QString first=body.section(' ',isec,isec).toUpper();
-	
+
 	if (QString::fromStdString(st->findAttribute("type"))!="groupchat")
 	{
 		isForMe_=true;
 	}
-	
+
 	if (first.startsWith('!'))
 	{
 		isForMe_=true;
@@ -38,22 +39,30 @@ MessageParser::MessageParser(gloox::Stanza* st, const QString& ownNick, const QC
 
 	if (separator==QChar() &&  body.contains('\n'))
 	{
-		//Using \n as token separator. Perform some "advanced" argument 
+		//Using \n as token separator. Perform some "advanced" argument
 		//parsing. Use \s for separator before first \n and then \n
 
 		QString bodySpace=body.section('\n',0,0);
 		QString bodyNewLine=body.section('\n',1);
 		tokens_=bodySpace.split(' ');
+		firstEOLSeparatorTokenIdx_=tokens_.count();
 		tokens_ << bodyNewLine.split('\n');
 		separator_='\n';
 	}
 	else
 	{
 		if (separator==QChar())
+		{
 			separator_=' ';
+			tokens_=body.split(separator_);
+			firstEOLSeparatorTokenIdx_=tokens_.count();
+		}
 		else
+		{
 			separator_=separator;
-		tokens_=body.split(separator_);
+			tokens_=body.split(separator_);
+		}
+
 	}
 	currentIdx_=0;
 	null_=false;
@@ -71,6 +80,7 @@ MessageParser::MessageParser(const MessageParser& other)
 	tokens_=other.getTokens();
 	currentIdx_=other.getCurrentIndex();
 	separator_=other.getSeparator();
+	firstEOLSeparatorTokenIdx_=other.firstEOLSeparatorTokenIdx_;
 }
 
 MessageParser::~MessageParser()
@@ -85,7 +95,7 @@ bool MessageParser::isMessageAcceptable(gloox::Stanza* st,
 	return parser.isForMe() && (pluginName.isEmpty() || parser.firstToken().toUpper() ==pluginName.toUpper());
 }
 
-//Maybe this should be replaced with something like startsWith(const QString&) 
+//Maybe this should be replaced with something like startsWith(const QString&)
 //to support spaces in plugin names;
 QString MessageParser::firstToken() const
 {
@@ -124,23 +134,28 @@ QString MessageParser::joinBody()
 
 QString MessageParser::joinBody(const QChar& sep)
 {
-	qDebug() << "Joining body. Separator: " << separator_.unicode();
-
 	if (currentIdx_<tokens_.count())
 	{
 		QString total;
 		QStringList::iterator it=tokens_.begin();
 		it+=currentIdx_;
+		int curIdx=currentIdx_;
 		bool first=true;
 		while (it!=tokens_.end())
 		{
 			if (first)
 				first=false;
 			else
-				total+=sep;
+			{
+				if (firstEOLSeparatorTokenIdx_>=0 && curIdx<firstEOLSeparatorTokenIdx_ && sep=='\n')
+					total+=' ';
+				else
+					total+=sep;
+			}
 
 			total+=(*it);
 			++it;
+			++curIdx;
 		}
 		return total;
 	}

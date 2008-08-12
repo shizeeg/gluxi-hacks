@@ -3,7 +3,7 @@
 
 #include <QStringList>
 
-namespace gloox 
+namespace gloox
 {
 	class Stanza;
 }
@@ -32,6 +32,7 @@ private:
 	bool null_;
 	bool isForMe_;
 	int currentIdx_;
+	int firstEOLSeparatorTokenIdx_;
 	QChar separator_;
 	QStringList tokens_;
 };
