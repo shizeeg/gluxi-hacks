@@ -1911,9 +1911,13 @@ bool MucPlugin::onVCard(const VCardWrapper& vcardWrapper)
 			nick->setVCardPhotoSize(0);
 			if (conf->configurator()->isDevoiceNoVCard())
 			{
-				reply(src, conf->configurator()->devoiceNoVCardReason(),true, true);
-				setRole(conf, nick, "visitor","");
-				nick->setDevoicedNoVCard(true);
+				// Devoice only if user was not already devoiced (for example by alists)
+				if (nick->role()!="visitor")
+				{
+					reply(src, conf->configurator()->devoiceNoVCardReason(),true, true);
+					setRole(conf, nick, "visitor", conf->configurator()->devoiceNoVCardReason());
+					nick->setDevoicedNoVCard(true);
+				}
 			}
 		}
 		else
