@@ -77,12 +77,13 @@ Conference::Conference(const QString& name, const QString& nick, bool lazyLeave)
 	}
 	if (!lazyLeave)
 		Nick::setAllOffline(this);
-	myBan=new AList(this, ALIST_BAN);
-	myKick=new AList(this,ALIST_KICK);
-	myVisitor=new AList(this, ALIST_VISITOR);
-	myModerator=new AList(this, ALIST_MODERATOR);
-	myParticipant=new AList(this, ALIST_PARTICIPANT);
-	myCommand=new AList(this, ALIST_CMD);
+	myBan=new AList(this, "ban", ALIST_BAN);
+	myKick=new AList(this, "kick", ALIST_KICK);
+	myVisitor=new AList(this, "visitor", ALIST_VISITOR);
+	myModerator=new AList(this, "moderator", ALIST_MODERATOR);
+	myParticipant=new AList(this, "participant", ALIST_PARTICIPANT);
+	myCommand=new AList(this, "command", ALIST_CMD);
+	alistTraceList_=new QStringList();
 }
 
 Conference::~Conference()
@@ -103,6 +104,7 @@ Conference::~Conference()
 	delete myParticipant;
 	delete myCommand;
 	delete configurator_;
+	delete alistTraceList_;
 }
 
 void Conference::markOffline()

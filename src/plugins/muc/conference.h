@@ -35,6 +35,8 @@ public:
 	AList* amoderator() { return myModerator; };
 	AList* aparticipant() { return myParticipant; }
 	AList* acommand() { return myCommand; };
+	QStringList* alistTraceList() { return alistTraceList_; }
+
 	QString seen(const QString& nick);
 	QString clientStat();
 	void setNick(const QString& name);
@@ -54,9 +56,6 @@ private:
 	QString myNick;
 	QString myName;
 	NickList myNicks;
-	/*QStringList myKick;
-	QStringList myVisitor;
-	QStringList myModerator;*/
 	AList* myBan;
 	AList* myKick;
 	AList* myVisitor;
@@ -64,6 +63,7 @@ private:
 	AList* myCommand;
 	AList* myParticipant;
 	MucConfigurator* configurator_;
+	QStringList* alistTraceList_;
 };
 
 #endif

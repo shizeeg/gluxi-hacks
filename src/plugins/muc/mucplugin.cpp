@@ -33,7 +33,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 			<< "KICK" << "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN"
 			<< "BANJID" << "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
 	commands << "ABAN" << "AKICK" << "AVISITOR" << "ACMD" << "AMODERATOR" << "APARTICIPANT" << "AFIND"
-			<< "SEEN" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
+			<< "ATRACE"  << "SEEN" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
 	commands << "HERE" << "AGE" << "AGESTAT";
 	pluginId=1;
 	lazyOffline=DataStorage::instance()->getInt("muc/lazyoffline");
@@ -295,6 +295,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		{
 			qDebug() << "!!!!!! Removing nick";
 			conf->nicks()->remove(n);
+			conf->alistTraceList()->removeAll(QString::fromStdString(s->from().full()));
 		}
 		bot()->roles()->remove(QString::fromStdString(s->from().full()));
 	}
@@ -651,6 +652,25 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		parser.back(2);
 		return autoLists(s, parser);
 	}
+
+	if (cmd=="ATRACE")
+	{
+		if (!isFromConfAdmin(s))
+			return true;
+		QString dst=QString::fromStdString(s->from().full());
+		if (!conf->alistTraceList()->contains(dst))
+		{
+			conf->alistTraceList()->append(dst);
+			reply(s, "Subscribed to alists trace");
+		}
+		else
+		{
+			conf->alistTraceList()->removeAll(dst);
+			reply(s, "Unsubscribed from alists trace");
+		}
+		return true;
+	}
+
 	if (cmd=="CLIENTS")
 	{
 		QString res=conf->clientStat();
@@ -1594,7 +1614,20 @@ const QList<AListItem*> MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza*
 		{
 			resultList.append(topItem);
 			if (onlyFirst)
-				return resultList;
+				break;
+		}
+	}
+	if (!resultList.isEmpty() && !nick->conference()->alistTraceList()->isEmpty())
+	{
+		QString tracedMsg=QString("Nick \"").append(nick->nick()).append("\" (").append(nick->jidStr()).append(")")
+			.append(" is matched followed items of a").append(list->name()).append(" list:\n");
+		tracedMsg+=AListItem::toStringAll(resultList);
+		for (QStringList::iterator it=nick->conference()->alistTraceList()->begin();
+			it!=nick->conference()->alistTraceList()->end(); ++it)
+		{
+			QString dst=*it;
+			gloox::Stanza* s=gloox::Stanza::createMessageStanza(gloox::JID(dst.toStdString()), tracedMsg.toStdString());
+			bot()->client()->send(s);
 		}
 	}
 	return resultList;

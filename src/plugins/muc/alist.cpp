@@ -13,10 +13,11 @@
 
 const static int CHILD_ALIST=9999;
 
-AList::AList(Conference* conf, int type) :
+AList::AList(Conference* conf, const QString& name, int type) :
 	QList<AListItem*>()
 {
 	myParent=conf;
+	name_=name;
 	myType=type;
 	convertUnknown();
 
