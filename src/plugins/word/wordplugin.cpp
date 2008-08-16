@@ -193,8 +193,8 @@ bool WordPlugin::parseMessage(gloox::Stanza* s)
 			newParser.nextToken();
 			newParser.nextToken(); //cmd
 			arg=newParser.joinBody();
-			QString name=arg.section('=', 0, 0);
-			QString value=arg.section('=', 1);
+			QString name=arg.section('=', 0, 0).trimmed();
+			QString value=arg.section('=', 1).trimmed();
 			if (name.isEmpty() || value.isEmpty())
 			{
 				reply(s, "Definition should be like name=value");
