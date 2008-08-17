@@ -39,7 +39,8 @@ void RoleList::insert(const QString& key, const QString& role, const QString& af
 void RoleList::update(const QString& key, int value)
 {
 	qDebug() << "RoleList::update: " << key << value;
-	if (get(key)>=value)
+	int old=get(key);
+	if (old<0 || old>=value)
 		return;
 	remove(key);
 	insert(key,value);
@@ -47,7 +48,6 @@ void RoleList::update(const QString& key, int value)
 
 int RoleList::calc(const QString& role, const QString& affiliation)
 {
-
 	QString r=role.toUpper();
 	QString a=affiliation.toUpper();
 	if (a.startsWith("OWNER"))
@@ -73,3 +73,14 @@ int RoleList::get(const QString& key)
 	return QMap<QString, int>::value(key,0);
 }
 
+void RoleList::remove(const QString& key)
+{
+	if (get(key)>=0)
+		QMap<QString, int>::remove(key);
+}
+
+void RoleList::remove(const QString& key, int value)
+{
+	if (get(key)==value)
+		QMap<QString, int>::remove(key);
+}

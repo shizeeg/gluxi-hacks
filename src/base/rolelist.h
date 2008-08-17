@@ -21,6 +21,8 @@ public:
 	void insert(const QString& key, const QString& from);
 	void insert(const QString& key, const QString& role, const QString& affiliation);
 	void update(const QString& key, const int value);
+	void remove(const QString& key);
+	void remove(const QString& key, int value);
 	int operator[](const QString& key);
 	int get(const QString& key);
 	static int calc(const QString& role, const QString& affiliation);

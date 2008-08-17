@@ -2052,6 +2052,10 @@ int MucPlugin::getRoleForNick(Conference* conf, Nick* nick)
 	QString jid2=conf->name()+"/"+nick->nick();
 	int role1=bot()->roles()->get(jid1);
 	int role2=bot()->roles()->get(jid2);
+	if (role1<0)
+		return role1;
+	if (role2<0)
+		return role2;
 	return (role1>role2) ? role1: role2;
 }
 
