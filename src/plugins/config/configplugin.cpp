@@ -23,6 +23,7 @@ ConfigPlugin::ConfigPlugin(GluxiBot *parent) :
 	bot()->rootDiscoHandler()->registerDiscoHandler(this);
 	addInfoItem(new FeatureItem("http://jabber.org/protocol/commands"));
 	addInfoItem(new IdentityItem("automation", "command-node", "Configuration"));
+	commands << "GET" << "SET";
 }
 
 ConfigPlugin::~ConfigPlugin()
@@ -35,8 +36,73 @@ bool ConfigPlugin::parseMessage(gloox::Stanza* s)
 	MessageParser parser(s, getMyNick(s));
 	parser.nextToken();
 	QString cmd=parser.nextToken().toUpper();
-	qDebug() << "Got CMD: " << cmd << "; length=" << cmd.length();
-	
+	if (cmd=="GET")
+	{
+		AbstractConfigurator* config=getConfiguratorVerbose(s);
+		if (!config)
+			return true;
+		QString name=parser.nextToken();
+		QList<ConfigField> fields=config->loadFields();
+		QString res;
+		int idx=0;
+		for (QList<ConfigField>::iterator it=fields.begin(); it!=fields.end(); ++it)
+		{
+			ConfigField field = *it;
+			if (name.isEmpty())
+				res+=QString("\n%1) %2").arg(++idx).arg(field.name()+": "+field.value());
+			else
+			{
+				if (name.toLower()==field.name().toLower())
+					res=field.name()+": "+field.value();
+			}
+		}
+		if (res.isEmpty())
+			reply(s, "No configuration field(s) found");
+		else
+		{
+			reply(s, res);
+		}
+		return true;
+	}
+
+	if (cmd=="SET")
+	{
+		AbstractConfigurator* config=getConfiguratorVerbose(s);
+		if (!config)
+			return true;
+		QString name;
+		QString value;
+
+		name=parser.nextToken().trimmed();
+		value=parser.nextToken().trimmed();
+		if (name.isEmpty() || value.isEmpty())
+		{
+			reply(s, "Incorrect name or value");
+			return true;
+		}
+		QList<ConfigField> fields=config->loadFields();
+		QList<ConfigField> modifiedList;
+		for (QList<ConfigField>::iterator it=fields.begin(); it!=fields.end(); ++it)
+		{
+			ConfigField field = *it;
+			if (name.toLower()==field.name())
+			{
+				field.setValue(value);
+				modifiedList.append(field);
+				break;
+			}
+		}
+		if (!modifiedList.isEmpty())
+		{
+			config->saveFields(modifiedList);
+			reply(s, "Updated");
+		}
+		else
+		{
+			reply(s, "No field found");
+		}
+		return true;
+	}
 	return false;
 }
 
@@ -45,27 +111,27 @@ gloox::Stanza* ConfigPlugin::handleDiscoRequest(gloox::Stanza* s, const QString&
 	gloox::Stanza* res=0;
 	if (res=DiscoHandler::handleDiscoRequest(s, jid))
 		return res;
-	
+
 	AbstractConfigurator* config=bot()->getConfigurator(s);
 	if (!config)
 		return 0;
-	
+
 	if (s->subtype()==gloox::StanzaIqSet || s->subtype() == gloox::StanzaIqGet)
-	{		
+	{
 		gloox::Tag* incCmdTag=s->findChild("command","node", GLUXI_CONFIG_NODE);
 		if (incCmdTag)
 		{
 			gloox::Tag* xTag=incCmdTag->findChild("x");
-			
+
 			QString action=QString::fromStdString(incCmdTag->findAttribute("action")).toLower();
 			bool isCancel=(action=="cancel");
-			
+
 			gloox::Stanza* st=gloox::Stanza::createIqStanza(s->from(),s->id(),gloox::StanzaIqResult);
 			gloox::Tag *cmdTag=new gloox::Tag(incCmdTag->name());
 			cmdTag->addAttribute("xmlns",cmdTag->findAttribute("xmlns"));
 			cmdTag->addAttribute("node",GLUXI_CONFIG_NODE);
 			cmdTag->addAttribute("sessionid",s->id());
-			
+
 			if (isCancel)
 			{
 				cmdTag->addAttribute("status","canceled");
@@ -152,4 +218,15 @@ ConfigField ConfigPlugin::createConfigFieldFromTag(gloox::Tag* tag)
 	if (valueTag)
 		value=QString::fromStdString(valueTag->cdata());
 	return ConfigField(name,value);
+}
+
+AbstractConfigurator* ConfigPlugin::getConfiguratorVerbose(gloox::Stanza* s)
+{
+	AbstractConfigurator* config=bot()->getConfigurator(s);
+	if (!config)
+	{
+		reply(s,"Unable to find configurator");
+		return 0;
+	}
+	return config;
 }

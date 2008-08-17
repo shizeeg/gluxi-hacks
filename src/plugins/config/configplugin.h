@@ -44,6 +44,7 @@ private:
 	gloox::Tag* createFieldTag(const ConfigField& field);
 	ConfigField createConfigFieldFromTag(gloox::Tag* tag);
 	QString fieldTypeToString(ConfigField::FieldType fieldType);
+	AbstractConfigurator* getConfiguratorVerbose(gloox::Stanza* s);
 };
 
 #endif
