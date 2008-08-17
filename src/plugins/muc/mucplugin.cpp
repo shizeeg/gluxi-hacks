@@ -1321,6 +1321,34 @@ bool MucPlugin::autoLists(gloox::Stanza *s, MessageParser& parser)
 		item.setReason(reason);
 	}
 	alist->append(item);
+
+	// Remove all JID's from AListItem to avoid displaying it to chatroom
+	AListItem* ptr=&item;
+	while (ptr)
+	{
+		if (ptr->matcherType()==AListItem::MatcherJid)
+		{
+			QString jid=ptr->value();
+			bool found=false;
+			for (NickList::iterator it=conf->nicks()->begin(); it!=conf->nicks()->end(); ++it)
+			{
+				Nick *tmpNick=*it;
+				if (tmpNick->jidStr().section('/',0,-2)==jid)
+				{
+					jid=QString("%1@").arg(tmpNick->nick());
+					found=true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				jid=jid.section('@',0,0)+"@";
+			}
+			ptr->setValue(jid);
+		}
+		ptr=ptr->child();
+	}
+
 	QString response((existsIdx>=0) ? "Updated" : "Added");
 	response+=": ";
 	response+=item.toString();
