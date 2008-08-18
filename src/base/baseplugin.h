@@ -41,7 +41,7 @@ public:
  	virtual bool shouldIgnoreError(); // Should we ignore can't handle error;
  	virtual bool isMyMessage(gloox::Stanza*s); // TODO: Fix it
  	virtual StorageKey getStorage(gloox::Stanza*s);
-	virtual QString getJID(gloox::Stanza*s, const QString&nick);
+	virtual QString getJID(gloox::Stanza*s, const QString&nick, bool realJid=false);
 	virtual QString getBotJID(gloox::Stanza* s);
 	virtual QString JIDtoNick(const QString& jid);
 	virtual void onQuit(const QString& reason);			// OnQuit

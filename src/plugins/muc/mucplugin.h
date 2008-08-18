@@ -30,7 +30,7 @@ public:
 	virtual bool onVCard(const VCardWrapper& vcard);
 	virtual bool isMyMessage(gloox::Stanza*);
 	virtual StorageKey getStorage(gloox::Stanza*s );
-	virtual QString getJID(gloox::Stanza*s, const QString&nick);
+	virtual QString getJID(gloox::Stanza*s, const QString&nick, bool realJid=false);
 	virtual QString getBotJID(gloox::Stanza* s);
 	virtual QString JIDtoNick(const QString& jid);
 	virtual QString getMyNick(gloox::Stanza* s);

@@ -748,7 +748,6 @@ Conference* MucPlugin::getConf(gloox::Stanza* s)
 	Conference* conf=conferences.byName(confName);
 	if (!conf)
 	{
-		qDebug() << "!!!!!!!!! Conf not found";
 		return 0;
 	}
 	return conf;
@@ -1800,7 +1799,7 @@ AbstractConfigurator* MucPlugin::getConfigurator(gloox::Stanza* s)
 	return conf->configurator();
 }
 
-QString MucPlugin::getJID(gloox::Stanza*s, const QString& n)
+QString MucPlugin::getJID(gloox::Stanza*s, const QString& n, bool realJid)
 {
 	qDebug() << "[MUC] getJID() " << n;
 	Nick* nick=getNick(s, n);
@@ -1809,6 +1808,8 @@ QString MucPlugin::getJID(gloox::Stanza*s, const QString& n)
 	Conference *conf=nick->conference();
 	if (!conf)
 		return QString::null;
+	if (realJid && !nick->jidStr().isEmpty())
+		return nick->jidStr();
 	return QString("%1/%2").arg(conf->name()).arg(nick->nick());
 }
 

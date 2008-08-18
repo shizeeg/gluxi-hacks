@@ -226,7 +226,7 @@ QString BasePlugin::getNick(gloox::Stanza*s)
 	}
 }
 
-QString BasePlugin::getJID(gloox::Stanza*s, const QString& nick)
+QString BasePlugin::getJID(gloox::Stanza*s, const QString& nick, bool realJid)
 {
 	return QString::null;
 }

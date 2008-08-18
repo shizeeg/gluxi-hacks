@@ -17,9 +17,26 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef DBVERSION_H
-#define DBVERSION_H
+#ifndef ACLLIST_H
+#define ACLLIST_H
 
-#define GLUXI_DB_VERSION 334
+#include "base/config/storagekey.h"
+
+#include <QList>
+#include <QMap>
+
+class AclList
+{
+public:
+	AclList();
+	~AclList() {; }
+	// 0 - err, 1 - added, 2 - updated
+	int append(const QString& name, const QString& value);
+	QString get(const QString& name);
+	QMap<QString, QString> getAll();
+	void clear();
+	int count();
+	bool remove(const QString& name);
+};
 
 #endif

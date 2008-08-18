@@ -8,6 +8,13 @@ CREATE TABLE aliases (
   PRIMARY KEY (plugin,storage,name)
 );
 
+DROP TABLE IF EXISTS acl CASCADE;
+CREATE TABLE acl (
+  name varchar(2000) NOT NULL,
+  value varchar(200) NOT NULL,
+  PRIMARY KEY (name)
+);
+
 DROP TABLE IF EXISTS conference_alists CASCADE;
 CREATE TABLE conference_alists (
   id SERIAL,

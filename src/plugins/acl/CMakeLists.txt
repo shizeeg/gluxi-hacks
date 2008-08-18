@@ -5,10 +5,12 @@ set (plugin_HDR_MOC
 )
 
 set (plugin_HDR
+	acllist.h
 )
 
 set (plugin_SRC
 	aclplugin.cpp
+	acllist.cpp
 )
 
 GLUXI_PLUGIN()

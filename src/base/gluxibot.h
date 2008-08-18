@@ -45,13 +45,13 @@ public:
 	// Depreacted members
 //	QStringList* owners() { return &myOwners; };
 //	QStringList* tmpOwners() { return &myTmpOwners; };
-	
+
 	PluginList* plugins() { return &myPlugins; };
 	AsyncRequestList* asyncRequests() { return myAsyncRequests; };
 	StorageKey getStorage(gloox::Stanza*s);
 	AbstractConfigurator* getConfigurator(gloox::Stanza* s);
 	bool isMyMessage(gloox::Stanza *);
-	QString getJID(gloox::Stanza*s, const QString&);
+	QString getJID(gloox::Stanza*s, const QString&, bool realJid=false);
 	QString getBotJID(gloox::Stanza*s);
 	QString JIDtoNick(const QString& jid);
 	void onQuit(const QString& reason);

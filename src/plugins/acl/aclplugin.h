@@ -24,6 +24,11 @@
 
 #include <gloox/stanza.h>
 
+#include <QMap>
+
+class AclList;
+class MessageParser;
+
 class AclPlugin : public BasePlugin
 {
 	Q_OBJECT
@@ -32,7 +37,14 @@ public:
 	~AclPlugin();
 	virtual QString name() const { return "ACL"; };
 	virtual QString prefix() const { return "ACL"; };
+	virtual bool canHandleMessage(gloox::Stanza* s);
 	virtual bool parseMessage(gloox::Stanza*);
+	bool parseCommands(gloox::Stanza* s, MessageParser& parser);
+private:
+	AclList* aclList_;
+	QMap<QString, QString> aclMap_;
+	bool isJidAccepted(const QString& jid);
+	int getAccessLevel(const QString& key);
 };
 
 #endif

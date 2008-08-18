@@ -250,7 +250,7 @@ StorageKey GluxiBot::getStorage(gloox::Stanza*s)
 	return StorageKey();
 }
 
-QString GluxiBot::getJID(gloox::Stanza* s, const QString& nick)
+QString GluxiBot::getJID(gloox::Stanza* s, const QString& nick, bool realJid)
 {
 	QListIterator<PluginRef> it(myPlugins);
 	BasePlugin *plugin;
@@ -258,7 +258,7 @@ QString GluxiBot::getJID(gloox::Stanza* s, const QString& nick)
 	{
 		plugin=it.next();
 		assert(plugin);
-		QString jid=plugin->getJID(s,nick);
+		QString jid=plugin->getJID(s,nick, realJid);
 		if (!jid.isEmpty())
 		{
 			return jid;
