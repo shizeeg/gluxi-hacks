@@ -134,7 +134,6 @@ void Nick::setNick(const QString& nick)
 
 void Nick::updateLastActivity()
 {
-	qDebug() << "[NICK] Activity updated: " << myNick;
 	if (myValidateRequired)
 		myValidateRequired=false;
 	else

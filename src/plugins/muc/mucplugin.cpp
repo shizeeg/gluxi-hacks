@@ -765,8 +765,6 @@ Nick* MucPlugin::getNick(gloox::Stanza* s, const QString& nn)
 	else
 		nickName=nn;
 
-	qDebug() << "[GETNICK] " << nickName;
-
 	Nick *nick=conf->nicks()->byName(nickName);
 	return nick;
 }
@@ -775,52 +773,16 @@ bool MucPlugin::isFromConfModerator(gloox::Stanza* s)
 {
 	QString jid=QString::fromStdString(s->from().full());
 	return (bot()->roles()->get(jid) >= ROLE_MODERATOR);
-	/*	if (bot()->owners()->indexOf(jid)>=0)
-	 return true
-	 QString nm=QString::fromStdString(s->from().resource());
-	 Nick *nick=getNick(s,nm);
-	 if (!nick) return false;
-
-	 if (nick->role()!="moderator")
-	 {
-	 reply(s,"Only conference moderator can do this.");
-	 return false;
-	 }
-	 return true;
-	 */
-
 }
 
 bool MucPlugin::isFromConfAdmin(gloox::Stanza* s)
 {
 	QString jid=QString::fromStdString(s->from().full());
 	return (bot()->roles()->get(jid) >= ROLE_ADMIN);
-	/*
-	 if (bot()->owners()->indexOf(jid)>=0)
-	 return true;
-
-	 QString nm=QString::fromStdString(s->from().resource());
-	 Nick *nick=getNick(s,nm);
-	 if (!nick) return false;
-
-
-	 qDebug() << nick->affiliation();
-	 if (!nick->affiliation().toUpper().startsWith("ADMIN") && nick->affiliation().toUpper() != "OWNER")
-	 {
-	 reply(s,"Only conference administrator can do this");
-	 return false;
-	 }
-	 return true;
-	 */
 }
 
 bool MucPlugin::isFromConfOwner(gloox::Stanza* s)
 {
-	/*	QString jid=QString::fromStdString(s->from().bare());
-	 QString nm=QString::fromStdString(s->from().resource());
-	 Nick *nick=getNick(s,nm);
-	 if (!nick) return false;
-	 */
 	QString jid=QString::fromStdString(s->from().full());
 
 	if (bot()->roles()->get(jid) < ROLE_OWNER)
@@ -1801,7 +1763,6 @@ AbstractConfigurator* MucPlugin::getConfigurator(gloox::Stanza* s)
 
 QString MucPlugin::getJID(gloox::Stanza*s, const QString& n, bool realJid)
 {
-	qDebug() << "[MUC] getJID() " << n;
 	Nick* nick=getNick(s, n);
 	if (!nick)
 		return QString::null;
