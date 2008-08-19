@@ -15,7 +15,7 @@ AclPlugin::AclPlugin(GluxiBot *parent) :
 	priority_=10; // We should be able to drop stanzas
 	aclList_=new AclList();
 	aclMap_=aclList_->getAll();
-	commands << "SHOW" << "ADD";
+	commands << "SHOW" << "ADD" << "DEL" << "CLEAR";
 }
 
 AclPlugin::~AclPlugin()
