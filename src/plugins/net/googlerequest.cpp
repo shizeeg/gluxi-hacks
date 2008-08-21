@@ -54,6 +54,7 @@ void GoogleRequest::exec()
 	http=new QHttp(qurl.host());
 	connect(http,SIGNAL(requestFinished(int, bool)), this, SLOT(httpRequestFinished(int, bool)));
 	http->get(qurl.toEncoded());
+	qDebug() << "GET...";
 }
 
 void GoogleRequest::httpRequestFinished(int, bool err)
@@ -65,7 +66,7 @@ void GoogleRequest::httpRequestFinished(int, bool err)
 		return;
 	}
 	QString buf=http->readAll();
-	QRegExp exp("<div class=g><h2 class=r>(.*)</td></tr></table></div>");
+	QRegExp exp("<div class=g><h3 class=r>(.*)</td></tr></table></div>");
 	exp.setMinimal(TRUE);
 	QString res;
 	int ps=0;
@@ -79,13 +80,19 @@ void GoogleRequest::httpRequestFinished(int, bool err)
 	}
 	if (nres || res.isEmpty())
 	{
-		plugin()->reply(stanza(), "Can't parse google");
+		QString value=removeHtml(getValue(buf,"<div class=med style=margin-top:2em><p>(.*)<p style=margin-top:1em>")).trimmed();
+		if (!value.isEmpty())
+			plugin()->reply(stanza(),value);
+		else
+			plugin()->reply(stanza(), "Can't parse google");
 		deleteLater();
 		return;
 	}
-	QString url=removeHtml(getValue(res,"<a href=\\\"(.*)\\\" class=l>"));
-	QString subj=removeHtml(getValue(res,"<a[^>]*class=l>(.*)</a>"));
-	QString body=removeHtml(getValue(res,"<tr><td class=\"j\"><div class=std>(.*)<br><span class=a>"));
+	QString url=removeHtml(getValue(res,"<a href=\\\"(.*)\\\" class=l>")).trimmed();
+	QString subj=removeHtml(getValue(res,"<a[^>]*class=l>(.*)</a>")).trimmed();
+	QString body=removeHtml(getValue(res,"<div class=std>(.*)<span class=")).trimmed();
+	if (body.endsWith('\n'))
+		body=body.section('\n',0,-2);
 	plugin()->reply(stanza(),QString("%1\n%2\n%3").arg(subj).arg(body).arg(url));
 	deleteLater();
 }
