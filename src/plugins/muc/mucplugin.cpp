@@ -77,7 +77,6 @@ bool MucPlugin::canHandlePresence(gloox::Stanza* s)
 	QString fromFull=QString::fromStdString(s->from().full());
 	int ret= (conferences.byName(from)
 			|| (confInProgress.indexOf(getConfExp(from))>=0));
-	qDebug() << "MucPlugin::canHandlePresence() " << fromFull << " = " << ret;
 	return ret;
 }
 
@@ -934,8 +933,6 @@ void MucPlugin::leave(const QString& name)
 			*st=
 					gloox::Stanza::createPresenceStanza(gloox::JID(confName.toStdString()));
 	st->addAttribute("type", "unavailable");
-
-	std::cout << st->xml() << std::endl << std::endl;
 	bot()->client()->send(st);
 }
 
