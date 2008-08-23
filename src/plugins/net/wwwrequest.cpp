@@ -182,14 +182,6 @@ void WWWRequest::run()
 			}
 		}
 
-		for (;;)
-		{
-			QChar ch=myString.at(myString.length()-1);
-			if (ch!=13 && ch!=10)
-				break;
-			myString.remove(myString.length()-1,1);
-		}
-
 		plugin()->reply(stanza(), myString);
 		return;
 	}
@@ -216,6 +208,18 @@ void WWWRequest::run()
 	}
 	else
 		res=data;
+
+	for (;;)
+	{
+		QChar ch=res.at(res.length()-1);
+		if (ch!=13 && ch!=10 && ch!=' ')
+		{
+			qDebug() << ch;
+			break;
+		}
+		res.remove(res.length()-1,1);
+	}
+
 	plugin()->reply(stanza(),res);
 }
 
