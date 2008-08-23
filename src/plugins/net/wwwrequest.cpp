@@ -53,8 +53,8 @@ void WWWRequest::run()
 		qDebug() << "|| exp=" << myExp << "  || dest=" << myDest;
 	}
 	QRegExp exp(myExp);
-	
-	QStringList postList;	
+
+	QStringList postList;
 	if (myCmd=="POST")
 	{
 		QString tmp=myDest;
@@ -68,18 +68,18 @@ void WWWRequest::run()
 		proxy.headersOnly=true;
 	else
 		proxy.contentTypes << "text/plain" << "text/html" << "text/xml" << "text/vnd.sun.j2me.app-descriptor" << "text/vnd.wap.wml" ;
-	
+
 	QStringList cookies;
 	QString referer="";
 	if (myDest.indexOf("://")<0)
 		myDest="http://"+myDest;
-	
+
 	QString res;
 	if (postList.isEmpty())
 		res=proxy.fetch(myDest,referer,&cookies,0);
 	else
 		res=proxy.fetch(myDest, referer, &cookies, &postList);
-	
+
 	if (proxy.headersOnly)
 	{
 		if (proxy.headers.isEmpty())
@@ -89,7 +89,7 @@ void WWWRequest::run()
 				.arg(myDest).arg(proxy.headers.join("\n")));
 		return;
 	}
-	
+
 	if (!proxy.redirectTo.isEmpty())
 	{
 		plugin()->reply(stanza(),QString("Location: %1").arg(proxy.redirectTo));
@@ -138,7 +138,18 @@ void WWWRequest::run()
 		data=codec->toUnicode(proxy.lastData).toUtf8();
 	else
 		data=proxy.lastData;
-	
+
+	QString tmpStr(data);
+	int l=tmpStr.length();
+	for (int i=0; i<l; ++i)
+	{
+		if (tmpStr.at(i).unicode()<10)
+		{
+			plugin()->reply(stanza(), "Illegal character in respone body");
+			return;
+		}
+	}
+
 	if (!myExp.isEmpty())
 	{
 		// Apply regexp
@@ -174,7 +185,7 @@ void WWWRequest::run()
 		plugin()->reply(stanza(), myString);
 		return;
 	}
-	
+
 	if (proxy.contentType=="text/html")
 	{
 		proc=new QProcess();
