@@ -143,9 +143,10 @@ void WWWRequest::run()
 	int l=tmpStr.length();
 	for (int i=0; i<l; ++i)
 	{
-		if (tmpStr.at(i).unicode()<10)
+		if (tmpStr.at(i).unicode()<9)
 		{
-			plugin()->reply(stanza(), "Illegal character in respone body");
+			plugin()->reply(stanza(), "Illegal character in respone body: 0x"
+					+QString::number(tmpStr.at(i).unicode(),16));
 			return;
 		}
 	}
@@ -213,10 +214,7 @@ void WWWRequest::run()
 	{
 		QChar ch=res.at(res.length()-1);
 		if (ch!=13 && ch!=10 && ch!=' ')
-		{
-			qDebug() << ch;
 			break;
-		}
 		res.remove(res.length()-1,1);
 	}
 
