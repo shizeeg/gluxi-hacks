@@ -36,6 +36,10 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 			<< "ATRACE"  << "SEEN" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
 	commands << "HERE" << "AGE" << "AGESTAT";
 	pluginId=1;
+
+	// Plugin should be able to modify self-messages so they will be
+	// unparseable by other plugins
+	priority_=20;
 	lazyOffline=DataStorage::instance()->getInt("muc/lazyoffline");
 
 	int leaveCheckInterval=DataStorage::instance()->getInt("muc/leave_checkinterval");
@@ -158,9 +162,17 @@ bool MucPlugin::canHandleMessage(gloox::Stanza* s)
 		qDebug() << "MUC: getNick() returns 0L";
 		return false;
 	}
-	if (n->nick()==conf->nick() && !s->from()==s->to())
+	if (n->nick()==conf->nick() && !(s->from()==s->to()))
 	{
 		qDebug() << "MUC: Self message ignored";
+		// Avoid processing of such message by other plugins.
+		// Currently just add invalid "to" and clear body :)
+		s->addAttribute("from","");
+		s->addAttribute("to","");
+		gloox::Tag* tag=s->findChild("body");
+		if (tag)
+			tag->setCData("");
+		s->finalize();
 		return false;
 	}
 	return true;
