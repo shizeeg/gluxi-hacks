@@ -57,6 +57,7 @@ bool AclPlugin::parseCommands(gloox::Stanza* s, MessageParser& parser)
 	if (getRole(s) < ROLE_BOTOWNER)
 	{
 		reply(s, "You should be bot-owner to do this");
+		return true;
 	}
 
 	QString cmd=parser.nextToken().toUpper();
