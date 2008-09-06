@@ -22,9 +22,10 @@
 UserPlugin::UserPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "VERSION" << "PING" << "DISCO" << "VCARD" << "PHOTO" << "STATLIST" << "STAT";
+	commands << "VERSION" << "PING" << "DISCO" << "VCARD" << "PHOTO" << "STATLIST" << "STAT" << "UPTIME";
 
 	bot()->registerIqHandler("jabber:iq:version");
+	bot()->registerIqHandler("jabber:iq:last");
 	bot()->registerIqHandler("http://jabber.org/protocol/disco#items");
 	bot()->registerIqHandler("http://jabber.org/protocol/stats");
 }
@@ -130,6 +131,23 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 		sf->addAttribute("id", id);
 		AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
 		req->setName(QString(cmd));
+		bot()->asyncRequests()->append(req);
+		bot()->client()->send(st);
+		return true;
+	}
+
+	if (cmd=="UPTIME")
+	{
+		std::string id=bot()->client()->getID();
+		QString jid=resolveTargetJid(s, arg);
+
+		gloox::Stanza *st=gloox::Stanza::createIqStanza(
+				gloox::JID(jid.toStdString()), id, gloox::StanzaIqGet,
+				"jabber:iq:last");
+		gloox::Stanza *sf=new gloox::Stanza(s);
+		sf->addAttribute("id", id);
+		AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
+		req->setName(jid);
 		bot()->asyncRequests()->append(req);
 		bot()->client()->send(st);
 		return true;
@@ -371,6 +389,17 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 				reply(req->stanza(), QString("Statistic:\n%1").arg(statItemList.join("\n")));
 			}
 		}
+	}
+
+	if (xmlns=="jabber:iq:last")
+	{
+		QString value=QString::fromStdString(query->findAttribute("seconds"));
+		bool ok=true;
+		int res=value.toInt(&ok);
+		if (ok==false || value.isEmpty())
+			reply(req->stanza(),"Unable to query");
+		else
+			reply(req->stanza(), secsToString(res));
 	}
 
 	bot()->asyncRequests()->removeAll(req);
