@@ -34,7 +34,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 			<< "BANJID" << "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
 	commands << "ABAN" << "AKICK" << "AVISITOR" << "ACMD" << "AMODERATOR" << "APARTICIPANT" << "AFIND"
 			<< "ATRACE"  << "SEEN" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
-	commands << "HERE" << "AGE" << "AGESTAT";
+	commands << "HERE" << "STATUS" << "AGE" << "AGESTAT";
 	pluginId=1;
 
 	// Plugin should be able to modify self-messages so they will be
@@ -708,6 +708,18 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		}
 		else
 			reply(s, "never");
+		return true;
+	}
+
+	if (cmd=="STATUS")
+	{
+		Nick *n=getNickVerbose(s, arg);
+		if (!nick)
+			return true;
+		QString res=n->show();
+		if (!n->status().isEmpty())
+			res+=QString(" (%1)").arg(n->status());
+		reply(s, res);
 		return true;
 	}
 
