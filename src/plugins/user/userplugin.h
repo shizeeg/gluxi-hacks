@@ -11,7 +11,7 @@ class VCardWrapper;
 /**
 	@author Dmitry Nezhevenko <dion@inhex.net>
 */
-class UserPlugin : public BasePlugin 
+class UserPlugin : public BasePlugin
 {
 	Q_OBJECT
 public:
@@ -26,6 +26,7 @@ public:
 	virtual bool onVCard(const VCardWrapper& vcard);
 private:
 	void sendVersion(gloox::Stanza *s);
+	QString resolveTargetJid(gloox::Stanza* s, const QString& arg);
 };
 
 #endif

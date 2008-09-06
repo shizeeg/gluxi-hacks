@@ -22,10 +22,11 @@
 UserPlugin::UserPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "VERSION" << "PING" << "DISCO" << "VCARD" << "PHOTO";
+	commands << "VERSION" << "PING" << "DISCO" << "VCARD" << "PHOTO" << "STATLIST" << "STAT";
 
 	bot()->registerIqHandler("jabber:iq:version");
 	bot()->registerIqHandler("http://jabber.org/protocol/disco#items");
+	bot()->registerIqHandler("http://jabber.org/protocol/stats");
 }
 
 UserPlugin::~UserPlugin()
@@ -50,11 +51,7 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 	if (cmd=="VERSION" || cmd=="PING")
 	{
 		std::string id=bot()->client()->getID();
-		QString jid=bot()->getJID(s, arg);
-		if (jid.isEmpty())
-			jid=arg;
-		if (jid.isEmpty())
-			jid=QString::fromStdString(s->from().full());
+		QString jid=resolveTargetJid(s, arg);
 
 		gloox::Stanza *st=gloox::Stanza::createIqStanza(
 				gloox::JID(jid.toStdString()), id, gloox::StanzaIqGet,
@@ -74,11 +71,8 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 	if (cmd=="DISCO")
 	{
 		std::string id=bot()->client()->getID();
-		QString jid=bot()->getJID(s, arg);
-		if (jid.isEmpty())
-			jid=arg;
-		if (jid.isEmpty())
-			jid=QString::fromStdString(s->from().full());
+		QString jid=resolveTargetJid(s, arg);
+
 		gloox::Stanza *st=gloox::Stanza::createIqStanza(
 				gloox::JID(jid.toStdString()), id, gloox::StanzaIqGet,
 				"http://jabber.org/protocol/disco#items");
@@ -104,6 +98,40 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 		AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
 		req->setName(cmd);
 		bot()->asyncRequests()->append(req);
+		return true;
+	}
+	if (cmd=="STATLIST" || cmd=="STAT")
+	{
+		std::string id=bot()->client()->getID();
+		QString jid=resolveTargetJid(s, arg);
+
+		gloox::Stanza *st=gloox::Stanza::createIqStanza(
+			gloox::JID(jid.toStdString()), id, gloox::StanzaIqGet,
+			"http://jabber.org/protocol/stats");
+
+		if (cmd=="STAT")
+		{
+			gloox::Tag* tag=st->findChild("query", "xmlns",
+				"http://jabber.org/protocol/stats");
+			if (tag)
+			{
+				for (;;)
+				{
+					QString item=parser.nextToken();
+					if (item.isEmpty())
+						break;
+					tag->addChild(new gloox::Tag("stat","name",item.toStdString()));
+				}
+			}
+		}
+		st->finalize();
+
+		gloox::Stanza *sf=new gloox::Stanza(s);
+		sf->addAttribute("id", id);
+		AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
+		req->setName(QString(cmd));
+		bot()->asyncRequests()->append(req);
+		bot()->client()->send(st);
 		return true;
 	}
 
@@ -278,6 +306,72 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 			reply(req->stanza(), "Disco items:\n"+replyList.join("\n"));
 		}
 	}
+	if (xmlns=="http://jabber.org/protocol/stats")
+	{
+		// Got statistic to display?
+		if (s->subtype()==gloox::StanzaIqError)
+			reply(req->stanza(), "Unable to query");
+		else
+		{
+			std::list<gloox::Tag*> childList=query->children();
+			QStringList statItemList;
+			bool haveValues=true;
+			for (std::list<gloox::Tag*>::iterator it=childList.begin(); it!=childList.end(); ++it)
+			{
+				gloox::Tag* child=*it;
+				if (child->name()!="stat")
+					continue;
+				QString item=QString::fromStdString(child->findAttribute("name"));
+				QString value=QString::fromStdString(child->findAttribute("value"));
+				if (!value.isEmpty())
+				{
+					item+=QString(": %1").arg(value);
+					QString units=QString::fromStdString(child->findAttribute("units"));
+					if (!units.isEmpty())
+						item+=QString(" %1").arg(units);
+				}
+				else
+				{
+					gloox::Tag* err=child->findChild("error");
+					if (err)
+					{
+						value=QString::fromStdString(err->cdata());
+						if (value.isEmpty())
+							value=QString::fromStdString(err->xml());
+						item+=QString(": %1").arg(value);
+					}
+				}
+				if (value.isEmpty())
+					haveValues=false;
+				statItemList.append(item);
+			}
+			if (req->name()=="STAT" && !haveValues)
+			{
+				// Resubmit query with values information
+				std::string id=bot()->client()->getID();
+				gloox::Stanza *st2=gloox::Stanza::createIqStanza(s->from(),
+					id, gloox::StanzaIqGet, xmlns.toStdString());
+				gloox::Tag* query2=st2->findChild("query", "xmlns", xmlns.toStdString());
+				assert(query2);
+				for (QStringList::iterator it=statItemList.begin(); it!=statItemList.end(); ++it)
+				{
+					QString statItem=*it;
+					query2->addChild(new gloox::Tag("stat","name",statItem.toStdString()));
+				}
+				st2->finalize();
+				gloox::Stanza *sf=new gloox::Stanza(req->stanza());
+				sf->addAttribute("id", id);
+				AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
+				req->setName("STAT2");
+				bot()->asyncRequests()->append(req);
+				bot()->client()->send(st2);
+			}
+			else
+			{
+				reply(req->stanza(), QString("Statistic:\n%1").arg(statItemList.join("\n")));
+			}
+		}
+	}
 
 	bot()->asyncRequests()->removeAll(req);
 	delete req;
@@ -358,4 +452,14 @@ bool UserPlugin::onVCard(const VCardWrapper& vcardWrapper)
 	}
 	bot()->asyncRequests()->removeAll(req);
 	return true;
+}
+
+QString UserPlugin::resolveTargetJid(gloox::Stanza* s, const QString& arg)
+{
+	QString jid=bot()->getJID(s, arg);
+	if (jid.isEmpty())
+		jid=arg;
+	if (jid.isEmpty())
+		jid=QString::fromStdString(s->from().full());
+	return jid;
 }
