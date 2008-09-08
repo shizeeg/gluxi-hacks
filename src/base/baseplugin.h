@@ -62,6 +62,7 @@ protected:
 
 	virtual bool isFromBotOwner(gloox::Stanza*, bool message=false);
 	int getRole(gloox::Stanza*);
+	int getRole(const QString& jid);
 	QString getPresence(const gloox::Presence& pr);
 };
 

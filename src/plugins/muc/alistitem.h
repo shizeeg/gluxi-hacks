@@ -40,7 +40,8 @@ public:
 		MatcherVersionClient=7,
 		MatcherVersionOs=8,
 		MatcherVCardPhotoSize=9,
-		MatcherAge=10
+		MatcherAge=10,
+		MatcherRole=11
 	};
 
 	enum TestType

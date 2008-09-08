@@ -202,7 +202,12 @@ bool BasePlugin::isFromBotOwner(gloox::Stanza *s, bool message)
 
 int BasePlugin::getRole(gloox::Stanza *s)
 {
-	QString jid1=QString::fromStdString(s->from().full());
+	QString jid=QString::fromStdString(s->from().full());
+	return getRole(jid);
+}
+
+int BasePlugin::getRole(const QString& jid1)
+{
 	QString jid2=jid1.section('/',0,0);
 	int role1=bot()->roles()->get(jid1);
 	int role2=bot()->roles()->get(jid2);

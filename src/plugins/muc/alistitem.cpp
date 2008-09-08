@@ -101,8 +101,13 @@ QString AListItem::toString() const
 		break;
 	case AListItem::MatcherVCardPhotoSize:
 		flags+="Ps";
+		break;
 	case AListItem::MatcherAge:
 		flags+="Ag";
+		break;
+	case AListItem::MatcherRole:
+		flags+="ro";
+		break;
 	};
 
 	switch (testType())
@@ -169,7 +174,8 @@ bool AListItem::isSubPresenceDepends() const
 	return (matcherType_ == AListItem::MatcherNick
 						|| matcherType_==AListItem::MatcherJid
 						|| matcherType_==AListItem::MatcherResource
-						|| matcherType_==AListItem::MatcherAge);
+						|| matcherType_==AListItem::MatcherAge
+						|| matcherType_==AListItem::MatcherRole);
 }
 
 bool AListItem::isSubBodyDepends() const

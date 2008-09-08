@@ -1378,7 +1378,7 @@ int MucPlugin::parseAListItem(gloox::Stanza* s, MessageParser& parser, AListItem
 	if (arg2=="NICK" || arg2=="BODY" || arg2=="RES"
 		|| arg2=="VERSION" || arg2=="VERSION.NAME"
 		|| arg2=="VERSION.CLIENT" || arg2=="VERSION.OS"
-		|| arg2=="VCARD.PHOTOSIZE" || arg2=="AGE")
+		|| arg2=="VCARD.PHOTOSIZE" || arg2=="AGE" || arg2=="ROLE")
 	{
 		if (arg2=="NICK")
 			item.setMatcherType(AListItem::MatcherNick);
@@ -1398,6 +1398,8 @@ int MucPlugin::parseAListItem(gloox::Stanza* s, MessageParser& parser, AListItem
 			item.setMatcherType(AListItem::MatcherVCardPhotoSize);
 		else if (arg2=="AGE")
 			item.setMatcherType(AListItem::MatcherAge);
+		else if (arg2=="ROLE")
+			item.setMatcherType(AListItem::MatcherRole);
 
 		arg2=parser.nextToken().toUpper();
 	}
@@ -1493,8 +1495,12 @@ const QList<AListItem*> MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza*
 	}
 	QString vcardPhotoSize=QString::number(nick->vcardPhotoSize());
 	QString age("?");
+	QString role("0");
 	if (nick->jid())
+	{
 		age=QString::number(nick->jid()->created().secsTo(QDateTime::currentDateTime()));
+		role=QString::number(getRole(nick->conference()->name()+"/"+nick->nick()));
+	}
 
 	bool isPresence=!s || (s->type()==gloox::StanzaPresence);
 
@@ -1555,6 +1561,7 @@ const QList<AListItem*> MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza*
 				case AListItem::MatcherVersionOs: testValue=nick->versionOs().toLower(); break;
 				case AListItem::MatcherVCardPhotoSize: testValue=vcardPhotoSize; break;
 				case AListItem::MatcherAge: testValue=age; break;
+				case AListItem::MatcherRole: testValue=role; break;
 				default: shouldBreak=true; break;
 			}
 			if (shouldBreak)
