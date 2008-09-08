@@ -18,12 +18,12 @@ if [ -z "$QUERYCMD" ]; then
 		exit 1
 	fi
 
-	if [ "$DBTYPE" == "mysql" ]; then
+	if [ "$DBTYPE" = "mysql" ]; then
 		QUERYCMD="mysql -h $DBHOST -u $DBUSER -p${DBPASS} $DBNAME --skip-column-names -A -B"
 		INLINE_SUFFIX="-e"
 	fi
 	
-	if [ "$DBTYPE" == "psql" ] || [ "$DBTYPE" == "pgsql" ]; then
+	if [ "$DBTYPE" = "psql" ] || [ "$DBTYPE" = "pgsql" ]; then
 		export ON_ERROR_STOP="true"
 		DBTYPE="pgsql"
 		QUERYCMD="psql -U $DBUSER -h $DBHOST $DBNAME -A -t -q"
