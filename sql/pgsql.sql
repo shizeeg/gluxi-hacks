@@ -117,6 +117,14 @@ CREATE TABLE configuration_fields (
   PRIMARY KEY (plugin,name)
 );
 
+DROP TABLE IF EXISTS roster;
+CREATE TABLE roster (
+  id SERIAL,
+  jid varchar(100) NOT NULL,
+  PRIMARY KEY(id),
+  UNIQUE(jid)
+);
+
 DROP TABLE IF EXISTS version CASCADE;
 CREATE TABLE version (
   name varchar(50) NOT NULL,

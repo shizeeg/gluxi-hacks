@@ -17,9 +17,44 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef DBVERSION_H
-#define DBVERSION_H
+#include "rosterplugin.h"
+#include "rosterstorage.h"
 
-#define GLUXI_DB_VERSION 352
+#include "base/messageparser.h"
+#include "base/gluxibot.h"
+#include "base/glooxwrapper.h"
+#include "base/datastorage.h"
 
-#endif
+
+#include <QtDebug>
+#include <QTime>
+
+RosterPlugin::RosterPlugin(GluxiBot *parent) :
+	BasePlugin(parent)
+{
+	// Storage provider
+	pluginId=2;
+	// Let muc plugin provide storage for conference stuff
+	priority_=100;
+	rosterStorage_=new RosterStorage();
+	autoCreateStorage_=(DataStorage::instance()->getString("roster/autocreate_storage")=="1");
+}
+
+RosterPlugin::~RosterPlugin()
+{
+	delete rosterStorage_;
+	rosterStorage_=0l;
+}
+
+StorageKey RosterPlugin::getStorage(gloox::Stanza*s)
+{
+	if (!rosterStorage_)
+		return StorageKey();
+	QString jid=QString::fromStdString(s->from().bare());
+	int idx=rosterStorage_->getStorage(jid);
+	if (idx<=0 && autoCreateStorage_)
+		idx=rosterStorage_->createStorage(jid);
+	if (idx<=0)
+		return StorageKey();
+	return StorageKey(pluginId, idx);
+}

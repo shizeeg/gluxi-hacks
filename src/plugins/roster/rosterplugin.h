@@ -17,9 +17,30 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef DBVERSION_H
-#define DBVERSION_H
+#ifndef ROSTERPLUGIN_H
+#define ROSTERPLUGIN_H
 
-#define GLUXI_DB_VERSION 352
+#include "base/baseplugin.h"
+
+#include <gloox/stanza.h>
+
+class RosterStorage;
+
+/**
+	@author Dmitry Nezhevenko <dion@inhex.net>
+*/
+class RosterPlugin : public BasePlugin
+{
+	Q_OBJECT
+public:
+	RosterPlugin(GluxiBot *parent = 0);
+	~RosterPlugin();
+	virtual QString name() const { return "Roster"; };
+	virtual QString prefix() const { return "ROSTER"; };
+	virtual StorageKey getStorage(gloox::Stanza*s);
+private:
+	RosterStorage* rosterStorage_;
+	bool autoCreateStorage_;
+};
 
 #endif

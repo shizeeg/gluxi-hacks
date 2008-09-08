@@ -17,9 +17,19 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef DBVERSION_H
-#define DBVERSION_H
+#ifndef ROSTERSTORAGE_H_
+#define ROSTERSTORAGE_H_
 
-#define GLUXI_DB_VERSION 352
+#include <QString>
 
-#endif
+class RosterStorage
+{
+public:
+	RosterStorage();
+	virtual ~RosterStorage();
+	// <=0 -- no such record
+	int getStorage(const QString& jid);
+	int createStorage(const QString& jid);
+};
+
+#endif /* ROSTERSTORAGE_H_ */

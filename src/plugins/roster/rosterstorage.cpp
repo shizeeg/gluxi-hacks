@@ -17,9 +17,38 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef DBVERSION_H
-#define DBVERSION_H
+#include "rosterstorage.h"
 
-#define GLUXI_DB_VERSION 352
+#include "base/datastorage.h"
 
-#endif
+#include <QSqlQuery>
+#include <QVariant>
+#include <QSqlError>
+#include <QtDebug>
+
+RosterStorage::RosterStorage()
+{}
+
+RosterStorage::~RosterStorage()
+{}
+
+int RosterStorage::getStorage(const QString& jid)
+{
+	QSqlQuery query=DataStorage::instance()->prepareQuery("SELECT id FROM roster where jid=?");
+	query.addBindValue(jid);
+	if (!query.exec() || !query.next())
+		return -1;
+	return query.value(0).toInt();
+}
+
+int RosterStorage::createStorage(const QString& jid)
+{
+	QSqlQuery query=DataStorage::instance()->prepareQuery("INSERT INTO roster(jid) VALUES(?)");
+	query.addBindValue(jid);
+	if (!query.exec())
+	{
+		qDebug() << query.lastError().text();
+		return -1;
+	}
+	return getStorage(jid);
+}
