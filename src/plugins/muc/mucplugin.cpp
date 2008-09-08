@@ -1513,7 +1513,7 @@ const QList<AListItem*> MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza*
 			bool partMatches=false;
 			bool processEmpty=false;
 			if (!multiMatch && matcher!=AListItem::MatcherUnknown && matcher!=AListItem::MatcherAll &&
-					!item->matcherType()!=matcher)
+					item->matcherType()!=matcher)
 			{
 				if (matcher==AListItem::MatcherVersion)
 				{
