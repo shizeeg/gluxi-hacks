@@ -714,7 +714,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	if (cmd=="STATUS")
 	{
 		Nick *n=getNickVerbose(s, arg);
-		if (!nick)
+		if (!n)
 			return true;
 		QString res=n->show();
 		if (!n->status().isEmpty())
