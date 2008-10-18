@@ -42,7 +42,7 @@ void SVNRequest::onProcessFinished()
 	QString lines=QString(proc->readAll()).trimmed();
 	if (lines.isEmpty())
 	{
-		plugin()->reply(stanza(), QString("Can't get repositroy info:\n%1")
+		plugin()->reply(stanza(), QString("Can't get repository info:\n%1")
 			.arg(QString(proc->readAllStandardError())));
 		deleteLater();
 		return;
