@@ -29,9 +29,6 @@ CREATE TABLE `aliases` (
   PRIMARY KEY  (`plugin`,`storage`,`name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
----
---- Table structuire for table `acl`
----
 
 DROP TABLE IF EXISTS `acl`;
 CREATE TABLE `acl` (
@@ -234,7 +231,7 @@ CREATE TABLE `version` (
 
 LOCK TABLES `version` WRITE;
 /*!40000 ALTER TABLE `version` DISABLE KEYS */;
-INSERT INTO `version` VALUES ('dbversion','334');
+INSERT INTO `version` VALUES ('dbversion','352');
 /*!40000 ALTER TABLE `version` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

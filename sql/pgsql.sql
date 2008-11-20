@@ -132,4 +132,4 @@ CREATE TABLE version (
   PRIMARY KEY (name)
 );
 
-INSERT INTO version (name, value) VALUES ('dbversion', 334);
+INSERT INTO version (name, value) VALUES ('dbversion', 352);
