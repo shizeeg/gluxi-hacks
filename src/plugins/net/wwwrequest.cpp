@@ -210,14 +210,16 @@ void WWWRequest::run()
 	else
 		res=data;
 
-	for (;;)
+	while (!res.isEmpty())
 	{
 		QChar ch=res.at(res.length()-1);
 		if (ch!=13 && ch!=10 && ch!=' ')
 			break;
 		res.remove(res.length()-1,1);
 	}
-
-	plugin()->reply(stanza(),res);
+	if (res.isEmpty())
+		plugin()->reply(stanza(), "Nothing to display. Probably document is empty");
+	else
+		plugin()->reply(stanza(),res);
 }
 
