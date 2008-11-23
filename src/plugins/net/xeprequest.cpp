@@ -31,7 +31,7 @@ void XepRequest::exec()
 		return;
 	}
 	xep=QString::number(tmp).rightJustified(4,QChar('0'));
-	url=QString("http://www.xmpp.org/extensions/xep-%1.html").arg(xep);
+	url=QString("http://xmpp.org/extensions/xep-%1.html").arg(xep);
 	QUrl qurl(url);
 	http=new QHttp(qurl.host());
 	connect(http,SIGNAL(requestFinished(int, bool)), this, SLOT(httpRequestFinished(int, bool)));
@@ -43,6 +43,7 @@ void XepRequest::httpRequestFinished(int, bool err)
 	if (err || http->lastResponse().statusCode()!=200)
 	{
 		plugin()->reply(stanza(),"Failed to fetch XEP: "+http->lastResponse().reasonPhrase());
+		qDebug() << http->lastResponse().toString();
 		deleteLater();
 		return;
 	}
