@@ -10,13 +10,15 @@
 #include "svnrequest.h"
 #include "base/messageparser.h"
 
+#include "currencyrequest.h"
+
 #include <QtDebug>
 #include <QRegExp>
 
 NetPlugin::NetPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
-	commands << "PING" << "TRACEROUTE" << "WWW" << "POST" << "XEP" << "GOOGLE" << "SVN" << "HEADERS";
+	commands << "PING" << "TRACEROUTE" << "WWW" << "POST" << "XEP" << "GOOGLE" << "SVN" << "HEADERS" << "CURRENCY";
 }
 
 
@@ -107,7 +109,13 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 		req->exec();
 		return true;
 	}
-
+	if (cmd=="CURRENCY")
+	{
+		CurrencyRequest *req = new CurrencyRequest(this, new gloox::Stanza(s), arg);
+		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
+		req->exec();
+		return true;
+	}
 	return false;
 }
 
