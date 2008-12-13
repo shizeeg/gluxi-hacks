@@ -60,14 +60,14 @@ void SVNRequest::onProcessFinished()
 			list.removeAt(i);
 		else
 			i++;
-	QString res=QString("SVN info for %1:\n%2").arg(myDest).arg(list.join("\n"));
-	
+	QString res=QString("SVN info for %1\n%2").arg(myDest).arg(list.join("\n"));
+
 	plugin()->reply(stanza(),res);
 	deleteLater();
 }
 
 void SVNRequest::onStateChanged ( QProcess::ProcessState newState )
 {
-	qDebug() << "STCH: " << newState;	
+	qDebug() << "STCH: " << newState;
 }
 
