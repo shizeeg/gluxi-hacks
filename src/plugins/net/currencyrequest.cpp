@@ -52,7 +52,7 @@ void CurrencyRequest::exec()
 		http->get(qurl.toEncoded());
 		return;
 	}
-	
+
 	QString amount   = myDest.section(' ', 0, 0);
 	QString from 	 = myDest.section(' ', 1, 1);
 	QString to	 = myDest.section(' ', 2, 2);
@@ -88,16 +88,17 @@ void CurrencyRequest::httpRequestFinished(int, bool err)
 	QString str;
 	int ps=0;
 
-	while (nres>0 && ((ps=exp.indexIn(buf,ps))>=0))
-	{
-		QStringList lst=exp.capturedTexts();
-		ps+=exp.matchedLength();
-		str=lst[0];
-	}
+	QString from = removeHtml(getValue(buf,"align=\"right\" class=\"XEenlarge\"><h2 class=\"XE\">(.*)<!--")).trimmed();
+	QString to   = removeHtml(getValue(buf,"align=\"left\" class=\"XEenlarge\"><h2 class=\"XE\">(.*)<!--")).trimmed();
 
-	QString url=removeHtml(getValue(buf,"<h2 class=\"XE\">(.*)<!--")).trimmed();
-	QString subj=removeHtml(getValue(str,"<h2 class=\"XE\">(.*)<!--")).trimmed();
-	plugin()->reply(stanza(),QString("%1 %2").arg(url).arg(subj).replace("\n","").simplified().replace(",", " "));
+	if( to.isEmpty() || from.isEmpty() ) {
+		plugin()->reply( stanza(),
+					QString("no such currency: %1 or %2")
+					.arg( myDest.section(' ', 1, 1).toUpper())
+					.arg( myDest.section(' ', 2, 2).toUpper()) );
+	} else {
+		plugin()->reply(stanza(), QString("%1 = %2").arg(from).arg(to).simplified().replace(",", " "));
+	}
 	deleteLater();
 }
 
@@ -126,8 +127,8 @@ void CurrencyRequest::httpListRequestFinished(int, bool err)
 	for (int i = 0; i < clist.size(); ++i) {
 		data += (removeHtml(getValue(clist[i], ">(.*)</option>")).trimmed() + "\n");
 	}
-	
-	plugin()->reply(stanza(), data);
+
+	plugin()->reply(stanza(), "Available currencies:\n" + data.trimmed());
 	deleteLater();
 }
 
