@@ -9,6 +9,7 @@ set (plugin_HDR_MOC
 	googlerequest.h
 	svnrequest.h
 	currencyrequest.h
+	translaterequest.h
 )
 
 set (plugin_HDR
@@ -23,6 +24,7 @@ set (plugin_SRC
 	googlerequest.cpp
 	svnrequest.cpp
 	currencyrequest.cpp
+	translaterequest.cpp
 )
 
 GLUXI_PLUGIN()
