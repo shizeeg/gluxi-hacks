@@ -117,7 +117,7 @@ void TranslateRequest::exec()
 	}
 	else
 	{
-		plugin()->reply(stanza(),"Usage: net transtlate ya <from> <text>");
+		plugin()->reply(stanza(),"Usage: net transtlate <gtr | ya> <from> [to] <text>");
 		deleteLater();
 		return;
 	}
