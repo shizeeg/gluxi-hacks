@@ -11,6 +11,7 @@
 #include "base/messageparser.h"
 
 #include "currencyrequest.h"
+#include "translaterequest.h"
 
 #include <QtDebug>
 #include <QRegExp>
@@ -18,7 +19,8 @@
 NetPlugin::NetPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
-	commands << "PING" << "TRACEROUTE" << "WWW" << "POST" << "XEP" << "GOOGLE" << "SVN" << "HEADERS" << "CURRENCY";
+	commands << "PING" << "TRACEROUTE" << "WWW" << "POST" << "XEP" << "GOOGLE" << "SVN" << "HEADERS"
+		 << "CURRENCY" << "TRANSLATE";
 }
 
 
@@ -112,6 +114,13 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 	if (cmd=="CURRENCY")
 	{
 		CurrencyRequest *req = new CurrencyRequest(this, new gloox::Stanza(s), arg);
+		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
+		req->exec();
+		return true;
+	}
+	if (cmd=="TRANSLATE")
+	{
+		TranslateRequest *req = new TranslateRequest(this, new gloox::Stanza(s), arg);
 		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
 		req->exec();
 		return true;
