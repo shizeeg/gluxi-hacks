@@ -35,6 +35,8 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 	commands << "ABAN" << "AKICK" << "AVISITOR" << "ACMD" << "AMODERATOR" << "APARTICIPANT" << "AFIND"
 			<< "ATRACE"  << "SEEN" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
 	commands << "HERE" << "STATUS" << "AGE" << "AGESTAT";
+	
+	commands << "POKE";
 	pluginId=1;
 
 	// Plugin should be able to modify self-messages so they will be
@@ -465,6 +467,76 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	{
 		myShouldIgnoreError=1;
 		return false;
+	}
+
+	if (cmd=="POKE")
+	{
+		QStringList nickList;
+		int cnt=conf->nicks()->count();
+		QStringList replys; replys
+		<< "облил %1 ледяной водой"
+		<< "закидал %1 тухлыми помидорами"
+		<< "шарахнул  %1 веслом по голове"
+		<< "ткнул %1 в глаз"
+		<< "постукал %1 головой апстенку"
+		<< "дал %1 йаду"
+		<< "slaps %1 around a bit with a large trout"
+		<< "приковал наручниками к кровати %1 и заставил слушать Децла. МНОГО ДЕЦЛА!"
+		<< "шарахнул %1 веслом по голове"
+		<< "потыкал %1 палочкой"
+		<< "целится плюсомётом в %1"
+		<< "тыкает %1 со словами \"нуу, пратииивный\""
+		<< "неожиданно проорал \"БУУУУ!\" в ухо %1"
+		<< "случайно уронил кирпич на голову %1"
+		<< "попрыгал с бубном вокруг %1"
+		<< "размахивает руками перед лицом %1"
+		<< "воззвал к %1"
+		<< "тресёт %1 за плечи"
+		<< "кинул нож в сторону %1";
+		
+		srand ( time(NULL) );
+		int r = rand() % replys.count();
+		QString msg = replys[r];
+		
+		if( arg.isEmpty() )
+		{
+			reply(s, "!muc poke <nick>");
+			return true;
+		}
+		if ( arg.length() > 35 )
+		{
+			reply(s, "шибко умный, да? ]:->");
+			return true;
+		}
+		if ( s->subtype() == gloox::StanzaMessageChat ) {
+			reply(s, ":-P");
+			return true;
+		}
+		QString nickName = QString::fromStdString(s->from().resource());
+
+		if ( arg.compare( getMyNick(s), Qt::CaseInsensitive ) == 0 )
+		{
+			reply(s, "Ы?");
+			return true;
+		}
+		if ( arg.compare(nickName, Qt::CaseInsensitive) == 0 ) 
+		{
+			reply(s, "мазохист? :D");
+			return true;
+		}
+
+		for (int i=0; i<cnt; i++)
+		{
+			if( arg.compare( conf->nicks()->at(i)->nick(), Qt::CaseInsensitive ) == 0 ) 
+			{
+				reply(s, QString("/me " + msg)
+					.arg(conf->nicks()->at(i)->nick()), false, false);
+				return true;
+			}
+		}
+
+		reply(s, "а он тут? :-O");
+		return true;
 	}
 
 	if (cmd=="HERE")
