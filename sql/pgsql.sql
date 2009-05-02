@@ -15,46 +15,6 @@ CREATE TABLE acl (
   PRIMARY KEY (name)
 );
 
-DROP TABLE IF EXISTS conference_alists CASCADE;
-CREATE TABLE conference_alists (
-  id SERIAL,
-  conference_id int NOT NULL,
-  list smallint NOT NULL,
-  matcher smallint NOT NULL DEFAULT 0,
-  test smallint NOT NULL DEFAULT 0,
-  inv boolean NOT NULL DEFAULT false,
-  value varchar(50) NOT NULL,
-  child_id int NOT NULL DEFAULT 0,
-  reason varchar(100) NULL,
-  expire timestamp default NULL,
-  PRIMARY KEY (id),
-  UNIQUE (conference_id,list,matcher,test,value, child_id)
-);
-
-DROP TABLE IF EXISTS conference_jids CASCADE;
-CREATE TABLE conference_jids (
-  id SERIAL,
-  conference_id int NOT NULL,
-  jid varchar(50) NOT NULL,
-  resource varchar(50) default NULL,
-  temporary boolean NOT NULL default false,
-  created timestamp default NULL,
-  PRIMARY KEY (id)
-);
-
-DROP TABLE IF EXISTS conference_nicks CASCADE;
-CREATE TABLE conference_nicks (
-  id SERIAL,
-  conference_id int NOT NULL,
-  nick varchar(50) NOT NULL,
-  jid int NOT NULL default '0',
-  created timestamp NOT NULL,
-  online boolean NOT NULL default false,
-  joined timestamp NOT NULL,
-  lastaction timestamp NOT NULL,
-  PRIMARY KEY (id)
-);
-
 DROP TABLE IF EXISTS conferences CASCADE;
 CREATE TABLE conferences (
   name varchar(50) NOT NULL,
@@ -68,6 +28,50 @@ CREATE TABLE conferences (
   owner varchar(200) NULL,
   PRIMARY KEY (name),
   UNIQUE (id)
+);
+
+DROP TABLE IF EXISTS conference_alists CASCADE;
+CREATE TABLE conference_alists (
+  id SERIAL,
+  conference_id int NOT NULL,
+  list smallint NOT NULL,
+  matcher smallint NOT NULL DEFAULT 0,
+  test smallint NOT NULL DEFAULT 0,
+  inv boolean NOT NULL DEFAULT false,
+  value varchar(50) NOT NULL,
+  child_id int NOT NULL DEFAULT 0,
+  reason varchar(100) NULL,
+  expire timestamp default NULL,
+  PRIMARY KEY (id),
+  FOREIGN KEY(conference_id) REFERENCES conferences(id) ON DELETE CASCADE,
+  UNIQUE (conference_id,list,matcher,test,value, child_id)
+);
+
+DROP TABLE IF EXISTS conference_jids CASCADE;
+CREATE TABLE conference_jids (
+  id SERIAL,
+  conference_id int NOT NULL,
+  jid varchar(50) NOT NULL,
+  resource varchar(50) default NULL,
+  temporary boolean NOT NULL default false,
+  created timestamp default NULL,
+  PRIMARY KEY (id),
+  FOREIGN KEY(conference_id) REFERENCES conferences(id) ON DELETE CASCADE
+);
+
+DROP TABLE IF EXISTS conference_nicks CASCADE;
+CREATE TABLE conference_nicks (
+  id SERIAL,
+  conference_id int NOT NULL,
+  nick varchar(50) NOT NULL,
+  jid int NOT NULL default '0',
+  created timestamp NOT NULL,
+  online boolean NOT NULL default false,
+  joined timestamp NOT NULL,
+  lastaction timestamp NOT NULL,
+  PRIMARY KEY (id),
+  FOREIGN KEY(conference_id) REFERENCES conferences(id) ON DELETE CASCADE,
+  FOREIGN KEY(jid) REFERENCES conference_jids(id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS webstatus CASCADE;
