@@ -26,6 +26,8 @@ public:
 	virtual bool onVCard(const VCardWrapper& vcard);
 private:
 	void sendVersion(gloox::Stanza *s);
+	void sendTime(gloox::Stanza* s);
+	QString utcToString(const QString &cdata, const QString &format);
 	QString resolveTargetJid(gloox::Stanza* s, const QString& arg);
 };
 

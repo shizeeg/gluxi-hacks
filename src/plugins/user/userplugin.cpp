@@ -22,10 +22,12 @@
 UserPlugin::UserPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "VERSION" << "PING" << "DISCO" << "VCARD" << "PHOTO" << "STATLIST" << "STAT" << "UPTIME";
+	commands << "VERSION" << "PING" << "DISCO" << "VCARD" << "PHOTO" << "STATLIST" << "STAT" << "UPTIME"
+		 << "TIME";
 
 	bot()->registerIqHandler("jabber:iq:version");
 	bot()->registerIqHandler("jabber:iq:last");
+	bot()->registerIqHandler("jabber:iq:time");
 	bot()->registerIqHandler("http://jabber.org/protocol/disco#items");
 	bot()->registerIqHandler("http://jabber.org/protocol/stats");
 }
@@ -39,6 +41,8 @@ bool UserPlugin::canHandleIq(gloox::Stanza* s)
 	QString xmlns=QString::fromStdString(s->xmlns());
 	if (xmlns=="jabber:iq:version")
 		return true;
+	if (xmlns=="jabber:iq:time")
+		return true;
 	return false;
 }
 
@@ -48,7 +52,27 @@ bool UserPlugin::parseMessage(gloox::Stanza* s)
 	parser.nextToken();
 	QString cmd=parser.nextToken().toUpper();
 	QString arg=parser.nextToken();
+	
+	if(cmd=="TIME")
+	{
+		std::string id=bot()->client()->getID();
+		QString jid=resolveTargetJid(s, arg);
 
+		gloox::Stanza *st=gloox::Stanza::createIqStanza(
+				gloox::JID(jid.toStdString()), id, gloox::StanzaIqGet,
+				"jabber:iq:time");
+
+		qDebug() << QString::fromStdString(st->xml());
+
+		gloox::Stanza *sf=new gloox::Stanza(s);
+		sf->addAttribute("id", id);
+
+		AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
+		req->setName(cmd);
+		bot()->asyncRequests()->append(req);
+		bot()->client()->send(st);
+		return true;
+	}
 	if (cmd=="VERSION" || cmd=="PING")
 	{
 		std::string id=bot()->client()->getID();
@@ -169,10 +193,56 @@ void UserPlugin::sendVersion(gloox:: Stanza* s)
 	bot()->client()->send(st);
 }
 
+void UserPlugin::sendTime(gloox::Stanza* s)
+{
+	time_t rawtime;
+	struct tm *timeinfo;
+	char buffer[80];
+
+	time ( &rawtime );
+	timeinfo = localtime ( &rawtime );
+
+	strftime (buffer, 80, "%Z",timeinfo);
+	QString tz = QString::fromLocal8Bit(buffer);
+
+	QString display = QDateTime::currentDateTime().toString("ddd MMM dd HH:mm:ss %1 yyyy").arg(tz);
+	QString utc = QDateTime::currentDateTime().toUTC().toString("yyyyMMddhh:mm:ss");
+
+	gloox::Stanza *st = gloox::Stanza::createIqStanza(s->from(),
+	    s->findAttribute("id"), gloox::StanzaIqResult, "jabber:iq:time");
+
+	gloox::Tag* tag=st->findChild("query");
+	assert(tag);
+	tag->addChild(new gloox::Tag("utc", utc.toStdString()));
+	tag->addChild(new gloox::Tag("tz", tz.toStdString()));
+	tag->addChild(new gloox::Tag("display", display.toStdString()));
+	qDebug() << QString::fromStdString(st->xml());
+	bot()->client()->send(st);
+}
+
+QString UserPlugin::utcToString(const QString &cdata, const QString &format)
+{
+	QStringList l; 
+	QDateTime date;
+	if(cdata.length() < 17)
+		return("unknown format");
+
+	l << cdata.left(4);	// year.
+	l << cdata.mid(4,2);	// month.
+	l << cdata.mid(6,2);	// day.. (skip T)
+	l << cdata.mid(9,2);	// hour.
+	l << cdata.mid(12,2);	// min.
+	l << cdata.mid(15,2);	// sec.
+	date.setDate(QDate(l[0].toInt(), l[1].toInt(), l[2].toInt()));
+	date.setTime(QTime(l[3].toInt(), l[4].toInt(), l[5].toInt()));
+	return date.toString(format);
+}
+
 bool UserPlugin::onIq(gloox::Stanza* s)
 {
 	QString xmlns=QString::fromStdString(s->xmlns());
 	AsyncRequest* req=bot()->asyncRequests()->byStanza(s);
+
 	if (s->subtype()==gloox::StanzaIqGet)
 	{
 		if (s->subtype()!=gloox::StanzaIqResult && xmlns=="jabber:iq:version")
@@ -188,6 +258,12 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 					s->findAttribute("id"), gloox::StanzaIqError,
 					xmlns.toStdString());
 			bot()->client()->send(st);
+		}
+		if (s->subtype() != gloox::StanzaIqResult && xmlns=="jabber:iq:time" )
+		{
+			//We should send our time (XEP-0090)
+			sendTime(s);
+			return true;
 		}
 		if (req)
 			bot()->asyncRequests()->removeAll(req);
@@ -206,6 +282,57 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 		bot()->asyncRequests()->removeAll(req);
 		delete req;
 		return true;
+	}
+	if (xmlns=="jabber:iq:time")
+	{
+		QString msg, time;
+		QString src = bot()->JIDtoNick(QString::fromStdString(s->from().full()));
+
+		gloox::Tag *display = query->findChild("display");
+		
+		if(display) {
+			assert(display);
+			time = QString::fromStdString(display->cdata());
+		}
+
+		if( time.isEmpty() )
+		{
+			gloox::Tag *tz = query->findChild("tz");
+			if(tz) {
+				assert(tz);
+				time = QString::fromStdString(tz->cdata());
+			}
+		}
+		if( time.isEmpty() )
+		{
+			gloox::Tag *utc = query->findChild("utc");
+			if(utc) {
+				assert(utc);
+				QString time = utcToString(
+					QString::fromStdString(utc->cdata()).trimmed(),
+					"ddd, dd MMM yyyy HH:mm:ss");
+
+				msg=QString("at %1 there is %2 +0000")
+					.arg(QString::fromStdString(s->from().full()))
+					.arg(time);
+			}
+		}
+		else {
+			if ( msg.isEmpty() && src.isEmpty() ) 
+				msg=QString("It's %1 on your watch").arg(time);
+			else if( msg.isEmpty() )
+				msg=QString("It's %1 on %2's watch").arg(time).arg(src);
+			if( time.isEmpty() )
+				msg="responce with no data.";
+
+		}
+		if( s->subtype()==gloox::StanzaIqResult && s->error() == gloox::StanzaErrorUndefined )
+			reply( req->stanza(), msg );
+		else if( s->error() == gloox::StanzaErrorRemoteServerNotFound )
+			reply( req->stanza(), "Recipient is not in the conference room" );
+		else if( s->error() == gloox::StanzaErrorFeatureNotImplemented )
+			reply( req->stanza(), "Feature Not Implemented" );
+		else reply( req->stanza(), "Unable to get time" );
 	}
 	if (xmlns=="jabber:iq:version")
 	{
