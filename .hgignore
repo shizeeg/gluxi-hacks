@@ -16,3 +16,5 @@
 .rej$
 .swp$
 dbupdate\.cfg\..*
+sqlconvert/.*\.o
+sqlconvert/(sqlconvert|Makefile)$
