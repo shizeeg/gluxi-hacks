@@ -15,13 +15,13 @@ Jid::Jid(Nick *parent, const QString& jid)
 
 	if (!jid.isEmpty())
 	{
-		myJid=jid.section('/',0,0);
+		myJid=jid.section('/',0,0).toLower();
 		myResource=jid.section('/',1);
 	}
 
 	if (myJid.isEmpty())
 	{
-		myJid=QString("%1@").arg(parent->nick());
+		myJid=QString("%1@%2.local").arg(parent->nick()).arg(QDateTime::currentDateTime().toString());
 		myTemporary=true;
 	}
 	else
@@ -124,7 +124,7 @@ void Jid::setFullJid(const QString& fullJid)
 		return;
 	}
 
-	myJid=fullJid.section('/',0,0);
+	myJid=fullJid.section('/',0,0).toLower();
 	myResource=fullJid.section('/',1);
 	if (myId>0)
 	{

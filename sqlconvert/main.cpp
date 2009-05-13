@@ -23,6 +23,8 @@
 #include <QSet>
 #include <QtSql>
 
+#error This is very ugly. Please read code first
+
 QTextStream stream(stdout);
 
 #define TARGET_PGSQL
@@ -69,7 +71,7 @@ int main(int argc, char *argv[])
 		<< "conference_alists.inv" << "conference_jids.temporary" << "conference_nicks.online";
 
 	QCoreApplication app(argc, argv);
-
+#ifdef CONVERT_DB
 	QSqlDatabase dbSrc = QSqlDatabase::addDatabase("QMYSQL", "src");
 	dbSrc.setHostName("localhost");
 	dbSrc.setDatabaseName("gluxi");
@@ -83,6 +85,7 @@ int main(int argc, char *argv[])
 				dbSrc.lastError().text() << endl;
 		return 1;
 	}
+#endif
 
 	QSqlDatabase dbDst = QSqlDatabase::addDatabase("QPSQL7", "dst");
 	dbDst.setHostName("localhost");
@@ -98,6 +101,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+#ifdef CONVERT_DB
 	for(QStringList::iterator it = tables.begin(); it != tables.end(); ++it) {
 		QString tbl = *it;
 		stream << "==> Converting: " << tbl << endl;
@@ -230,4 +234,86 @@ int main(int argc, char *argv[])
 		}
 #endif
 	}
+#else
+
+	stream << "Removing duplicate JID records" << endl;
+	QSqlQuery badCaseQuery(dbDst);
+	if (!badCaseQuery.exec("select conference_id, jid from (select conference_id, jid, count(jid) as cnt from conference_jids group by conference_id, jid) as tbl where cnt > 1"))
+	{
+		stream << "Unable to query for bad case JIDs" << endl;
+		return 1;
+	}
+	while (badCaseQuery.next()) {
+		int conference_id = badCaseQuery.value(0).toInt();
+		QString jid = badCaseQuery.value(1).toString();
+		stream << "conference_id: " << conference_id << ", jid=" << jid << endl;
+
+		QSqlQuery bestJidQuery(dbDst);
+		bestJidQuery.prepare("select id from conference_jids where conference_id=? and jid=? order by created limit 1");
+		bestJidQuery.addBindValue(conference_id);
+		bestJidQuery.addBindValue(jid);
+		if (!bestJidQuery.exec() || !bestJidQuery.next()) {
+			stream << "Unable to query for best jid" << endl;
+			return 1;
+		}
+		int bestJidId = bestJidQuery.value(0).toInt();
+		stream << " best jid id: " << bestJidId << endl;
+		QSqlQuery fixQuery(dbDst);
+		fixQuery.prepare(
+				"UPDATE conference_nicks set jid=? where conference_id=? and jid in ("
+				"select id from conference_jids where conference_id=? and jid=?)");
+		fixQuery.addBindValue(bestJidId);
+		fixQuery.addBindValue(conference_id);
+		fixQuery.addBindValue(conference_id);
+		fixQuery.addBindValue(jid);
+		if (!fixQuery.exec()) {
+			stream << "Unable to fix nicks" << endl;
+			return 1;
+		}
+		stream << " fixed nicks: " << fixQuery.numRowsAffected() << endl;
+
+		fixQuery.prepare("DELETE from conference_jids where conference_id=? and jid=? and id<>?");
+		fixQuery.addBindValue(conference_id);
+		fixQuery.addBindValue(jid);
+		fixQuery.addBindValue(bestJidId);
+		if (!fixQuery.exec()) {
+			stream << "Unable to remove extra jids" << endl;
+			return 1;
+		}
+		stream << " removed jids: " << fixQuery.numRowsAffected() << endl;
+	}
+
+	stream << "Removing duplicate nick records" << endl;
+
+	QSqlQuery dublNickQuery(dbDst);
+	if (!dublNickQuery.exec("select * from (select conference_id, nick, jid, count(jid) from conference_nicks group by conference_id, nick, jid) as tbl where count > 1"))
+	{
+		stream << "Unable to query for bad case JIDs" << endl;
+		return 1;
+	}
+	while (dublNickQuery.next()) {
+		int conference_id = dublNickQuery.value(0).toInt();
+		QString nick = dublNickQuery.value(1).toString();
+		int jid_id = dublNickQuery.value(2).toInt();
+
+		stream << "conference_id: " << conference_id << ", nick:" << nick << ", jid_id:" << jid_id << endl;
+		QSqlQuery fixQuery(dbDst);
+		fixQuery.prepare(
+				"delete from conference_nicks where conference_id=? and jid=? and nick=? and not id in ("
+				"select id from conference_nicks where conference_id=? and jid=? and nick=? order by created LIMIT 1)");
+		fixQuery.addBindValue(conference_id);
+		fixQuery.addBindValue(jid_id);
+		fixQuery.addBindValue(nick);
+		fixQuery.addBindValue(conference_id);
+		fixQuery.addBindValue(jid_id);
+		fixQuery.addBindValue(nick);
+
+		if (!fixQuery.exec())
+		{
+			stream << "Unable to remove duplicate nicks";
+		}
+		stream << " removed nicks: " << fixQuery.numRowsAffected() << endl;
+	}
+
+#endif
 }
