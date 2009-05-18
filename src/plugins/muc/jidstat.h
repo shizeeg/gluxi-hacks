@@ -52,10 +52,11 @@ public:
 	virtual ~JidStat();
 	void commit();
 	void setLastAction(ActionType type, const QString& reason);
-	void setVersion(const QString& version);
+	void setVersion(const QString& name, const QString& version, const QString& os);
 	void updateOnlineTime();
 	void statMessage(const QString& msg);
 	void statReply();
+	void statSubject(const QString& subject);
 private:
 	int id_;
 	int jidId_;

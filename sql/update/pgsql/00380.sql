@@ -14,6 +14,7 @@ CREATE TABLE conference_jidstat (
   msg_sentences int NOT NULL default 0,
   msg_me int NOT NULL default 0,
   msg_reply int NOT NULL default 0,
+  msg_subject int NOT NULL default 0,
 
   cnt_join int NOT NULL default 0,
   cnt_leave int NOT NULL default 0,
@@ -29,7 +30,9 @@ CREATE TABLE conference_jidstat (
   cnt_kick int NOT NULL default 0,
   cnt_ban int NOT NULL default 0,
   
-  version varchar(200) NULL,
+  ver_name varchar(50) NULL,
+  ver_version varchar(50) NULL,
+  ver_os varchar(200) NULL,
 
   PRIMARY KEY(id),
   FOREIGN KEY(jid_id) REFERENCES conference_jids(id) ON DELETE CASCADE,

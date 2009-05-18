@@ -535,7 +535,13 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	QString msgBody = QString::fromStdString(s->body());
 	JidStat *stat = nick->jidStat();
 	if (stat)
-		stat->statMessage(msgBody);
+	{
+		if (!msgBody.isEmpty())
+			stat->statMessage(msgBody);
+		QString subject = QString::fromStdString(s->subject());
+		if (!subject.isEmpty())
+			stat->statSubject(subject);
+	}
 
 	if (msgBody.contains(':'))
 	{
@@ -1230,8 +1236,8 @@ bool MucPlugin::onIq(gloox::Stanza* s)
 	JidStat *stat = nick->jidStat();
 	if (stat)
 	{
-		stat->setVersion(QString("%1 %2 // %3").arg(nick->versionName(),
-				nick->versionClient(), nick->versionOs()));
+		stat->setVersion(nick->versionName(), nick->versionClient(),
+				nick->versionOs());
 	}
 
 	checkMember(0L, conf, nick, AListItem::MatcherVersion);

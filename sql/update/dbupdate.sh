@@ -8,6 +8,11 @@ DBTYPE="$1"
 QUERYCMD=""
 INLINE_SUFFIX=""
 
+if [ "$DBTYPE" = "mysql" ]; then
+	echo "MySQL support is currently out of date"
+	exit 1
+fi
+
 if [ -f "dbupdate.cfg" ]; then
 	. ./dbupdate.cfg $*
 fi

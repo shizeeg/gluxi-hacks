@@ -160,15 +160,17 @@ void JidStat::setLastAction(ActionType type, const QString& reason)
 	updateOnlineTime();
 }
 
-void JidStat::setVersion(const QString& v)
+void JidStat::setVersion(const QString& name, const QString& version, const QString& os)
 {
 	if (id_ <= 0)
 		return;
 
 	QSqlQuery q = DataStorage::instance()->prepareQuery(
-			"UPDATE conference_jidstat SET version=? WHERE id=?"
+			"UPDATE conference_jidstat SET ver_name=?, ver_version=?,ver_os=? WHERE id=?"
 	);
-	q.addBindValue(v);
+	q.addBindValue(name);
+	q.addBindValue(version);
+	q.addBindValue(os);
 	q.addBindValue(id_);
 	if (!q.exec())
 	{
@@ -267,3 +269,17 @@ void JidStat::statReply()
 	}
 }
 
+void JidStat::statSubject(const QString& subject)
+{
+	Q_UNUSED(subject);
+	if (id_ <= 0)
+		return;
+
+	QSqlQuery q = DataStorage::instance()->prepareQuery(
+		"UPDATE conference_jidstat SET msg_subject = msg_subject + 1 WHERE id=?");
+	q.addBindValue(id_);
+	if (!q.exec())
+	{
+		qDebug() << "ERROR: Unable to stat subject: " << q.lastError().text();
+	}
+}
