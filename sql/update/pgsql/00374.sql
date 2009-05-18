@@ -2,6 +2,9 @@ DROP TABLE IF EXISTS conference_jidstat CASCADE;
 CREATE TABLE conference_jidstat (
   id SERIAL,
   jid_id int NOT NULL,
+
+  time_online int NOT NULL default 0, 
+
   lastaction int NOT NULL default '0',
   lastreason varchar(200) NULL,
 

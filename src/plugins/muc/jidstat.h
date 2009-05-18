@@ -21,6 +21,7 @@
 #define JIDSTAT_H_
 
 #include <QString>
+#include <QDateTime>
 
 class JidStat
 {
@@ -52,9 +53,11 @@ public:
 	void commit();
 	void setLastAction(ActionType type, const QString& reason);
 	void setVersion(const QString& version);
+	void updateOnlineTime();
 private:
 	int id_;
 	int jidId_;
+	QDateTime dateTime_;
 
 	bool load();
 	void create();

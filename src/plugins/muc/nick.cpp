@@ -133,6 +133,8 @@ Nick::~Nick()
 	{
 		delete myJid;
 	}
+	if (myJidStat)
+		myJidStat->updateOnlineTime();
 	delete myJidStat;
 }
 

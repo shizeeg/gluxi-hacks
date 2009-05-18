@@ -31,6 +31,7 @@ JidStat::JidStat(int jidId)
 	id_ = 0;
 	jidId_ = jidId;
 
+	dateTime_ = QDateTime::currentDateTime();
 	if (jidId_ > 0)
 	{
 		if (!load())
@@ -148,13 +149,14 @@ void JidStat::setLastAction(ActionType type, const QString& reason)
 
 	if (!cntName.isEmpty())
 	{
-		q.prepare(QString("UPDATE conference_jidstat set %1 = %1 + 1 WHERE id=?").arg(cntName, cntName));
+		q.prepare(QString("UPDATE conference_jidstat set %1 = %2 + 1 WHERE id=?").arg(cntName).arg(cntName));
 		q.addBindValue(id_);
 		if (!q.exec())
 		{
 			qDebug() << "ERROR: Unable to update jidstat for field: " << cntName;
 		}
 	}
+	updateOnlineTime();
 }
 
 void JidStat::setVersion(const QString& v)
@@ -171,4 +173,26 @@ void JidStat::setVersion(const QString& v)
 	{
 		qDebug() << "ERROR: Unable to update version info";
 	}
+}
+
+void JidStat::updateOnlineTime()
+{
+	if (id_ <= 0)
+		return;
+	QDateTime now = QDateTime::currentDateTime();
+	int delta = dateTime_.secsTo(now);
+	QSqlQuery q = DataStorage::instance()->prepareQuery(
+			"UPDATE conference_jidstat SET time_online = time_online + ? WHERE id=?"
+	);
+	q.addBindValue(delta);
+	q.addBindValue(id_);
+	if (!q.exec())
+	{
+		qDebug() << "ERROR: Unable to update time_online";
+	}
+	else
+	{
+		dateTime_=now;
+	}
+
 }
