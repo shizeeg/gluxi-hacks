@@ -67,6 +67,7 @@ private:
 	QRegExp getConfExp(const QString&);
 	QString affiliationByCommand(const QString& cmd);
 	int getStatus(gloox::Stanza* s);
+	QString getReason(gloox::Stanza *s);
 	bool warnImOwner(gloox::Stanza* s);
 	int getRoleForNick(Conference* conf, Nick* nick);
 	QString expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QString& str, const AListItem* item=0);

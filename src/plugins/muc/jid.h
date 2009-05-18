@@ -22,6 +22,7 @@ public:
 	QDateTime created() const { return myCreated; };
 	void commit();
 	void remove();
+	bool isTemporary() const { return myTemporary; }
 	static void removeTemporary(Conference *conf=0);
 private:
 	Nick* myParent;

@@ -55,6 +55,7 @@ Jid::~Jid()
 
 void Jid::loadJid()
 {
+	myId == 0;
 	QSqlQuery query=DataStorage::instance()
 		->prepareQuery("SELECT id,created FROM conference_jids WHERE conference_id = ? AND jid = ?");
 	qDebug() << myParent->conference()->id() << myJid;

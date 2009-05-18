@@ -1,6 +1,7 @@
 #include "nick.h"
 #include "conference.h"
 #include "jid.h"
+#include "jidstat.h"
 #include "base/datastorage.h"
 
 #include <QtDebug>
@@ -14,6 +15,7 @@ Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 	devoicedNoVCard_=false;
 	myValidateRequired=false;
 	myParent=parent;
+	myJidStat = NULL;
 	myNick=nick;
 	myLazyLeave=false;
 	myJoined=QDateTime::currentDateTime();
@@ -22,6 +24,9 @@ Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 	qDebug() << "[NICK] created: " << myNick;
 
 	myJid=new Jid(this, jid);
+
+	if (myJid->id() >= 0 )
+		myJidStat = new JidStat(myJid->id());
 
 	QSqlQuery query=DataStorage::instance()
 		->prepareQuery("SELECT id FROM conference_nicks WHERE conference_id = ? AND nick = ? AND jid = ?");
@@ -81,6 +86,7 @@ Nick::Nick(Conference* parent, int id)
 {
 	devoicedNoVCard_=false;
 	myParent=parent;
+	myJidStat = NULL;
 	myLazyLeave=false;
 	myId=id;
 	myValidateRequired=false;
@@ -104,6 +110,10 @@ Nick::Nick(Conference* parent, int id)
 	myNick=query.value(0).toString();
 	myJid=new Jid(this, query.value(1).toInt());
 	myJidS=myJid->jid();
+
+	if (myJid->id() >= 0 )
+			myJidStat = new JidStat(myJid->id());
+
 	myJoined=query.value(2).toDateTime();
 	myLastActivity=query.value(3).toDateTime();
 }
@@ -123,6 +133,7 @@ Nick::~Nick()
 	{
 		delete myJid;
 	}
+	delete myJidStat;
 }
 
 void Nick::setNick(const QString& nick)

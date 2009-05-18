@@ -6,8 +6,10 @@
 
 class Conference;
 class Jid;
+class JidStat;
 
-class Nick{
+class Nick
+{
 public:
     Nick(Conference* parent, const QString& nick, const QString& jid=QString::null);
     Nick(Conference* parent, int id);
@@ -23,6 +25,7 @@ public:
 	QString status() const { return myStatus; };
 	Conference* conference() const { return myParent; };
 	Jid* jid() const { return myJid; };
+	JidStat *jidStat() const { return myJidStat; }
 	bool validateRequired() const { return myValidateRequired; };
 	bool isVersionStored() const { return versionStored_; }
 	QString versionName() const { return versionName_; }
@@ -56,6 +59,7 @@ private:
 	bool myValidateRequired;
 	Conference *myParent;
 	Jid *myJid;
+	JidStat *myJidStat;
 	QString myJidS;
 	QString myNick;
 	QString myAffiliation;

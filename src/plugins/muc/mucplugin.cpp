@@ -4,6 +4,7 @@
 #include "alist.h"
 #include "alistitem.h"
 #include "jid.h"
+#include "jidstat.h"
 #include "config/mucconfigurator.h"
 #include "nickasyncrequest.h"
 
@@ -35,7 +36,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 	commands << "ABAN" << "AKICK" << "AVISITOR" << "ACMD" << "AMODERATOR" << "APARTICIPANT" << "AFIND"
 			<< "ATRACE"  << "SEEN" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
 	commands << "HERE" << "STATUS" << "AGE" << "AGESTAT";
-	
+
 	commands << "POKE";
 	pluginId=1;
 
@@ -257,7 +258,6 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 			conf->nicks()->remove(n);
 			n=0;
 		}
-
 	}
 
 	bool newNick=false;
@@ -271,6 +271,17 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		n=new Nick(conf, nick,getItem(s,"jid"));
 		conf->nicks()->append(n);
 
+		JidStat *stat = n->jidStat();
+		if (stat)
+		{
+			// Just presence?
+			QString show = getPresence(s->presence());
+			QString status = QString::fromStdString(s->status());
+			if (!status.isEmpty())
+				show += QString(" (%1)").arg(status);
+			stat->setLastAction(JidStat::ActionJoin, show);
+		}
+
 		if (nick==conf->nick())
 		{
 			// Got own presence after renaming
@@ -282,6 +293,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		if (n->validateRequired())
 			newNick=true;
 	}
+
 	if (role=="none" || type=="unavailable")
 	{
 		n->updateLastActivity();
@@ -307,6 +319,24 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		else
 		{
 			qDebug() << "!!!!!! Removing nick";
+			JidStat *stat = n->jidStat();
+			if (stat)
+			{
+				int statusCode = getStatus(s);
+				if (statusCode == 307 || statusCode == 301)
+				{
+					JidStat::ActionType actType = statusCode == 307
+						? JidStat::ActionKick : JidStat::ActionBan;
+					QString reason = getReason(s);
+					stat->setLastAction(actType, reason);
+				}
+				else
+				{
+					// Just presence?
+					QString show = QString::fromStdString(s->status());
+					stat->setLastAction(JidStat::ActionLeave, show);
+				}
+			}
 			conf->nicks()->remove(n);
 			conf->alistTraceList()->removeAll(QString::fromStdString(s->from().full()));
 		}
@@ -314,6 +344,47 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 	}
 	else
 	{
+		JidStat *stat = n->jidStat();
+		if (stat && !newNick)
+		{
+			if (n->role() != role)
+			{
+				JidStat::ActionType actType = JidStat::ActionNone;
+				if (role == "moderator")
+					actType = JidStat::ActionModerator;
+				else if (role == "participant")
+					actType = JidStat::ActionParticipant;
+				else if (role == "visitor")
+					actType = JidStat::ActionVisitor;
+				QString reason = getReason(s);
+				stat->setLastAction(actType, reason);
+			}
+			else if (n->affiliation() != getItem(s, "affiliation"))
+			{
+				QString aff = getItem(s, "affiliation");
+				JidStat::ActionType actType = JidStat::ActionNone;
+				if (aff == "none")
+					actType = JidStat::ActionNoAffiliation;
+				else if (aff == "member")
+					actType = JidStat::ActionMember;
+				else if (aff == "administrator")
+					actType = JidStat::ActionAdministrator;
+				else if (role == "owner")
+					actType = JidStat::ActionOwner;
+				QString reason = getReason(s);
+				stat->setLastAction(actType, reason);
+			}
+			else
+			{
+				// Just presence?
+				QString show = getPresence(s->presence());
+				QString status = QString::fromStdString(s->status());
+				if (!status.isEmpty())
+					show += QString(" (%1)").arg(status);
+				stat->setLastAction(JidStat::ActionPresence, show);
+			}
+		}
+
 		n->setAffiliation(getItem(s, "affiliation"));
 		n->setJid(getItem(s, "jid"));
 		n->setRole(role);
@@ -493,11 +564,11 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		<< "воззвал к %1"
 		<< "тресёт %1 за плечи"
 		<< "кинул нож в сторону %1";
-		
+
 		srand ( time(NULL) );
 		int r = rand() % replys.count();
 		QString msg = replys[r];
-		
+
 		if( arg.isEmpty() )
 		{
 			reply(s, "!muc poke <nick>");
@@ -519,7 +590,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 			reply(s, "Ы?");
 			return true;
 		}
-		if ( arg.compare(nickName, Qt::CaseInsensitive) == 0 ) 
+		if ( arg.compare(nickName, Qt::CaseInsensitive) == 0 )
 		{
 			reply(s, "мазохист? :D");
 			return true;
@@ -527,7 +598,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 
 		for (int i=0; i<cnt; i++)
 		{
-			if( arg.compare( conf->nicks()->at(i)->nick(), Qt::CaseInsensitive ) == 0 ) 
+			if( arg.compare( conf->nicks()->at(i)->nick(), Qt::CaseInsensitive ) == 0 )
 			{
 				reply(s, QString("/me " + msg)
 					.arg(conf->nicks()->at(i)->nick()), false, false);
@@ -1069,6 +1140,30 @@ int MucPlugin::getStatus(gloox::Stanza* s)
 		}
 	}
 	return QString::fromStdString(res).toInt();
+}
+
+
+QString MucPlugin::getReason(gloox::Stanza* s)
+{
+	std::string res;
+	if (s->hasChild("x", "xmlns", "http://jabber.org/protocol/muc#user"))
+	{
+		gloox::Tag *tg1=s->findChild("x", "xmlns",
+				"http://jabber.org/protocol/muc#user");
+		if (!tg1)
+			return "";
+		if (tg1->hasChild("item"))
+		{
+			gloox::Tag *tg2=tg1->findChild("item");
+			if (!tg2)
+				return "";
+			tg2 = tg2->findChild("reason");
+			if (!tg2)
+				return "";
+			res = tg2->cdata();
+		}
+	}
+	return QString::fromStdString(res);
 }
 
 bool MucPlugin::canHandleIq(gloox::Stanza* /* s */)

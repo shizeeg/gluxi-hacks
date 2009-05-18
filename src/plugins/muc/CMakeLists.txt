@@ -11,6 +11,7 @@ set (plugin_HDR
 	conference.h
 	conferencelist.h
 	jid.h
+	jidstat.h
 	nick.h
 	nicklist.h
 	config/mucconfigurator.h
@@ -22,6 +23,7 @@ set (plugin_SRC
 	conference.cpp
 	conferencelist.cpp
 	jid.cpp
+	jidstat.cpp
 	mucplugin.cpp
 	nick.cpp
 	nicklist.cpp
