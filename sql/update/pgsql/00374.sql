@@ -18,6 +18,9 @@ CREATE TABLE conference_jidstat (
   cnt_owner int NOT NULL default 0,
   cnt_kick int NOT NULL default 0,
   cnt_ban int NOT NULL default 0,
+  
+  version varchar(200) NULL,
+
   PRIMARY KEY(id),
   FOREIGN KEY(jid_id) REFERENCES conference_jids(id) ON DELETE CASCADE,
   UNIQUE(jid_id)

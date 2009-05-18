@@ -17,8 +17,8 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef NICKSTAT_H_
-#define NICKSTAT_H_
+#ifndef JIDSTAT_H_
+#define JIDSTAT_H_
 
 #include <QString>
 
@@ -51,6 +51,7 @@ public:
 	virtual ~JidStat();
 	void commit();
 	void setLastAction(ActionType type, const QString& reason);
+	void setVersion(const QString& version);
 private:
 	int id_;
 	int jidId_;
@@ -59,4 +60,4 @@ private:
 	void create();
 };
 
-#endif /* NICKSTAT_H_ */
+#endif /* JIDSTAT_H_ */

@@ -156,3 +156,19 @@ void JidStat::setLastAction(ActionType type, const QString& reason)
 		}
 	}
 }
+
+void JidStat::setVersion(const QString& v)
+{
+	if (id_ <= 0)
+		return;
+
+	QSqlQuery q = DataStorage::instance()->prepareQuery(
+			"UPDATE conference_jidstat SET version=? WHERE id=?"
+	);
+	q.addBindValue(v);
+	q.addBindValue(id_);
+	if (!q.exec())
+	{
+		qDebug() << "ERROR: Unable to update version info";
+	}
+}

@@ -1212,6 +1212,14 @@ bool MucPlugin::onIq(gloox::Stanza* s)
 	delete req;
 	bot()->asyncRequests()->removeAll(req);
 	nick->setVersionStored(true);
+
+	JidStat *stat = nick->jidStat();
+	if (stat)
+	{
+		stat->setVersion(QString("%1 %2 // %3").arg(nick->versionName(),
+				nick->versionClient(), nick->versionOs()));
+	}
+
 	checkMember(0L, conf, nick, AListItem::MatcherVersion);
 	return true;
 }
