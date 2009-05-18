@@ -1,5 +1,5 @@
 DELETE FROM conference_jids where temporary=true;
-DELETE FROM conference_jids where jid in (SELECT jid FROM (select jid, count(jid) as cnt from conference_jids group by conference_id, jid) as tbl where cnt > 1);
+// DELETE FROM conference_jids where jid in (SELECT jid FROM (select jid, count(jid) as cnt from conference_jids group by conference_id, jid) as tbl where cnt > 1);
 UPDATE conference_jids set jid=LOWER(jid);
 
 ... cleanup nicks/jids here ...
