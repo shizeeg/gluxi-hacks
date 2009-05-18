@@ -8,6 +8,13 @@ CREATE TABLE conference_jidstat (
   lastaction int NOT NULL default '0',
   lastreason varchar(200) NULL,
 
+  msg_count int NOT NULL default 0,
+  msg_chars int NOT NULL default 0,
+  msg_words int NOT NULL default 0,
+  msg_sentences int NOT NULL default 0,
+  msg_me int NOT NULL default 0,
+  msg_reply int NOT NULL default 0,
+
   cnt_join int NOT NULL default 0,
   cnt_leave int NOT NULL default 0,
   cnt_presence int NOT NULL default 0,

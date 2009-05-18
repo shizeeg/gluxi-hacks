@@ -54,6 +54,8 @@ public:
 	void setLastAction(ActionType type, const QString& reason);
 	void setVersion(const QString& version);
 	void updateOnlineTime();
+	void statMessage(const QString& msg);
+	void statReply();
 private:
 	int id_;
 	int jidId_;

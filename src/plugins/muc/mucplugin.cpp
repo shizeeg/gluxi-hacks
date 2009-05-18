@@ -532,6 +532,20 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	nick->updateLastActivity();
 	nick->commit();
 
+	QString msgBody = QString::fromStdString(s->body());
+	JidStat *stat = nick->jidStat();
+	if (stat)
+		stat->statMessage(msgBody);
+
+	if (msgBody.contains(':'))
+	{
+		// Calc also highlights
+		QString dstNickStr = msgBody.section(':', 0, 0);
+		Nick *dstNick=conf->nicks()->byName(dstNickStr);
+		if (dstNick && nick != dstNick && dstNick->jidStat())
+			dstNick->jidStat()->statReply();
+	}
+
 	checkMember(s, conf, nick);
 
 	if (msgPrefix!=prefix() || !parser.isForMe())

@@ -25,6 +25,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QVariant>
+#include <QRegExp>
 
 JidStat::JidStat(int jidId)
 {
@@ -196,3 +197,73 @@ void JidStat::updateOnlineTime()
 	}
 
 }
+
+void JidStat::statMessage(const QString& message)
+{
+	if (id_ <= 0)
+		return;
+	QString msg = message.trimmed();
+	int msgChars = msg.length();
+	int msgWords = 0;
+	int msgSentences = 0;
+	int msgMe = 0;
+	if (msg.toLower().startsWith("/me "))
+		msgMe = 1;
+	bool hasWord = false;
+	for (int i = 0; i < msgChars; ++i )
+	{
+		QChar chr = msg[i];
+		if (chr == '.' || chr == '?' || chr == '!')
+		{
+			if (hasWord)
+			{
+				++msgSentences;
+				++msgWords;
+			}
+			hasWord = false;
+			continue;
+		}
+		else if (chr.isSpace())
+		{
+			if (hasWord)
+				++msgWords;
+			hasWord = false;
+			continue;
+		}
+		hasWord = true;
+	}
+	if (hasWord)
+	{
+		++msgWords;
+		++msgSentences;
+	}
+
+	QSqlQuery q = DataStorage::instance()->prepareQuery(
+		"UPDATE conference_jidstat SET msg_count = msg_count + 1,"
+		" msg_chars = msg_chars + ?, msg_words = msg_words + ?,"
+		" msg_sentences = msg_sentences + ?, msg_me = msg_me + ? WHERE id=?");
+	q.addBindValue(msgChars);
+	q.addBindValue(msgWords);
+	q.addBindValue(msgSentences);
+	q.addBindValue(msgMe);
+	q.addBindValue(id_);
+	if (!q.exec())
+	{
+		qDebug() << "ERROR: Unable to stat sentence: " << q.lastError().text();
+	}
+}
+
+void JidStat::statReply()
+{
+	if (id_ <= 0)
+		return;
+
+	QSqlQuery q = DataStorage::instance()->prepareQuery(
+		"UPDATE conference_jidstat SET msg_reply = msg_reply + 1 WHERE id=?");
+	q.addBindValue(id_);
+	if (!q.exec())
+	{
+		qDebug() << "ERROR: Unable to stat reply: " << q.lastError().text();
+	}
+}
+
