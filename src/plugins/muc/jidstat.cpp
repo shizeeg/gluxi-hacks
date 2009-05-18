@@ -101,4 +101,58 @@ void JidStat::setLastAction(ActionType type, const QString& reason)
 	{
 		qDebug() << "ERROR: Unable to update Last action: " << q.lastError().text();
 	}
+
+	QString cntName;
+	switch (type)
+	{
+	case ActionJoin:
+		cntName = "cnt_join";
+		break;
+	case ActionLeave:
+		cntName = "cnt_leave";
+		break;
+	case ActionPresence:
+		cntName = "cnt_presence";
+		break;
+	case ActionNickChange:
+		cntName = "cnt_nickchange";
+		break;
+	case ActionVisitor:
+		cntName = "cnt_visitor";
+		break;
+	case ActionParticipant:
+		cntName = "cnt_participant";
+		break;
+	case ActionModerator:
+		cntName = "cnt_moderator";
+		break;
+	case ActionNoAffiliation:
+		cntName = "cnt_noaffiliation";
+		break;
+	case ActionMember:
+		cntName = "cnt_member";
+		break;
+	case ActionAdministrator:
+		cntName = "cnt_administrator";
+		break;
+	case ActionOwner:
+		cntName = "cnt_owner";
+		break;
+	case ActionBan:
+		cntName = "cnt_ban";
+		break;
+	case ActionKick:
+		cntName = "cnt_kick";
+		break;
+	}
+
+	if (!cntName.isEmpty())
+	{
+		q.prepare(QString("UPDATE conference_jidstat set %1 = %1 + 1 WHERE id=?").arg(cntName, cntName));
+		q.addBindValue(id_);
+		if (!q.exec())
+		{
+			qDebug() << "ERROR: Unable to update jidstat for field: " << cntName;
+		}
+	}
 }

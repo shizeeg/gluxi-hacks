@@ -31,7 +31,7 @@ public:
 		ActionJoin = 1,
 		ActionLeave = 2,
 		ActionPresence = 3,
-		ActionChangeNick = 4,
+		ActionNickChange = 4,
 
 		ActionVisitor = 5,
 		ActionParticipant = 6,
@@ -40,8 +40,8 @@ public:
 		ActionNoAffiliation = 8,
 		ActionMember = 9,
 		ActionAdministrator = 10,
-
 		ActionOwner = 11,
+
 		ActionBan = 12,
 		ActionKick = 13,
 	};
