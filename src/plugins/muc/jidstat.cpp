@@ -55,6 +55,13 @@ static RateReport reportList[] =
 		""
 	},
 	{
+		"replies",
+		"Message replies statistic report",
+		"conference_jidstat.msg_reply as sort_field|conference_jidstat.msg_count|conference_jidstat.msg_words|conference_jidstat.msg_sentences|conference_jidstat.msg_me",
+		"Replies|Messages|Words|Sentences|/me",
+		""
+	},
+	{
 			"subject",
 			"Subject changes report",
 			"msg_subject as sort_field|time_online",
@@ -78,8 +85,8 @@ static RateReport reportList[] =
 	{
 			"presence",
 			"Presence report",
-			"cnt_presence as sort_field|time_online",
-			"Presences|Online time",
+			"cnt_presence as sort_field|time_online|cnt_ban|cnt_kick|cnt_visitor|cnt_moderator",
+			"Presences|Online time|Bans|Kicks|Visitors|Moderators",
 			"|t"
 	},
 	{
