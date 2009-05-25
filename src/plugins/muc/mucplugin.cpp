@@ -37,6 +37,8 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 			<< "ATRACE"  << "SEEN" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
 	commands << "HERE" << "STATUS" << "AGE" << "AGESTAT";
 
+	commands << "REPORT";
+
 	commands << "POKE";
 	pluginId=1;
 
@@ -723,6 +725,20 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	if (cmd=="SEEN")
 	{
 		reply(s, conf->seen(arg));
+		return true;
+	}
+
+	if (cmd == "REPORT")
+	{
+		QString res = JidStat::queryReport(conf->id(), arg, 10);
+		if (!res.isEmpty())
+		{
+			reply(s, res);
+		}
+		else
+		{
+			reply(s, JidStat::availableReports());
+		}
 		return true;
 	}
 

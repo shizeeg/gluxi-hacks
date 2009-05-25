@@ -14,4 +14,6 @@ bool isServerValid(const QString& server);
 
 QString urlEncode(const QString& s, const QString& encoding);
 
+QString formatTable(const QVector<QVector<QString> > tbl);
+
 #endif

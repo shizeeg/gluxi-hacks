@@ -20,12 +20,105 @@
 #include "jidstat.h"
 
 #include "base/datastorage.h"
+#include "base/common.h"
 
 #include <QtDebug>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QSqlRecord>
 #include <QVariant>
 #include <QRegExp>
+
+struct RateReport
+{
+	QString name;
+	QString title;
+	QString fieldNames;
+	QString fieldTitles;
+	QString encType; // t -- time
+};
+
+static RateReport reportList[] =
+{
+	{
+		"online",
+		"Online time report",
+		"conference_jidstat.time_online as sort_field",
+		"Online time",
+		"t"
+	},
+	{
+		"message",
+		"Message statistic report",
+		"conference_jidstat.msg_count as sort_field|conference_jidstat.msg_words|conference_jidstat.msg_sentences|conference_jidstat.msg_me|conference_jidstat.msg_reply",
+		"Messages|Words|Sentences|/me|Replies",
+		""
+	},
+	{
+			"subject",
+			"Subject changes report",
+			"msg_subject as sort_field|time_online",
+			"Subject changes|Online time",
+			"|t"
+	},
+	{
+			"join",
+			"Join report",
+			"cnt_join as sort_field|time_online",
+			"Joins|Online time",
+			"|t"
+	},
+	{
+			"presence",
+			"Presence report",
+			"cnt_presence as sort_field|time_online",
+			"Presences|Online time",
+			"|t"
+	},
+	{
+			"nick",
+			"Nick changes report",
+			"cnt_nickchange as sort_field|time_online",
+			"Nick changes|Online time",
+			"|t"
+	},
+	{
+			"visitor",
+			"Visitor report",
+			"cnt_visitor as sort_field|time_online",
+			"Visitor|Online time",
+			"|t"
+	},
+	{
+			"participant",
+			"Participant report",
+			"cnt_participant as sort_field|time_online",
+			"Participant|Online time",
+			"|t"
+	},
+	{
+			"moderator",
+			"Moderator report",
+			"cnt_moderator as sort_field|time_online",
+			"Moderator|Online time",
+			"|t"
+	},
+	{
+			"kick",
+			"Kick report",
+			"cnt_kick as sort_field|time_online",
+			"Kicks|Online time",
+			"|t"
+	},
+	{
+			"ban",
+			"Ban report",
+			"cnt_ban as sort_field|time_online",
+			"Bans|Online time",
+			"|t"
+	},
+	{"", "", "", ""}
+};
 
 JidStat::JidStat(int jidId)
 {
@@ -323,4 +416,107 @@ JidStat::StatAction JidStat::lastAction() const
 		res.reason = q.value(1).toString();
 	}
 	return res;
+}
+
+QString JidStat::availableReports()
+{
+	QString res;
+	RateReport *rep = &reportList[0];
+	while(!rep->name.isEmpty())
+	{
+		res += QString("\n%1 -- %2").arg(rep->name, rep->title);
+		++rep;
+	}
+	return QString("Available reports:%1").arg(res);
+}
+
+QString JidStat::queryReport(int conferenceId, const QString& type, int numRes)
+{
+	RateReport *rep = &reportList[0];
+	while(!rep->name.isEmpty())
+	{
+		if (rep->name == type)
+			break;
+		++rep;
+	}
+
+	if (rep->name.isEmpty())
+		return QString::null;
+
+	QString fields = rep->fieldNames;
+	fields.replace("|", ", ");
+	QString qStr(
+			"SELECT conference_jids.id, %1 from conference_jids"
+			" JOIN conference_jidstat ON conference_jidstat.jid_id = conference_jids.id"
+			" WHERE conference_jids.conference_id = ? ORDER BY sort_field DESC limit ?");
+	qStr = qStr.arg(fields);
+
+	QSqlQuery q = DataStorage::instance()->prepareQuery(qStr);
+	q.addBindValue(conferenceId);
+	q.addBindValue(numRes);
+
+	if (!q.exec())
+	{
+		qDebug() << "ERROR: Unable to execute query: " << q.lastError().text();
+		qDebug() << "Query: " << qStr;
+		return "Unable to prepare report";
+	}
+
+	int colNum = q.record().count();
+	QVector<QVector<QString> > tbl;
+	QVector<QString> head(colNum);
+	head[0] = "Nick";
+	for (int i = 1; i< colNum; ++i)
+	{
+		head[i] = rep->fieldTitles.section('|', i-1, i-1);
+	}
+	tbl << head;
+	QString jidIdList;
+	while (q.next())
+	{
+		QVector<QString> row(colNum);
+		for (int i = 0; i < colNum; ++i)
+		{
+			QVariant v = q.value(i);
+			QString enc = i > 0 ? rep->encType.section('|', i-1, i-1) : "";
+			if (enc == "t")
+				row[i] = secsToString(v.toInt());
+			else
+				row[i] = v.toString();
+		}
+		tbl << row;
+		QString id = q.value(0).toString();
+		if (!jidIdList.isEmpty())
+			jidIdList += ", " + id;
+		else
+			jidIdList = id;
+	}
+
+	// Load valid nicknames
+	QSqlQuery nickQ = DataStorage::instance()->prepareQuery(QString(
+			"SELECT jid, nick FROM conference_nicks"
+			" WHERE conference_id=? AND jid in (%1)").arg(jidIdList));
+	nickQ.addBindValue(conferenceId);
+	if (!nickQ.exec())
+	{
+		qDebug() << "ERROR: " << nickQ.lastError().text();
+		return QString::null;
+	}
+
+	QMap<QString, QString> nickMap;
+	while (nickQ.next())
+	{
+		nickMap.insert(nickQ.value(0).toString(), nickQ.value(1).toString());
+	}
+
+	for (int i = 1; i < tbl.count(); ++i)
+	{
+		QString id = tbl[i][0];
+		QString nick = nickMap.value(id);
+		if (nick.isEmpty())
+			nick = QString("[unknown:%1]").arg(id);
+		tbl[i][0] = nick;
+	}
+
+	return formatTable(tbl);
 }

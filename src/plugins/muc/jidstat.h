@@ -58,6 +58,8 @@ public:
 	virtual ~JidStat();
 
 	static JidStat *queryReadOnly(int jidId);
+	static QString queryReport(int conferenceId, const QString& type, int numRes = 10);
+	static QString availableReports();
 
 	void commit();
 	void setLastAction(ActionType type, const QString& reason);

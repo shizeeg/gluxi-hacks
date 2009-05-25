@@ -12,6 +12,8 @@
 #include <sys/utsname.h>
 #endif
 
+static const int TAB_SIZE=1;
+
 static QMap<QString, QString> htmlMap;
 
 void populateHtmlMap();
@@ -134,7 +136,7 @@ QString removeHtml(const QString& s)
 {
 	if (htmlMap.isEmpty())
 		populateHtmlMap();
-	
+
 	QString res=s;
 	QRegExp exp("<([^>]*)>");
 	exp.setMinimal(true);
@@ -175,7 +177,7 @@ QString removeHtml(const QString& s)
 			ps+=v.length();
 		}
 	}
-	
+
 	return removeExtraSpaces(res);
 }
 
@@ -200,7 +202,7 @@ QString replaceHtmlToken(const QString& token)
 bool isBareJidValid(const QString& jid)
 {
 	QString user=jid.section('@',0,-2);
-	QString server=jid.section('@',-1,-1); 
+	QString server=jid.section('@',-1,-1);
 	if (!isServerValid(server))
 		return false;
 	return (user.indexOf(' ')<0);
@@ -216,7 +218,7 @@ QString urlEncode(const QString& s, const QString& encoding)
 	QString enc=encoding.toLower();
 	if (enc.isEmpty() || enc=="utf8" || enc=="utf-8")
 		return QString(QUrl::toPercentEncoding(s));
-	
+
 	QString dst;
 	QTextCodec* codec=QTextCodec::codecForName(encoding.toAscii());
 	QByteArray arr;
@@ -228,7 +230,7 @@ QString urlEncode(const QString& s, const QString& encoding)
 	for (int i=0; i<l; ++i)
 	{
 		char ch=arr.at(i);
-		if ((ch >= 'A' && ch<='A') || (ch>='a' && ch<='a') || (ch>='0' && ch<='9') 
+		if ((ch >= 'A' && ch<='A') || (ch>='a' && ch<='a') || (ch>='0' && ch<='9')
 				|| ch=='~' || ch=='~' || ch=='.' || ch=='-')
 		{
 			dst.append(ch);
@@ -342,7 +344,7 @@ void populateHtmlMap()
 	htmlMap.insert("yacute",  QChar(253));
 	htmlMap.insert("thorn",  QChar(254));
 	htmlMap.insert("yuml",  QChar(255));
-	
+
 	htmlMap.insert("fnof",  QChar(402));
 
 	htmlMap.insert("Alpha",  QChar(913));
@@ -397,20 +399,20 @@ void populateHtmlMap()
 	htmlMap.insert("thetasy",  QChar(977));
 	htmlMap.insert("upsih",  QChar(978));
 	htmlMap.insert("piv",  QChar(982));
-	
+
 	htmlMap.insert("bull",  QChar(8226));
 	htmlMap.insert("hellip",  QChar(8230));
 	htmlMap.insert("prime",  QChar(8242));
 	htmlMap.insert("Prime",  QChar(8243));
 	htmlMap.insert("oline",  QChar(8254));
 	htmlMap.insert("frasl",  QChar(8260));
-	
+
 	htmlMap.insert("weierp",  QChar(8472));
 	htmlMap.insert("image",  QChar(8465));
 	htmlMap.insert("real",  QChar(8476));
 	htmlMap.insert("trade",  QChar(8482));
 	htmlMap.insert("alefsym",  QChar(8501));
-	
+
 	htmlMap.insert("larr",  QChar(8592));
 	htmlMap.insert("uarr",  QChar(8593));
 	htmlMap.insert("rarr",  QChar(8594));
@@ -422,7 +424,7 @@ void populateHtmlMap()
 	htmlMap.insert("rArr",  QChar(8658));
 	htmlMap.insert("dArr",  QChar(8659));
 	htmlMap.insert("hArr",  QChar(8660));
-	
+
 	htmlMap.insert("forall",  QChar(8704));
 	htmlMap.insert("part",  QChar(8706));
 	htmlMap.insert("exist",  QChar(8707));
@@ -475,7 +477,7 @@ void populateHtmlMap()
 	htmlMap.insert("clubs",  QChar(9827));
 	htmlMap.insert("hearts",  QChar(9829));
 	htmlMap.insert("diams",  QChar(9830));
-		
+
 	htmlMap.insert("quot",  QChar(34));
 	htmlMap.insert("amp",  QChar(38));
 	htmlMap.insert("lt",  QChar(60));
@@ -508,4 +510,35 @@ void populateHtmlMap()
 	htmlMap.insert("lsaquo",  QChar(8249));
 	htmlMap.insert("rsaquo",  QChar(8250));
 	htmlMap.insert("euro",  QChar(8364));
+}
+
+
+QString formatTable(const QVector<QVector<QString> > resultTable)
+{
+	int cnt = resultTable.count() > 0 ? resultTable.first().count() : 0;
+
+	QVector<int> colWidth(cnt);
+	colWidth.fill(0);
+
+	for (int row=0; row<resultTable.count(); ++row)
+		for (int col=0; col<cnt; ++col)
+			if (resultTable[row][col].length()>colWidth[col])
+				colWidth[col]=resultTable[row][col].length();
+
+	QString result;
+	for (int row=0; row<resultTable.count(); ++row)
+	{
+		QString line;
+		QVector<QString> rowVector=resultTable[row];
+		for (int col=0; col<cnt; ++col)
+		{
+			QString term=rowVector[col];
+			int l=term.length();
+			int maxL=colWidth[col];
+			line+=term;
+			line+=QString().fill(' ',(maxL-l)/TAB_SIZE + 2);
+		}
+		result+="\n"+line;
+	}
+	return result;
 }
