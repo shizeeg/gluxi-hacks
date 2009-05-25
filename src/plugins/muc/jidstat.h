@@ -47,9 +47,18 @@ public:
 		ActionKick = 13,
 	};
 
+	struct StatAction
+	{
+		ActionType type;
+		QString reason;
+	};
+
 public:
 	JidStat(int jidId);
 	virtual ~JidStat();
+
+	static JidStat *queryReadOnly(int jidId);
+
 	void commit();
 	void setLastAction(ActionType type, const QString& reason);
 	void setVersion(const QString& name, const QString& version, const QString& os);
@@ -57,9 +66,13 @@ public:
 	void statMessage(const QString& msg);
 	void statReply();
 	void statSubject(const QString& subject);
+
+
+	StatAction lastAction() const;
 private:
 	int id_;
 	int jidId_;
+	bool readOnly_;
 	QDateTime dateTime_;
 
 	bool load();

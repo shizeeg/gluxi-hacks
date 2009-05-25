@@ -31,6 +31,7 @@ JidStat::JidStat(int jidId)
 {
 	id_ = 0;
 	jidId_ = jidId;
+	readOnly_ = false;
 
 	dateTime_ = QDateTime::currentDateTime();
 	if (jidId_ > 0)
@@ -38,10 +39,26 @@ JidStat::JidStat(int jidId)
 		if (!load())
 			create();
 	}
+	else
+	{
+		readOnly_ = true;
+	}
 }
 
 JidStat::~JidStat()
 {
+}
+
+JidStat *JidStat::queryReadOnly(int jidId)
+{
+	JidStat *res = new JidStat(0);
+	res->jidId_ = jidId;
+	if (!res->load())
+	{
+		delete res;
+		res = NULL;
+	}
+	return res;
 }
 
 bool JidStat::load()
@@ -282,4 +299,28 @@ void JidStat::statSubject(const QString& subject)
 	{
 		qDebug() << "ERROR: Unable to stat subject: " << q.lastError().text();
 	}
+}
+
+JidStat::StatAction JidStat::lastAction() const
+{
+	StatAction res;
+	res.type = ActionNone;
+
+	if (id_ <= 0)
+		return res;
+
+	QSqlQuery q = DataStorage::instance()->prepareQuery(
+			"SELECT lastaction, lastreason FROM conference_jidstat WHERE id = ?");
+	q.addBindValue(id_);
+	if (!q.exec())
+	{
+		qDebug() << "ERROR: Unable to query for lastAction: " << q.lastError().text();
+		return res;
+	}
+	if (q.next())
+	{
+		res.type = static_cast<ActionType>(q.value(0).toInt());
+		res.reason = q.value(1).toString();
+	}
+	return res;
 }

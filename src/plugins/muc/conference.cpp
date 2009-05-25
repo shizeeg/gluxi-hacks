@@ -1,4 +1,5 @@
 #include "conference.h"
+#include "jidstat.h"
 #include "alist.h"
 #include "base/common.h"
 #include "base/datastorage.h"
@@ -165,7 +166,7 @@ QString Conference::seen(const QString&n)
 	if (query.exec() && query.next())
 	{
 		int jid=query.value(0).toInt();
-		query.prepare("SELECT online, nick, lastaction, joined FROM conference_nicks WHERE "
+		query.prepare("SELECT online, nick, lastaction, joined, jid FROM conference_nicks WHERE "
 			"conference_id=? AND jid=? ORDER BY lastaction DESC LIMIT 1");
 		query.addBindValue(myId);
 		query.addBindValue(jid);
@@ -175,13 +176,44 @@ QString Conference::seen(const QString&n)
 			QString newNick=query.value(1).toString();
 			QDateTime lastAction=query.value(2).toDateTime();
 			QDateTime joinedTime=query.value(3).toDateTime();
+			int jidId = query.value(4).toInt();
 			if (online)
 				return QString("%1 is here with nick \"%2\" (Joined %3 ago)").arg(n).arg(newNick)
 					.arg(secsToString(joinedTime.secsTo(QDateTime::currentDateTime())));
 			QString secs=secsToString(lastAction.secsTo(QDateTime::currentDateTime()));
-			if (newNick==n)
-				return QString("%1 was here %2 ago").arg(n).arg(secs);
-			return QString("%1 was here %2 ago with nick \"%3\"").arg(n).arg(secs).arg(newNick);
+
+			QString token("was here");
+			QString reason;
+			if (jidId > 0)
+			{
+				// Query for some stat information;
+				JidStat *stat = JidStat::queryReadOnly(jidId);
+				if (stat)
+				{
+					JidStat::StatAction act = stat->lastAction();
+					delete stat;
+					stat = NULL;
+
+					switch (act.type)
+					{
+					case JidStat::ActionKick:
+						token = "was kicked";
+						break;
+					case JidStat::ActionBan:
+						token = "was banned";
+						break;
+					}
+					reason = act.reason;
+				}
+			}
+			QString reply;
+			if (newNick == n)
+				reply = QString("%1 %2 %3 ago").arg(n, token, secs);
+			else
+				reply = QString("%1 %2 %3 ago with nick \"%4\"").arg(n, token, secs, newNick);
+			if (!reason.isEmpty())
+				reply += QString(" (%1)").arg(reason);
+			return reply;
 		}
 	}
 	return QString("I never see \"%1\" here").arg(n);
