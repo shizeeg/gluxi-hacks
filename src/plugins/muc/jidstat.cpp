@@ -62,6 +62,13 @@ static RateReport reportList[] =
 			"|t"
 	},
 	{
+			"version",
+			"Version report",
+			"ver_name as sort_field|ver_version|ver_os",
+			"Client|Version|OS",
+			""
+	},
+	{
 			"join",
 			"Join report",
 			"cnt_join as sort_field|time_online",
@@ -446,8 +453,10 @@ QString JidStat::queryReport(int conferenceId, const QString& type, int numRes)
 	QString fields = rep->fieldNames;
 	fields.replace("|", ", ");
 	QString qStr(
-			"SELECT conference_jids.id, %1 from conference_jids"
+			"SELECT conference_nicks.nick, %1 from conference_jids"
 			" JOIN conference_jidstat ON conference_jidstat.jid_id = conference_jids.id"
+			" JOIN conference_nicks ON conference_nicks.jid = conference_jids.id AND"
+				" conference_nicks.online = true"
 			" WHERE conference_jids.conference_id = ? ORDER BY sort_field DESC limit ?");
 	qStr = qStr.arg(fields);
 
@@ -491,32 +500,5 @@ QString JidStat::queryReport(int conferenceId, const QString& type, int numRes)
 		else
 			jidIdList = id;
 	}
-
-	// Load valid nicknames
-	QSqlQuery nickQ = DataStorage::instance()->prepareQuery(QString(
-			"SELECT jid, nick FROM conference_nicks"
-			" WHERE conference_id=? AND jid in (%1)").arg(jidIdList));
-	nickQ.addBindValue(conferenceId);
-	if (!nickQ.exec())
-	{
-		qDebug() << "ERROR: " << nickQ.lastError().text();
-		return QString::null;
-	}
-
-	QMap<QString, QString> nickMap;
-	while (nickQ.next())
-	{
-		nickMap.insert(nickQ.value(0).toString(), nickQ.value(1).toString());
-	}
-
-	for (int i = 1; i < tbl.count(); ++i)
-	{
-		QString id = tbl[i][0];
-		QString nick = nickMap.value(id);
-		if (nick.isEmpty())
-			nick = QString("[unknown:%1]").arg(id);
-		tbl[i][0] = nick;
-	}
-
 	return formatTable(tbl);
 }

@@ -127,7 +127,11 @@ QSqlQuery DataStorage::prepareQuery(const QString& query)
 		connect();
 	}
 	QSqlQuery q;
-	q.prepare(query);
+	if (!q.prepare(query))
+	{
+		qWarning() << "SQL ERROR: Unable to prepare query: " << q.lastError().text();
+		qWarning() << "SQL Query: " << query;
+	}
 	return q;
 }
 

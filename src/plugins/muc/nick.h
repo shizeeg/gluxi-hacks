@@ -32,6 +32,7 @@ public:
 	QString versionOs() const { return versionOs_; }
 	QString versionClient() const { return versionClient_; }
 	int vcardPhotoSize() const { return vcardPhotoSize_; }
+	int id() const { return myId; }
 
 	QStringList similarNicks();
 
