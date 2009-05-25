@@ -51,6 +51,9 @@ public:
 	{
 		ActionType type;
 		QString reason;
+		QString verName;
+		QString verVersion;
+		QString verOs;
 	};
 
 public:

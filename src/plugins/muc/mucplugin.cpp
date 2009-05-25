@@ -34,7 +34,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 			<< "KICK" << "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN"
 			<< "BANJID" << "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
 	commands << "ABAN" << "AKICK" << "AVISITOR" << "ACMD" << "AMODERATOR" << "APARTICIPANT" << "AFIND"
-			<< "ATRACE"  << "SEEN" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
+			<< "ATRACE"  << "SEEN" << "SEENEX" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
 	commands << "HERE" << "STATUS" << "AGE" << "AGESTAT";
 
 	commands << "REPORT";
@@ -722,9 +722,9 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		return true;
 	}
 
-	if (cmd=="SEEN")
+	if (cmd=="SEEN" || cmd=="SEENEX")
 	{
-		reply(s, conf->seen(arg));
+		reply(s, conf->seen(arg, "SEENEX" == cmd));
 		return true;
 	}
 

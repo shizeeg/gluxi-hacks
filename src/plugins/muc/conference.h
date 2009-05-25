@@ -37,7 +37,7 @@ public:
 	AList* acommand() { return myCommand; };
 	QStringList* alistTraceList() { return alistTraceList_; }
 
-	QString seen(const QString& nick);
+	QString seen(const QString& nick, bool ext = false);
 	QString clientStat();
 	void setNick(const QString& name);
 	void setLazyLeave(bool value);

@@ -150,7 +150,7 @@ void Conference::removeExpired()
 	myModerator->removeExpired();
 }
 
-QString Conference::seen(const QString&n)
+QString Conference::seen(const QString&n, bool ext)
 {
 	Nick* nick=myNicks.byName(n);
 //	int cnt=0;
@@ -184,6 +184,7 @@ QString Conference::seen(const QString&n)
 
 			QString token("was here");
 			QString reason;
+			QString version;
 			if (jidId > 0)
 			{
 				// Query for some stat information;
@@ -204,6 +205,14 @@ QString Conference::seen(const QString&n)
 						break;
 					}
 					reason = act.reason;
+					if (!act.verName.isEmpty())
+					{
+						version = act.verName;
+						if (!act.verVersion.isEmpty())
+							version+=" " + act.verVersion;
+						if (!act.verOs.isEmpty() && ext)
+							version+=" // " + act.verOs;
+					}
 				}
 			}
 			QString reply;
@@ -213,6 +222,8 @@ QString Conference::seen(const QString&n)
 				reply = QString("%1 %2 %3 ago with nick \"%4\"").arg(n, token, secs, newNick);
 			if (!reason.isEmpty())
 				reply += QString(" (%1)").arg(reason);
+			if (!version.isEmpty())
+				reply += QString(", Client: %1").arg(version);
 			return reply;
 		}
 	}

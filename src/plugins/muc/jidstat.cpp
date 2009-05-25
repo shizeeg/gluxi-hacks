@@ -417,7 +417,7 @@ JidStat::StatAction JidStat::lastAction() const
 		return res;
 
 	QSqlQuery q = DataStorage::instance()->prepareQuery(
-			"SELECT lastaction, lastreason FROM conference_jidstat WHERE id = ?");
+			"SELECT lastaction, lastreason, ver_name, ver_version, ver_os FROM conference_jidstat WHERE id = ?");
 	q.addBindValue(id_);
 	if (!q.exec())
 	{
@@ -428,6 +428,9 @@ JidStat::StatAction JidStat::lastAction() const
 	{
 		res.type = static_cast<ActionType>(q.value(0).toInt());
 		res.reason = q.value(1).toString();
+		res.verName = q.value(2).toString();
+		res.verVersion = q.value(3).toString();
+		res.verOs = q.value(4).toString();
 	}
 	return res;
 }
