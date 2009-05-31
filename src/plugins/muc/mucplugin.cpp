@@ -281,7 +281,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 			QString status = QString::fromStdString(s->status());
 			if (!status.isEmpty())
 				show += QString(" (%1)").arg(status);
-			stat->setLastAction(JidStat::ActionJoin, show);
+			stat->setLastAction(ActionJoin, show);
 		}
 
 		if (nick==conf->nick())
@@ -327,8 +327,8 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 				int statusCode = getStatus(s);
 				if (statusCode == 307 || statusCode == 301)
 				{
-					JidStat::ActionType actType = statusCode == 307
-						? JidStat::ActionKick : JidStat::ActionBan;
+					ActionType actType = statusCode == 307
+						? ActionKick : ActionBan;
 					QString reason = getReason(s);
 					stat->setLastAction(actType, reason);
 				}
@@ -336,7 +336,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 				{
 					// Just presence?
 					QString show = QString::fromStdString(s->status());
-					stat->setLastAction(JidStat::ActionLeave, show);
+					stat->setLastAction(ActionLeave, show);
 				}
 			}
 			conf->nicks()->remove(n);
@@ -351,28 +351,28 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		{
 			if (n->role() != role)
 			{
-				JidStat::ActionType actType = JidStat::ActionNone;
+				ActionType actType = ActionNone;
 				if (role == "moderator")
-					actType = JidStat::ActionModerator;
+					actType = ActionModerator;
 				else if (role == "participant")
-					actType = JidStat::ActionParticipant;
+					actType = ActionParticipant;
 				else if (role == "visitor")
-					actType = JidStat::ActionVisitor;
+					actType = ActionVisitor;
 				QString reason = getReason(s);
 				stat->setLastAction(actType, reason);
 			}
 			else if (n->affiliation() != getItem(s, "affiliation"))
 			{
 				QString aff = getItem(s, "affiliation");
-				JidStat::ActionType actType = JidStat::ActionNone;
+				ActionType actType = ActionNone;
 				if (aff == "none")
-					actType = JidStat::ActionNoAffiliation;
+					actType = ActionNoAffiliation;
 				else if (aff == "member")
-					actType = JidStat::ActionMember;
+					actType = ActionMember;
 				else if (aff == "administrator")
-					actType = JidStat::ActionAdministrator;
+					actType = ActionAdministrator;
 				else if (role == "owner")
-					actType = JidStat::ActionOwner;
+					actType = ActionOwner;
 				QString reason = getReason(s);
 				stat->setLastAction(actType, reason);
 			}
@@ -383,7 +383,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 				QString status = QString::fromStdString(s->status());
 				if (!status.isEmpty())
 					show += QString(" (%1)").arg(status);
-				stat->setLastAction(JidStat::ActionPresence, show);
+				stat->setLastAction(ActionPresence, show);
 			}
 		}
 

@@ -17,52 +17,28 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef JIDSTAT_H_
-#define JIDSTAT_H_
+#ifndef ACTIONTYPE_H_
+#define ACTIONTYPE_H_
 
-#include "actiontype.h"
-
-#include <QString>
-#include <QDateTime>
-
-class JidStat
+enum ActionType
 {
-public:
-	struct StatAction
-	{
-		ActionType type;
-		QString reason;
-		QString verName;
-		QString verVersion;
-		QString verOs;
-	};
+	ActionNone = 0,
+	ActionJoin = 1,
+	ActionLeave = 2,
+	ActionPresence = 3,
+	ActionNickChange = 4,
 
-public:
-	JidStat(int jidId);
-	virtual ~JidStat();
+	ActionVisitor = 5,
+	ActionParticipant = 6,
+	ActionModerator = 7,
 
-	static JidStat *queryReadOnly(int jidId);
-	static QString queryReport(int conferenceId, const QString& type, int numRes = 10);
-	static QString availableReports();
+	ActionNoAffiliation = 8,
+	ActionMember = 9,
+	ActionAdministrator = 10,
+	ActionOwner = 11,
 
-	void commit();
-	void setLastAction(ActionType type, const QString& reason);
-	void setVersion(const QString& name, const QString& version, const QString& os);
-	void updateOnlineTime();
-	void statMessage(const QString& msg);
-	void statReply();
-	void statSubject(const QString& subject);
-
-
-	StatAction lastAction() const;
-private:
-	int id_;
-	int jidId_;
-	bool readOnly_;
-	QDateTime dateTime_;
-
-	bool load();
-	void create();
+	ActionBan = 12,
+	ActionKick = 13,
 };
 
-#endif /* JIDSTAT_H_ */
+#endif /* ACTIONTYPE_H_ */

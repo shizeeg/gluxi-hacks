@@ -197,10 +197,10 @@ QString Conference::seen(const QString&n, bool ext)
 
 					switch (act.type)
 					{
-					case JidStat::ActionKick:
+					case ActionKick:
 						token = "was kicked";
 						break;
-					case JidStat::ActionBan:
+					case ActionBan:
 						token = "was banned";
 						break;
 					}
