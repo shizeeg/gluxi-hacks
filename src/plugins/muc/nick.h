@@ -35,6 +35,7 @@ public:
 	int id() const { return myId; }
 
 	QStringList similarNicks();
+	static QStringList nickToJids(Conference* conf, QString& n);
 
 	void setJid(const QString& jid);
 	void setNick(const QString& nick);

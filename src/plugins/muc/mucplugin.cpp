@@ -39,7 +39,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 
 	commands << "REPORT";
 
-	commands << "POKE";
+	commands << "POKE" << "REALJID";
 	pluginId=1;
 
 	// Plugin should be able to modify self-messages so they will be
@@ -562,6 +562,38 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		return false;
 	}
 
+	if (cmd=="REALJID")
+	{
+		if (!isFromConfModerator(s)) {
+			reply(s,"You should be moderator to do this");
+			return true;
+		}
+
+		QStringList jids;
+		Nick* nick=getNick(s, arg);
+		if (!nick)
+		{
+			jids = Nick::nickToJids(getConf(s), arg);
+			if(!jids.isEmpty())
+			{
+				reply(s, QString("\nNick:\t%1\nJID(s):\t%2")
+					.arg(arg).arg(jids.join("\n")), true);
+				reply(s, "OK.");
+				return true;
+			}
+		}
+		else
+		{
+			reply(s, QString("\nNick:\t%1\nJID:\t%2")
+				.arg(arg)
+				.arg(nick->jidStr().section("/",0,0)), true);
+			reply(s, "OK.");
+			return true;
+		}
+		reply(s, "I can't remember his/her jid.");
+		return true;
+	}
+	
 	if (cmd=="POKE")
 	{
 		QStringList nickList;
@@ -584,7 +616,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		<< "попрыгал с бубном вокруг %1"
 		<< "размахивает руками перед лицом %1"
 		<< "воззвал к %1"
-		<< "тресёт %1 за плечи"
+		<< "трясёт %1 за плечи"
 		<< "кинул нож в сторону %1";
 
 		srand ( time(NULL) );
