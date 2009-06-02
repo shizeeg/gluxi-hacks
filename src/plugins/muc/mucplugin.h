@@ -74,6 +74,8 @@ private:
 	void requestVCard(gloox::Stanza* s, Conference* conf, Nick* nick);
 	void requestVersion(gloox::Stanza* s, Conference* conf, Nick* nick);
 
+	void logMessageStanza(gloox::Stanza *s, Conference *conf);
+
 	static bool ageLessThan(const Nick* nick1, const Nick* nick2);
 private slots:
 	void sltAutoLeaveTimerTimeout();

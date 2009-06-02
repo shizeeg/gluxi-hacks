@@ -17,52 +17,47 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef JIDSTAT_H_
-#define JIDSTAT_H_
+#include "muchistory.h"
 
-#include "actiontype.h"
+#include "conference.h"
+#include "nick.h"
 
-#include <QString>
-#include <QDateTime>
+#include "base/datastorage.h"
 
-class JidStat
+#include <QtDebug>
+#include <QVariant>
+#include <QSqlError>
+
+MucHistory::MucHistory(int conferenceId)
 {
-public:
-	struct StatAction
+	conferenceId_ = conferenceId;
+}
+
+MucHistory::~MucHistory()
+{
+}
+
+void MucHistory::log(Nick *nick, ActionType type, const QString& msg, bool priv,
+		const QString& params, const QDateTime& dateTime)
+{
+	QDateTime date;
+	if (dateTime.isValid())
+		date=dateTime;
+	else
+		date = QDateTime::currentDateTime();
+	QSqlQuery q = DataStorage::instance()->prepareQuery(
+			"INSERT INTO conference_log(conference_id, datetime, private, nick_id,"
+			" action_type, message, params)"
+			" VALUES(?, ?, ?, ?, ?, ?, ?)");
+	q.addBindValue(nick->conference()->id());
+	q.addBindValue(date);
+	q.addBindValue(priv);
+	q.addBindValue(nick->id());
+	q.addBindValue(type);
+	q.addBindValue(msg);
+	q.addBindValue(params);
+	if (!q.exec())
 	{
-		ActionType type;
-		QString reason;
-		QString verName;
-		QString verVersion;
-		QString verOs;
-	};
-
-public:
-	JidStat(int jidId);
-	virtual ~JidStat();
-
-	static JidStat *queryReadOnly(int jidId);
-	static QString queryReport(int conferenceId, const QString& type, int numRes = 10);
-	static QString availableReports();
-
-	void commit();
-	void setLastAction(ActionType type, const QString& reason);
-	void setVersion(const QString& name, const QString& version, const QString& os);
-	void updateOnlineTime();
-	void statMessage(const QString& msg);
-	void statReply();
-	void statSubject(const QString& subject);
-
-
-	StatAction lastAction() const;
-private:
-	int id_;
-	int jidId_;
-	bool readOnly_;
-	QDateTime dateTime_;
-
-	bool load();
-	void create();
-};
-
-#endif /* JIDSTAT_H_ */
+		qDebug() << "SQL: Unable to log event: " << q.lastError().text();
+	}
+}

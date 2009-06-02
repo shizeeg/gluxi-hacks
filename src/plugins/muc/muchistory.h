@@ -17,52 +17,26 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef JIDSTAT_H_
-#define JIDSTAT_H_
+#ifndef MUCHISTORY_H_
+#define MUCHISTORY_H_
 
 #include "actiontype.h"
 
-#include <QString>
 #include <QDateTime>
 
-class JidStat
+class Nick;
+class QString;
+
+class MucHistory
 {
 public:
-	struct StatAction
-	{
-		ActionType type;
-		QString reason;
-		QString verName;
-		QString verVersion;
-		QString verOs;
-	};
+	MucHistory(int conferenceId);
+	virtual ~MucHistory();
 
-public:
-	JidStat(int jidId);
-	virtual ~JidStat();
-
-	static JidStat *queryReadOnly(int jidId);
-	static QString queryReport(int conferenceId, const QString& type, int numRes = 10);
-	static QString availableReports();
-
-	void commit();
-	void setLastAction(ActionType type, const QString& reason);
-	void setVersion(const QString& name, const QString& version, const QString& os);
-	void updateOnlineTime();
-	void statMessage(const QString& msg);
-	void statReply();
-	void statSubject(const QString& subject);
-
-
-	StatAction lastAction() const;
+	void log(Nick *nick, ActionType type, const QString& msg, bool priv,
+			const QString& params = QString::null, const QDateTime& dateTime = QDateTime());
 private:
-	int id_;
-	int jidId_;
-	bool readOnly_;
-	QDateTime dateTime_;
-
-	bool load();
-	void create();
+	int conferenceId_;
 };
 
-#endif /* JIDSTAT_H_ */
+#endif /* MUCHISTORY_H_ */

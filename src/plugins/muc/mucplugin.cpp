@@ -7,6 +7,7 @@
 #include "jidstat.h"
 #include "config/mucconfigurator.h"
 #include "nickasyncrequest.h"
+#include "muchistory.h"
 
 #include "base/common.h"
 #include "base/gluxibot.h"
@@ -169,6 +170,7 @@ bool MucPlugin::canHandleMessage(gloox::Stanza* s)
 	}
 	if (n->nick()==conf->nick() && !(s->from()==s->to()))
 	{
+		logMessageStanza(s, conf);
 		qDebug() << "MUC: Self message ignored";
 		// Avoid processing of such message by other plugins.
 		// Currently just add invalid "to" and clear body :)
@@ -281,7 +283,11 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 			QString status = QString::fromStdString(s->status());
 			if (!status.isEmpty())
 				show += QString(" (%1)").arg(status);
-			stat->setLastAction(JidStat::ActionJoin, show);
+			stat->setLastAction(ActionJoin, show);
+
+			if (conf->history())
+				conf->history()->log(n, ActionJoin, show, false,
+						QString("%1|%2").arg(role, getItem(s, "affiliation")));
 		}
 
 		if (nick==conf->nick())
@@ -327,16 +333,21 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 				int statusCode = getStatus(s);
 				if (statusCode == 307 || statusCode == 301)
 				{
-					JidStat::ActionType actType = statusCode == 307
-						? JidStat::ActionKick : JidStat::ActionBan;
+					ActionType actType = statusCode == 307
+						? ActionKick : ActionBan;
 					QString reason = getReason(s);
 					stat->setLastAction(actType, reason);
+
+					if (conf->history())
+						conf->history()->log(n, actType, reason, false);
 				}
 				else
 				{
 					// Just presence?
 					QString show = QString::fromStdString(s->status());
-					stat->setLastAction(JidStat::ActionLeave, show);
+					stat->setLastAction(ActionLeave, show);
+					if (conf->history())
+						conf->history()->log(n, ActionLeave, show, false);
 				}
 			}
 			conf->nicks()->remove(n);
@@ -349,41 +360,51 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 		JidStat *stat = n->jidStat();
 		if (stat && !newNick)
 		{
+			bool recorded = false;
 			if (n->role() != role)
 			{
-				JidStat::ActionType actType = JidStat::ActionNone;
+				ActionType actType = ActionNone;
 				if (role == "moderator")
-					actType = JidStat::ActionModerator;
+					actType = ActionModerator;
 				else if (role == "participant")
-					actType = JidStat::ActionParticipant;
+					actType = ActionParticipant;
 				else if (role == "visitor")
-					actType = JidStat::ActionVisitor;
+					actType = ActionVisitor;
 				QString reason = getReason(s);
 				stat->setLastAction(actType, reason);
+				if (conf->history())
+					conf->history()->log(n, actType, reason, false);
+				recorded = true;
 			}
-			else if (n->affiliation() != getItem(s, "affiliation"))
+			if (n->affiliation() != getItem(s, "affiliation"))
 			{
 				QString aff = getItem(s, "affiliation");
-				JidStat::ActionType actType = JidStat::ActionNone;
+				ActionType actType = ActionNone;
 				if (aff == "none")
-					actType = JidStat::ActionNoAffiliation;
+					actType = ActionNoAffiliation;
 				else if (aff == "member")
-					actType = JidStat::ActionMember;
+					actType = ActionMember;
 				else if (aff == "administrator")
-					actType = JidStat::ActionAdministrator;
+					actType = ActionAdministrator;
 				else if (role == "owner")
-					actType = JidStat::ActionOwner;
+					actType = ActionOwner;
 				QString reason = getReason(s);
 				stat->setLastAction(actType, reason);
+				if (conf->history())
+					conf->history()->log(n, actType, reason, false);
+				recorded = true;
 			}
-			else
+
+			if (!recorded)
 			{
 				// Just presence?
 				QString show = getPresence(s->presence());
 				QString status = QString::fromStdString(s->status());
 				if (!status.isEmpty())
 					show += QString(" (%1)").arg(status);
-				stat->setLastAction(JidStat::ActionPresence, show);
+				stat->setLastAction(ActionPresence, show);
+				if (conf->history())
+					conf->history()->log(n, ActionPresence, show, false);
 			}
 		}
 
@@ -421,6 +442,35 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 	}
 }
 
+void MucPlugin::logMessageStanza(gloox::Stanza *s, Conference *conf)
+{
+	if (!conf)
+		conf = getConf(s);
+
+	if (conf && conf->history())
+	{
+		Nick *n = getNick(s);
+		if (n)
+		{
+			QString msgBody = QString::fromStdString(s->body());
+			bool isPrivate = s->findAttribute("type") != "groupchat";
+			if (!msgBody.isEmpty())
+			{
+				ActionType actType = ActionMessage;
+
+				if (s->findAttribute("glooxbot_alias") == "true")
+					actType = ActionExpandedAlias;
+
+				conf->history()->log(n, actType, msgBody, isPrivate);
+			}
+
+			QString subject = QString::fromStdString(s->subject());
+			if (!subject.isEmpty())
+				conf->history()->log(n, ActionSubject, subject, isPrivate);
+		}
+	}
+}
+
 bool MucPlugin::parseMessage(gloox::Stanza* s)
 {
 	if (isOfflineMessage(s))
@@ -434,6 +484,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 	QString nickName=QString::fromStdString(s->from().resource());
 
 	Conference* conf=getConf(s);
+	logMessageStanza(s, conf);
 
 	if (parser.isForMe())
 	{
@@ -1915,6 +1966,11 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 		for (QList<AListItem*>::const_iterator it=itemList.begin(); it!=itemList.end();  ++it)
 		{
 			AListItem* item=*it;
+
+			if (c->history())
+				c->history()->log(n, ActionAListCommand, item->toString(), false,
+						QString::number(item->id()));
+
 			QString action=item->reason();
 			if (action.isEmpty())
 				return;
@@ -1946,6 +2002,11 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 			AListItem* item=itemList.first();
 			if (s && warnImOwner(s))
 				return;
+
+			if (c->history())
+				c->history()->log(n, ActionAListBan, item->toString(), false,
+						QString::number(item->id()));
+
 			QString reason=item->reason();
 			if (reason.isEmpty())
 				reason=DataStorage::instance()->getString("str/ban_reason");
@@ -1957,6 +2018,11 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 		if (!itemList.isEmpty())
 		{
 			AListItem* item=itemList.first();
+
+			if (c->history())
+				c->history()->log(n, ActionAListKick, item->toString(), false,
+						QString::number(item->id()));
+
 			QString reason=item->reason();
 			if (reason.isEmpty())
 				reason=DataStorage::instance()->getString("str/kick_reason");
@@ -1968,6 +2034,11 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 		if (!itemList.isEmpty())
 		{
 			AListItem* item=itemList.first();
+
+			if (c->history())
+				c->history()->log(n, ActionAListVisitor, item->toString(), false,
+						QString::number(item->id()));
+
 			QString reason=item->reason();
 			if (reason.isEmpty())
 				reason=DataStorage::instance()->getString("str/visitor_reason");
@@ -1980,6 +2051,11 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 	if (!itemList.isEmpty())
 	{
 		AListItem* item=itemList.first();
+
+		if (c->history())
+			c->history()->log(n, ActionAListParticipant, item->toString(), false,
+					QString::number(item->id()));
+
 		QString reason=item->reason();
 		if (reason.isEmpty())
 			reason=DataStorage::instance()->getString("str/participant_reason");
@@ -1991,6 +2067,12 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 	if (!itemList.isEmpty())
 	{
 		AListItem* item=itemList.first();
+
+		if (c->history())
+			c->history()->log(n, ActionAListModerator, item->toString(), false,
+					QString::number(item->id()));
+
+
 		QString reason=item->reason();
 		if (reason.isEmpty())
 			reason=DataStorage::instance()->getString("str/moderator_reason");
