@@ -20,6 +20,6 @@
 #ifndef DBVERSION_H
 #define DBVERSION_H
 
-#define GLUXI_DB_VERSION 380
+#define GLUXI_DB_VERSION 387
 
 #endif
