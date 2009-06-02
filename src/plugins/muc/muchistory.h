@@ -17,39 +17,26 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef ACTIONTYPE_H_
-#define ACTIONTYPE_H_
+#ifndef MUCHISTORY_H_
+#define MUCHISTORY_H_
 
-enum ActionType
+#include "actiontype.h"
+
+#include <QDateTime>
+
+class Nick;
+class QString;
+
+class MucHistory
 {
-	ActionNone = 0,
-	ActionJoin = 1,
-	ActionLeave = 2,
-	ActionPresence = 3,
-	ActionNickChange = 4,
+public:
+	MucHistory(int conferenceId);
+	virtual ~MucHistory();
 
-	ActionVisitor = 5,
-	ActionParticipant = 6,
-	ActionModerator = 7,
-
-	ActionNoAffiliation = 8,
-	ActionMember = 9,
-	ActionAdministrator = 10,
-	ActionOwner = 11,
-
-	ActionBan = 12,
-	ActionKick = 13,
-
-	ActionMessage = 14,
-	ActionSubject = 15,
-	ActionExpandedAlias = 16,
-
-	ActionAListCommand = 17,
-	ActionAListBan = 18,
-	ActionAListKick = 19,
-	ActionAListVisitor = 20,
-	ActionAListParticipant = 21,
-	ActionAListModerator = 22
+	void log(Nick *nick, ActionType type, const QString& msg, bool priv,
+			const QString& params = QString::null, const QDateTime& dateTime = QDateTime());
+private:
+	int conferenceId_;
 };
 
-#endif /* ACTIONTYPE_H_ */
+#endif /* MUCHISTORY_H_ */

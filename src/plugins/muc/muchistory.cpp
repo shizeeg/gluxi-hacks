@@ -17,39 +17,47 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef ACTIONTYPE_H_
-#define ACTIONTYPE_H_
+#include "muchistory.h"
 
-enum ActionType
+#include "conference.h"
+#include "nick.h"
+
+#include "base/datastorage.h"
+
+#include <QtDebug>
+#include <QVariant>
+#include <QSqlError>
+
+MucHistory::MucHistory(int conferenceId)
 {
-	ActionNone = 0,
-	ActionJoin = 1,
-	ActionLeave = 2,
-	ActionPresence = 3,
-	ActionNickChange = 4,
+	conferenceId_ = conferenceId;
+}
 
-	ActionVisitor = 5,
-	ActionParticipant = 6,
-	ActionModerator = 7,
+MucHistory::~MucHistory()
+{
+}
 
-	ActionNoAffiliation = 8,
-	ActionMember = 9,
-	ActionAdministrator = 10,
-	ActionOwner = 11,
-
-	ActionBan = 12,
-	ActionKick = 13,
-
-	ActionMessage = 14,
-	ActionSubject = 15,
-	ActionExpandedAlias = 16,
-
-	ActionAListCommand = 17,
-	ActionAListBan = 18,
-	ActionAListKick = 19,
-	ActionAListVisitor = 20,
-	ActionAListParticipant = 21,
-	ActionAListModerator = 22
-};
-
-#endif /* ACTIONTYPE_H_ */
+void MucHistory::log(Nick *nick, ActionType type, const QString& msg, bool priv,
+		const QString& params, const QDateTime& dateTime)
+{
+	QDateTime date;
+	if (dateTime.isValid())
+		date=dateTime;
+	else
+		date = QDateTime::currentDateTime();
+	QSqlQuery q = DataStorage::instance()->prepareQuery(
+			"INSERT INTO conference_log(conference_id, datetime, private, nick_id,"
+			" action_type, message, params)"
+			" VALUES(?, ?, ?, ?, ?, ?, ?)");
+	q.addBindValue(nick->conference()->id());
+	q.addBindValue(date);
+	q.addBindValue(priv);
+	q.addBindValue(nick->id());
+	q.addBindValue(type);
+	q.addBindValue(msg);
+	q.addBindValue(params);
+	if (!q.exec())
+	{
+		qDebug() << "SQL: Unable to log event: " << q.lastError().text();
+	}
+}

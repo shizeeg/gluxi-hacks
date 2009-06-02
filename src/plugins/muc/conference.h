@@ -8,6 +8,7 @@
 
 class AList;
 class MucConfigurator;
+class MucHistory;
 
 class Conference
 {
@@ -49,6 +50,8 @@ public:
 
 	MucConfigurator* configurator() const { return configurator_; }
 	void setConfigurator(MucConfigurator* configurator) { configurator_=configurator; }
+
+	MucHistory *history() const { return history_; }
 private:
 	int myId;
 	bool myLazyLeave;
@@ -64,6 +67,7 @@ private:
 	AList* myParticipant;
 	MucConfigurator* configurator_;
 	QStringList* alistTraceList_;
+	MucHistory *history_;
 };
 
 #endif

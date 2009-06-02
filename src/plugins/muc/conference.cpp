@@ -1,6 +1,7 @@
 #include "conference.h"
 #include "jidstat.h"
 #include "alist.h"
+#include "muchistory.h"
 #include "base/common.h"
 #include "base/datastorage.h"
 #include "config/mucconfigurator.h"
@@ -16,6 +17,7 @@ Conference::Conference()
 	qDebug() << "new Conference";
 	myLazyLeave=false;
 	myValidated=false;
+	history_ = NULL;
 }
 
 Conference::Conference(const QString& name, const QString& nick, bool lazyLeave)
@@ -85,6 +87,10 @@ Conference::Conference(const QString& name, const QString& nick, bool lazyLeave)
 	myParticipant=new AList(this, "participant", ALIST_PARTICIPANT);
 	myCommand=new AList(this, "command", ALIST_CMD);
 	alistTraceList_=new QStringList();
+	if (myId > 0)
+		history_ = new MucHistory(myId);
+	else
+		history_ = NULL;
 }
 
 Conference::~Conference()
@@ -106,6 +112,7 @@ Conference::~Conference()
 	delete myCommand;
 	delete configurator_;
 	delete alistTraceList_;
+	delete history_;
 }
 
 void Conference::markOffline()
