@@ -120,8 +120,10 @@ QString MucPlugin::resolveMyNick(gloox::Stanza* s)
 		return conf->nick();
 	}
 
-bool MucPlugin::canHandleMessage(gloox::Stanza* s)
+bool MucPlugin::canHandleMessage(gloox::Stanza* s, const QStringList& flags)
 {
+	Q_UNUSED(flags)
+
 	// 	std::cout << s->xml() << std::endl;
 	if (isOfflineMessage(s))
 	{
@@ -471,7 +473,7 @@ void MucPlugin::logMessageStanza(gloox::Stanza *s, Conference *conf)
 	}
 }
 
-bool MucPlugin::parseMessage(gloox::Stanza* s)
+bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 {
 	if (isOfflineMessage(s))
 		return true;
@@ -1042,7 +1044,10 @@ Nick* MucPlugin::getNick(gloox::Stanza* s, const QString& nn)
 {
 	Conference *conf=getConf(s);
 	if (!conf)
+	{
+		qDebug() << "ERR: getNick() without conf";
 		return 0;
+	}
 
 	QString nickName;
 	if (nn.isEmpty())
@@ -1984,14 +1989,15 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 				QString t1=QString::fromStdString(s->findAttribute("type"));
 				if (!t1.isEmpty())
 					type=t1;
-				if (type!="groupchat")
+				if (type != "groupchat")
 					from=QString::fromStdString(s->from().full());
 			}
 			gloox::Stanza* st=gloox::Stanza::createMessageStanza(from.toStdString(),
 					action.toStdString());
 			st->addAttribute("from", from.toStdString());
 			st->addAttribute("type", type.toStdString());
-			bot()->client()->handleMessage(st, 0);
+			st->finalize();
+			bot()->processMessage(st, QStringList("acmd"));
 			delete st;
 		}
 	}

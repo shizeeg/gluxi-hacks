@@ -21,23 +21,25 @@ AliasPlugin::~AliasPlugin()
 {
 }
 
-bool AliasPlugin::canHandleMessage(gloox::Stanza* s)
+bool AliasPlugin::canHandleMessage(gloox::Stanza* s, const QStringList& flags)
 {
 	if (isOfflineMessage(s))
 		return false;
-	if (BasePlugin::canHandleMessage(s))
+	if (BasePlugin::canHandleMessage(s, flags))
 		return true;
 	if (bot()->isMyMessage(s))
 		return false;
 
 	//Stanza with already expanded alias
-	if (s->hasAttribute("glooxbot_alias"))
+	if (flags.contains("glooxbot_alias") || s->hasAttribute("glooxbot_alias"))
 		return false;
 	return true;
 }
 
-bool AliasPlugin::parseMessage(gloox::Stanza* s)
+bool AliasPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 {
+	Q_UNUSED(flags);
+
 	MessageParser parser(s, getMyNick(s));
 
 	QString cmd=parser.nextToken().toUpper();
@@ -90,7 +92,7 @@ bool AliasPlugin::parseMessage(gloox::Stanza* s)
 			tg->setCData(item.toStdString());
 			s->addAttribute("glooxbot_alias", "true");
 			s->finalize();
-			bot()->client()->handleMessage(s, 0);
+			bot()->processMessage(s, QStringList("glooxbot_alias"));
 		}
 		return true;
 	}

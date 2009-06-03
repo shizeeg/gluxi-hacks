@@ -27,7 +27,7 @@ NetPlugin::NetPlugin(GluxiBot *parent)
 NetPlugin::~NetPlugin()
 {}
 
-bool NetPlugin::parseMessage(gloox::Stanza* s)
+bool NetPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 {
 	MessageParser parser(s, getMyNick(s));
 	parser.nextToken();
@@ -83,7 +83,7 @@ bool NetPlugin::parseMessage(gloox::Stanza* s)
 		req->launch();
 		return true;
 	}
-	
+
 	if (cmd=="SVN")
 	{
 		if (arg.isEmpty() || !isSafeArg(arg))

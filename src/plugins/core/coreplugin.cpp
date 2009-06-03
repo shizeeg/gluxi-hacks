@@ -13,8 +13,9 @@ CorePlugin::CorePlugin(GluxiBot *parent)
 CorePlugin::~CorePlugin()
 {}
 
-bool CorePlugin::onMessage(gloox::Stanza* s)
+bool CorePlugin::onMessage(gloox::Stanza* s, const QStringList& flags)
 {
+	Q_UNUSED(flags);
 	MessageParser parser(s, getMyNick(s));
 	qDebug() << parser.joinBody();
 	QString cmd=parser.nextToken().toUpper();

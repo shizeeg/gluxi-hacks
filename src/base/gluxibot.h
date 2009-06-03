@@ -59,6 +59,7 @@ public:
 	QString getMyNick(gloox::Stanza* s);
 	void registerIqHandler(const QString& service);
 	RootDiscoHandler* rootDiscoHandler() { return rootDiscoHandler_; }
+	void processMessage(gloox::Stanza *s, const QStringList& flags = QStringList());
 private:
 	GlooxWrapper *myGloox;
 	RootDiscoHandler* rootDiscoHandler_;

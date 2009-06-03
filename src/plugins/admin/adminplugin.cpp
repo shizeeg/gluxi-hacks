@@ -32,8 +32,10 @@ AdminPlugin::~AdminPlugin()
 {
 }
 
-bool AdminPlugin::parseMessage(gloox::Stanza* s)
+bool AdminPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 {
+	Q_UNUSED(flags)
+
 	MessageParser parser(s);
 	parser.nextToken();
 	QString cmd=parser.nextToken().toUpper();

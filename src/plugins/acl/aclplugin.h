@@ -37,8 +37,8 @@ public:
 	~AclPlugin();
 	virtual QString name() const { return "ACL"; };
 	virtual QString prefix() const { return "ACL"; };
-	virtual bool canHandleMessage(gloox::Stanza* s);
-	virtual bool parseMessage(gloox::Stanza*);
+	virtual bool canHandleMessage(gloox::Stanza* s, const QStringList& flags);
+	virtual bool parseMessage(gloox::Stanza*, const QStringList& flags);
 	bool parseCommands(gloox::Stanza* s, MessageParser& parser);
 private:
 	AclList* aclList_;

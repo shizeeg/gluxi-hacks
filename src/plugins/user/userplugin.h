@@ -20,7 +20,7 @@ public:
 	virtual QString name() const { return "User"; };
 	virtual QString prefix() const { return "USER"; };
 	virtual QString description() const { return "Various user info commands";};
-	virtual bool parseMessage(gloox::Stanza* );
+	virtual bool parseMessage(gloox::Stanza*, const QStringList& flags);
 	virtual bool canHandleIq(gloox::Stanza*);
 	virtual bool onIq(gloox::Stanza*);
 	virtual bool onVCard(const VCardWrapper& vcard);

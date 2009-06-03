@@ -37,7 +37,7 @@ public:
 	~ConfigPlugin();
 	virtual QString name() const { return "Config"; };
 	virtual QString prefix() const { return "CONFIG"; };
-	virtual bool parseMessage(gloox::Stanza* );
+	virtual bool parseMessage(gloox::Stanza*, const QStringList& flags);
 	virtual gloox::Stanza* handleDiscoRequest(gloox::Stanza* s, const QString& jid);
 private:
 	gloox::Tag* createCommandTag(const QString& nodePart, const QString& name, const QString& jid);

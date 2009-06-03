@@ -23,18 +23,18 @@ AclPlugin::~AclPlugin()
 	delete aclList_;
 }
 
-bool AclPlugin::canHandleMessage(gloox::Stanza* s)
+bool AclPlugin::canHandleMessage(gloox::Stanza* s, const QStringList& flags)
 {
 	if (isOfflineMessage(s))
 		return false;
-	if (BasePlugin::canHandleMessage(s))
+	if (BasePlugin::canHandleMessage(s, flags))
 		return true;
 	if (bot()->isMyMessage(s))
 		return false;
 	return true;
 }
 
-bool AclPlugin::parseMessage(gloox::Stanza* s)
+bool AclPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 {
 	MessageParser parser(s, getMyNick(s));
 	QString cmd=parser.nextToken().toUpper();

@@ -12,7 +12,7 @@ public:
 	virtual QString name() const { return QString::null; };
 	virtual QString prefix() const { return QString::null; };
 	virtual QString help() const { return QString::null; };
-	virtual bool onMessage(gloox::Stanza* );
+	virtual bool onMessage(gloox::Stanza*, const QStringList& flags);
 };
 
 #endif

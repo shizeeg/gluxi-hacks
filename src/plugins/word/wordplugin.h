@@ -17,7 +17,7 @@ public:
 	~WordPlugin();
 	virtual QString name() const { return "Word"; };
 	virtual QString prefix() const { return "WORD"; };
-	virtual bool parseMessage(gloox::Stanza* );
+	virtual bool parseMessage(gloox::Stanza*, const QStringList& flags);
 private:
 	WordList words;
 };
