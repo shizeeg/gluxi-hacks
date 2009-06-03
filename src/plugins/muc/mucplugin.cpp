@@ -644,7 +644,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		reply(s, "I can't remember his/her jid.");
 		return true;
 	}
-	
+
 	if (cmd=="POKE")
 	{
 		QStringList nickList;
@@ -1957,8 +1957,10 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 	if (s && (s->from() == s->to() || isMyMessage(s)))
 		s=0l;
 
-	QString aff=n->affiliation().toUpper();
 	QList<AListItem*> itemList;
+
+	Nick::Affiliation aff = n->affiliationValue();
+	Nick::Role role = n->roleValue();
 
 	itemList=aFind(c->acommand(), n, s, matcher, false);
 	if (!itemList.isEmpty())
@@ -1994,90 +1996,105 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 		}
 	}
 
-	if (((aff!="OWNER") && !aff.startsWith("ADMIN") && aff!="MEMBER")|| c->configurator()->isApplyAlistsToMembers())
+	if (aff < Nick::AffiliationMember || c->configurator()->isApplyAlistsToMembers())
 	{
-		itemList=aFind(c->aban(), n, s, matcher,true);
-		if (!itemList.isEmpty())
+		if (aff < Nick::AffiliationAdmin)
 		{
-			AListItem* item=itemList.first();
-			if (s && warnImOwner(s))
+			itemList=aFind(c->aban(), n, s, matcher,true);
+			if (!itemList.isEmpty())
+			{
+				AListItem* item=itemList.first();
+				if (s && warnImOwner(s))
+					return;
+
+				if (c->history())
+					c->history()->log(n, ActionAListBan, item->toString(), false,
+							QString::number(item->id()));
+
+				QString reason=item->reason();
+				if (reason.isEmpty())
+					reason=DataStorage::instance()->getString("str/ban_reason");
+				setAffiliation(c, n->jidStr(), "outcast",reason);
 				return;
-
-			if (c->history())
-				c->history()->log(n, ActionAListBan, item->toString(), false,
-						QString::number(item->id()));
-
-			QString reason=item->reason();
-			if (reason.isEmpty())
-				reason=DataStorage::instance()->getString("str/ban_reason");
-			setAffiliation(c, n->jidStr(), "outcast",reason);
-			return;
+			}
 		}
 
-		itemList=aFind(c->akick(), n, s, matcher, true);
+		if (role < Nick::RoleModerator)
+		{
+			itemList=aFind(c->akick(), n, s, matcher, true);
+			if (!itemList.isEmpty())
+			{
+				AListItem* item=itemList.first();
+
+				if (c->history())
+					c->history()->log(n, ActionAListKick, item->toString(), false,
+							QString::number(item->id()));
+
+				QString reason=item->reason();
+				if (reason.isEmpty())
+					reason=DataStorage::instance()->getString("str/kick_reason");
+				setRole(c, n, "none", reason);
+				return;
+			}
+		}
+
+		if (aff < Nick::AffiliationAdmin && role != Nick::RoleVisitor)
+		{
+			itemList=aFind(c->avisitor(), n, s, matcher, true);
+			if (!itemList.isEmpty())
+			{
+				AListItem* item=itemList.first();
+
+				if (c->history())
+					c->history()->log(n, ActionAListVisitor, item->toString(), false,
+							QString::number(item->id()));
+
+				QString reason=item->reason();
+				if (reason.isEmpty())
+					reason=DataStorage::instance()->getString("str/visitor_reason");
+				setRole(c, n, "visitor", reason);
+				return;
+			}
+		}
+	}
+
+	if (aff < Nick::AffiliationAdmin && role != Nick::RoleParticipant)
+	{
+		itemList=aFind(c->aparticipant(), n, s, matcher, true);
 		if (!itemList.isEmpty())
 		{
 			AListItem* item=itemList.first();
 
 			if (c->history())
-				c->history()->log(n, ActionAListKick, item->toString(), false,
+				c->history()->log(n, ActionAListParticipant, item->toString(), false,
 						QString::number(item->id()));
 
 			QString reason=item->reason();
 			if (reason.isEmpty())
-				reason=DataStorage::instance()->getString("str/kick_reason");
-			setRole(c, n, "none", reason);
+				reason=DataStorage::instance()->getString("str/participant_reason");
+			setRole(c, n, "participant", reason);
 			return;
 		}
+	}
 
-		itemList=aFind(c->avisitor(), n, s, matcher, true);
+	if (role != Nick::RoleModerator)
+	{
+		itemList=aFind(c->amoderator(), n, s, matcher, true);
 		if (!itemList.isEmpty())
 		{
 			AListItem* item=itemList.first();
 
 			if (c->history())
-				c->history()->log(n, ActionAListVisitor, item->toString(), false,
+				c->history()->log(n, ActionAListModerator, item->toString(), false,
 						QString::number(item->id()));
+
 
 			QString reason=item->reason();
 			if (reason.isEmpty())
-				reason=DataStorage::instance()->getString("str/visitor_reason");
-			setRole(c, n, "visitor", reason);
+				reason=DataStorage::instance()->getString("str/moderator_reason");
+			setRole(c, n, "moderator", reason);
 			return;
 		}
-	}
-
-	itemList=aFind(c->aparticipant(), n, s, matcher, true);
-	if (!itemList.isEmpty())
-	{
-		AListItem* item=itemList.first();
-
-		if (c->history())
-			c->history()->log(n, ActionAListParticipant, item->toString(), false,
-					QString::number(item->id()));
-
-		QString reason=item->reason();
-		if (reason.isEmpty())
-			reason=DataStorage::instance()->getString("str/participant_reason");
-		setRole(c, n, "participant", reason);
-		return;
-	}
-
-	itemList=aFind(c->amoderator(), n, s, matcher, true);
-	if (!itemList.isEmpty())
-	{
-		AListItem* item=itemList.first();
-
-		if (c->history())
-			c->history()->log(n, ActionAListModerator, item->toString(), false,
-					QString::number(item->id()));
-
-
-		QString reason=item->reason();
-		if (reason.isEmpty())
-			reason=DataStorage::instance()->getString("str/moderator_reason");
-		setRole(c, n, "moderator", reason);
-		return;
 	}
 }
 
