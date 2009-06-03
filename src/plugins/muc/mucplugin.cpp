@@ -486,7 +486,9 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 	QString nickName=QString::fromStdString(s->from().resource());
 
 	Conference* conf=getConf(s);
-	logMessageStanza(s, conf);
+
+	if (!flags.contains("acmd"))
+		logMessageStanza(s, conf);
 
 	if (parser.isForMe())
 	{
