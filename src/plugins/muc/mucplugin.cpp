@@ -39,7 +39,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 
 	commands << "REPORT";
 
-	commands << "POKE" << "REALJID";
+	commands << "POKE" << "REALJID" << "INVITE";
 	pluginId=1;
 
 	// Plugin should be able to modify self-messages so they will be
@@ -562,6 +562,21 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		return false;
 	}
 
+	if (cmd=="INVITE")
+	{
+		if( arg.isEmpty() )
+		{
+			reply(s, "!muc invite <nick> or <jid> [reason]");
+			return true;
+		}
+
+		QString n	= arg;
+		QString reason	= parser.nextToken();
+		QString msg	= invite(s, n, reason);
+		reply(s, msg);
+		return true;
+	}
+
 	if (cmd=="REALJID")
 	{
 		if (!isFromConfModerator(s)) {
@@ -593,7 +608,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s)
 		reply(s, "I can't remember his/her jid.");
 		return true;
 	}
-	
+
 	if (cmd=="POKE")
 	{
 		QStringList nickList;
@@ -2322,4 +2337,72 @@ bool MucPlugin::ageLessThan(const Nick* nick1, const Nick* nick2)
 	if (nick2->jid())
 			date2=nick2->jid()->created();
 	return date1 < date2;
+}
+
+QString MucPlugin::invite(gloox::Stanza* s, const QString& n, const QString& reason)
+{
+	Conference* conf = getConf(s);
+	if(!conf) {
+		return "You are not in conference!";
+	}
+	QStringList nicks = n.split(' ');
+	QStringList jids;
+	Nick *nick = 0;
+	for( int ndx = 0; ndx < nicks.size(); ndx++ ) {
+		if(isBareJidValid(nicks.at(ndx))) {
+			jids.append(nicks.at(ndx));
+		} else {
+			nick = conf->nicks()->byName(nicks.at(ndx));
+			if(nick) {
+				jids.append(nick->jid()->jid());
+			}
+			else
+			{
+				jids = Nick::nickToJids(conf, nicks.at(ndx), true);
+			}
+		}
+	}
+	if( reason.length() > 255 )
+			reason.left(252).append("...");
+	gloox::Stanza* st = invite(conf, jids, reason);
+
+	if( !st ) { /// TODO: Multi-invites.
+		QString str = "Can't resolve: \"%1\"'s JID";
+		str = (nicks.count() > 1) ? str + "s.": str + ".";
+		return str.arg(nicks.join("\n"));
+	}
+
+	bot()->client()->send(st);
+
+	return "Invitation sent.";
+}
+
+gloox::Stanza*
+MucPlugin::invite(Conference *conf, const QStringList& jids, const QString& reason, const QString& pass)
+{
+	if(!conf) return 0;
+	bool validJID = false;
+	gloox::Tag *m = new gloox::Tag( "message" );
+	m->addAttribute( "to", conf->name().toStdString() );
+	gloox::Tag *x = new gloox::Tag( m, "x" );
+	x->addAttribute( "xmlns", "http://jabber.org/protocol/muc#user" );
+
+	for( int ndx = 0; ndx < jids.size(); ndx++ ) {
+		if(isBareJidValid(jids.at(ndx))) {
+			validJID = true;
+			gloox::Tag *i = new gloox::Tag( x, "invite" );
+			i->addAttribute( "to", jids.at(ndx).toStdString() );
+			qDebug() << "JID: " << jids.at(ndx);
+			if(!reason.isEmpty())
+				new gloox::Tag( i, "reason",
+					reason.toStdString() );
+		}
+	}
+	if( !validJID ) {
+		return 0;
+	}
+	if(!pass.isEmpty()) {
+		new gloox::Tag( x, "password", pass.toStdString() );
+	}
+	return (new gloox::Stanza(m));
 }

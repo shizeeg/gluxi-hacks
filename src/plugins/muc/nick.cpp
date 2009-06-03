@@ -199,7 +199,7 @@ void Nick::setAllOffline (Conference* conf)
 	Jid::removeTemporary(conf);
 }
 
-QStringList Nick::nickToJids(Conference* conf, QString& n)
+QStringList Nick::nickToJids(Conference* conf, const QString& n, bool last)
 {
 	if(!conf)
 		return QStringList();
@@ -213,10 +213,11 @@ QStringList Nick::nickToJids(Conference* conf, QString& n)
 		"SELECT conference_jids.jid FROM conference_nicks LEFT JOIN "
 		"conference_jids ON conference_jids.id = conference_nicks.jid "
 		"WHERE conference_nicks.conference_id=? AND conference_nicks.nick=? "
-		"AND conference_jids.temporary = false ORDER BY conference_nicks.joined DESC LIMIT 3");
+		"AND conference_jids.temporary = false ORDER BY conference_nicks.joined DESC LIMIT ?");
 		query.addBindValue(conf->id());
 		query.addBindValue(n);
-	
+		query.addBindValue((last) ? 1:3);
+
 		if (!query.exec())
 		{
 			qDebug() << "Nick: " << QSqlDatabase::database().lastError().text();
@@ -227,8 +228,8 @@ QStringList Nick::nickToJids(Conference* conf, QString& n)
 			jids.append(query.value(0).toString());
 		}
 		return jids;
-	} 
-	jids.append(nick->jidStr()); 
+	}
+	jids.append(nick->jidStr());
 	return jids;
 
 }
