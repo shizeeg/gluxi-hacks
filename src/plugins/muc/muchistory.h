@@ -33,7 +33,7 @@ public:
 	MucHistory(int conferenceId);
 	virtual ~MucHistory();
 
-	void log(Nick *nick, ActionType type, const QString& msg, bool priv,
+	void log(Nick *nick, Nick *dstNick, ActionType type, const QString& msg, bool priv,
 			const QString& params = QString::null, const QDateTime& dateTime = QDateTime());
 private:
 	int conferenceId_;

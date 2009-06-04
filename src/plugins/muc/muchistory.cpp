@@ -37,7 +37,7 @@ MucHistory::~MucHistory()
 {
 }
 
-void MucHistory::log(Nick *nick, ActionType type, const QString& msg, bool priv,
+void MucHistory::log(Nick *nick, Nick *dstNick, ActionType type, const QString& msg, bool priv,
 		const QString& params, const QDateTime& dateTime)
 {
 	QDateTime date;
@@ -47,8 +47,8 @@ void MucHistory::log(Nick *nick, ActionType type, const QString& msg, bool priv,
 		date = QDateTime::currentDateTime();
 	QSqlQuery q = DataStorage::instance()->prepareQuery(
 			"INSERT INTO conference_log(conference_id, datetime, private, nick_id,"
-			" action_type, message, params)"
-			" VALUES(?, ?, ?, ?, ?, ?, ?)");
+			" action_type, message, params, dst_nick_id)"
+			" VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
 	q.addBindValue(nick->conference()->id());
 	q.addBindValue(date);
 	q.addBindValue(priv);
@@ -56,6 +56,7 @@ void MucHistory::log(Nick *nick, ActionType type, const QString& msg, bool priv,
 	q.addBindValue(type);
 	q.addBindValue(msg);
 	q.addBindValue(params);
+	q.addBindValue(dstNick ? dstNick->id() : QVariant());
 	if (!q.exec())
 	{
 		qDebug() << "SQL: Unable to log event: " << q.lastError().text();

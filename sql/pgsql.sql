@@ -126,6 +126,7 @@ CREATE TABLE conference_log (
   action_type int NOT NULL,
   message varchar(500) NOT NULL,
   params varchar(100) NULL,
+  dst_nick_id int NULL default NULL,
 
   PRIMARY KEY(id),
   FOREIGN KEY(conference_id) REFERENCES conferences(id) ON DELETE CASCADE,

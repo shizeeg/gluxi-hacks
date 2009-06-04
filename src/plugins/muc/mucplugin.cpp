@@ -288,7 +288,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 			stat->setLastAction(ActionJoin, show);
 
 			if (conf->history())
-				conf->history()->log(n, ActionJoin, show, false,
+				conf->history()->log(n, NULL, ActionJoin, show, false,
 						QString("%1|%2").arg(role, getItem(s, "affiliation")));
 		}
 
@@ -341,7 +341,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 					stat->setLastAction(actType, reason);
 
 					if (conf->history())
-						conf->history()->log(n, actType, reason, false);
+						conf->history()->log(n, NULL, actType, reason, false);
 				}
 				else
 				{
@@ -349,7 +349,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 					QString show = QString::fromStdString(s->status());
 					stat->setLastAction(ActionLeave, show);
 					if (conf->history())
-						conf->history()->log(n, ActionLeave, show, false);
+						conf->history()->log(n, NULL, ActionLeave, show, false);
 				}
 			}
 			conf->nicks()->remove(n);
@@ -375,7 +375,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 				QString reason = getReason(s);
 				stat->setLastAction(actType, reason);
 				if (conf->history())
-					conf->history()->log(n, actType, reason, false);
+					conf->history()->log(n, NULL, actType, reason, false);
 				recorded = true;
 			}
 			if (n->affiliation() != getItem(s, "affiliation"))
@@ -393,7 +393,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 				QString reason = getReason(s);
 				stat->setLastAction(actType, reason);
 				if (conf->history())
-					conf->history()->log(n, actType, reason, false);
+					conf->history()->log(n, NULL, actType, reason, false);
 				recorded = true;
 			}
 
@@ -406,7 +406,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 					show += QString(" (%1)").arg(status);
 				stat->setLastAction(ActionPresence, show);
 				if (conf->history())
-					conf->history()->log(n, ActionPresence, show, false);
+					conf->history()->log(n, NULL, ActionPresence, show, false);
 			}
 		}
 
@@ -463,12 +463,20 @@ void MucPlugin::logMessageStanza(gloox::Stanza *s, Conference *conf)
 				if (s->findAttribute("glooxbot_alias") == "true")
 					actType = ActionExpandedAlias;
 
-				conf->history()->log(n, actType, msgBody, isPrivate);
+				Nick *dstNick = NULL;
+				if (msgBody.contains(':'))
+				{
+					// Find destination nick
+					QString dstNickStr = msgBody.section(':', 0, 0);
+					dstNick=conf->nicks()->byName(dstNickStr);
+				}
+
+				conf->history()->log(n, dstNick, actType, msgBody, isPrivate);
 			}
 
 			QString subject = QString::fromStdString(s->subject());
 			if (!subject.isEmpty())
-				conf->history()->log(n, ActionSubject, subject, isPrivate);
+				conf->history()->log(n, NULL, ActionSubject, subject, isPrivate);
 		}
 	}
 }
@@ -1992,7 +2000,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 			AListItem* item=*it;
 
 			if (c->history())
-				c->history()->log(n, ActionAListCommand, item->toString(), false,
+				c->history()->log(n, NULL, ActionAListCommand, item->toString(), false,
 						QString::number(item->id()));
 
 			QString action=item->reason();
@@ -2031,7 +2039,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 					return;
 
 				if (c->history())
-					c->history()->log(n, ActionAListBan, item->toString(), false,
+					c->history()->log(n, NULL, ActionAListBan, item->toString(), false,
 							QString::number(item->id()));
 
 				QString reason=item->reason();
@@ -2050,7 +2058,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 				AListItem* item=itemList.first();
 
 				if (c->history())
-					c->history()->log(n, ActionAListKick, item->toString(), false,
+					c->history()->log(n, NULL, ActionAListKick, item->toString(), false,
 							QString::number(item->id()));
 
 				QString reason=item->reason();
@@ -2069,7 +2077,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 				AListItem* item=itemList.first();
 
 				if (c->history())
-					c->history()->log(n, ActionAListVisitor, item->toString(), false,
+					c->history()->log(n, NULL, ActionAListVisitor, item->toString(), false,
 							QString::number(item->id()));
 
 				QString reason=item->reason();
@@ -2089,7 +2097,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 			AListItem* item=itemList.first();
 
 			if (c->history())
-				c->history()->log(n, ActionAListParticipant, item->toString(), false,
+				c->history()->log(n, NULL, ActionAListParticipant, item->toString(), false,
 						QString::number(item->id()));
 
 			QString reason=item->reason();
@@ -2108,7 +2116,7 @@ void MucPlugin::checkMember(gloox::Stanza* s, Conference*c, Nick* n, AListItem::
 			AListItem* item=itemList.first();
 
 			if (c->history())
-				c->history()->log(n, ActionAListModerator, item->toString(), false,
+				c->history()->log(n, NULL, ActionAListModerator, item->toString(), false,
 						QString::number(item->id()));
 
 
