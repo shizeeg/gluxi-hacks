@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008 by Dmitry Nezhevenko                               *
+ *   Copyright (C) 2009 by Dmitry Nezhevenko                               *
  *   dion@inhex.net                                                        *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,9 +17,26 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef DBVERSION_H
-#define DBVERSION_H
+#ifndef MUCHISTORY_H_
+#define MUCHISTORY_H_
 
-#define GLUXI_DB_VERSION 387
+#include "actiontype.h"
 
-#endif
+#include <QDateTime>
+
+class Nick;
+class QString;
+
+class MucHistory
+{
+public:
+	MucHistory(int conferenceId);
+	virtual ~MucHistory();
+
+	void log(Nick *nick, ActionType type, const QString& msg, bool priv,
+			const QString& params = QString::null, const QDateTime& dateTime = QDateTime());
+private:
+	int conferenceId_;
+};
+
+#endif /* MUCHISTORY_H_ */

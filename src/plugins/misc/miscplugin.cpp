@@ -12,7 +12,7 @@ MiscPlugin::MiscPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
 	commands << "TEST" << "DATE" << "TIME" << "SAY";
-	
+
 	sayJidDisabled_=DataStorage::instance()->getInt("cmd/disable_misc_sayjid");
 	if (!sayJidDisabled_)
 	{
@@ -24,8 +24,10 @@ MiscPlugin::~MiscPlugin()
 {
 }
 
-bool MiscPlugin::parseMessage(gloox::Stanza* s)
+bool MiscPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 {
+	Q_UNUSED(flags);
+
 	MessageParser parser(s, getMyNick(s));
 	parser.nextToken();
 	QString cmd=parser.nextToken().toUpper();
@@ -46,7 +48,7 @@ bool MiscPlugin::parseMessage(gloox::Stanza* s)
 		reply(s, QTime::currentTime().toString(Qt::LocaleDate));
 		return true;
 	}
-	if (!sayJidDisabled_ && cmd=="SAYJID")	 
+	if (!sayJidDisabled_ && cmd=="SAYJID")
 	{
 		if (getRole(s)<ROLE_ADMIN)
 		{
@@ -64,7 +66,7 @@ bool MiscPlugin::parseMessage(gloox::Stanza* s)
 		bot()->client()->send(out);
 		return true;
 	}
-	if (cmd=="SAY") 
+	if (cmd=="SAY")
 	{
 		if (getRole(s)<ROLE_MODERATOR)
 		{

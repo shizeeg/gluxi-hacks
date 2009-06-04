@@ -30,11 +30,13 @@ public:
 	virtual void onConnect();
 	virtual void onDisconnect();
 	virtual bool allMessages() const { return false; };
-	virtual bool onMessage(gloox::Stanza* );
+	virtual bool onMessage(gloox::Stanza* s, const QStringList& flags);
 	virtual bool onVCard(const VCardWrapper& vcard);
-	virtual bool parseMessage(gloox::Stanza*);
+
+	virtual bool canHandleMessage(gloox::Stanza*, const QStringList& flags);
+	virtual bool parseMessage(gloox::Stanza*, const QStringList& flags);
+
  	virtual void onPresence(gloox::Stanza* );
- 	virtual bool canHandleMessage(gloox::Stanza* );
  	virtual bool canHandlePresence(gloox::Stanza* );
  	virtual bool canHandleIq(gloox::Stanza*);
  	virtual bool onIq(gloox::Stanza*);

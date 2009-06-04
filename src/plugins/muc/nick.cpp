@@ -213,7 +213,7 @@ QStringList Nick::nickToJids(Conference* conf, const QString& n, bool last)
 		"SELECT conference_jids.jid FROM conference_nicks LEFT JOIN "
 		"conference_jids ON conference_jids.id = conference_nicks.jid "
 		"WHERE conference_nicks.conference_id=? AND conference_nicks.nick=? "
-		"AND conference_jids.temporary = false ORDER BY conference_nicks.joined DESC LIMIT ?");
+		"AND c0onference_jids.temporary = false ORDER BY conference_nicks.joined DESC LIMIT ?");
 		query.addBindValue(conf->id());
 		query.addBindValue(n);
 		query.addBindValue((last) ? 1:3);
@@ -232,5 +232,30 @@ QStringList Nick::nickToJids(Conference* conf, const QString& n, bool last)
 	jids.append(nick->jidStr());
 	return jids;
 
+}
+
+
+Nick::Affiliation Nick::affiliationValue() const
+{
+	QString a = myAffiliation.toUpper();
+	if (a.startsWith("OWNER"))
+		return Nick::AffiliationOwner;
+	if (a.startsWith("ADMIN"))
+		return Nick::AffiliationAdmin;
+	if (a.startsWith("MEMBER"))
+		return Nick::AffiliationMember;
+	return Nick::AffiliationNone;
+}
+
+Nick::Role Nick::roleValue() const
+{
+	QString r = myRole.toUpper();
+	if (r.startsWith("MODER"))
+		return Nick::RoleModerator;
+	if (r.startsWith("PARTICIPANT"))
+		return Nick::RoleParticipant;
+	if (r.startsWith("VISITOR"))
+		return Nick::RoleVisitor;
+	return Nick::RoleUnknown;
 }
 

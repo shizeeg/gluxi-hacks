@@ -11,6 +11,22 @@ class JidStat;
 class Nick
 {
 public:
+	enum Affiliation
+	{
+		AffiliationNone = 0,
+		AffiliationMember = 1,
+		AffiliationAdmin = 2,
+		AffiliationOwner = 3
+	};
+
+	enum Role
+	{
+		RoleUnknown = -1,
+		RoleVisitor = 0,
+		RoleParticipant = 1,
+		RoleModerator = 2
+	};
+public:
     Nick(Conference* parent, const QString& nick, const QString& jid=QString::null);
     Nick(Conference* parent, int id);
     ~Nick();
@@ -19,6 +35,10 @@ public:
 	QString nick() const { return myNick; };
 	QString affiliation() const { return myAffiliation; };
 	QString role() const { return myRole; };
+
+	Affiliation affiliationValue() const;
+	Role roleValue() const;
+
 	QDateTime joined() const { return myJoined; };
 	QDateTime lastActivity() const { return myLastActivity; };
 	QString show() const { return myShow; };

@@ -16,7 +16,7 @@ public:
 	~MiscPlugin();
 	virtual QString name() const { return "Misc"; };
 	virtual QString prefix() const { return "MISC"; };
-	virtual bool parseMessage(gloox::Stanza* );
+	virtual bool parseMessage(gloox::Stanza*, const QStringList& flags);
 private:
 	bool sayJidDisabled_;
 };

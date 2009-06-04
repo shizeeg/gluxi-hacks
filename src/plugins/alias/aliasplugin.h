@@ -18,10 +18,10 @@ public:
 	virtual QString prefix() const { return "ALIAS"; };
 	virtual QString help() const { return "Alias support"; };
 	virtual QString description() const { return "Can handle aliases to commands"; };
-	virtual bool canHandleMessage(gloox::Stanza* s);
+	virtual bool canHandleMessage(gloox::Stanza* s, const QStringList& flags);
 	virtual bool allMessages() const { return false; };
 
-	virtual bool parseMessage(gloox::Stanza* );
+	virtual bool parseMessage(gloox::Stanza* s, const QStringList& flags);
 	virtual bool parseCommands(gloox::Stanza* s);
 private:
 	AliasList aliases;

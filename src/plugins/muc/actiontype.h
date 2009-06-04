@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008 by Dmitry Nezhevenko                               *
+ *   Copyright (C) 2009 by Dmitry Nezhevenko                               *
  *   dion@inhex.net                                                        *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,9 +17,39 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef DBVERSION_H
-#define DBVERSION_H
+#ifndef ACTIONTYPE_H_
+#define ACTIONTYPE_H_
 
-#define GLUXI_DB_VERSION 387
+enum ActionType
+{
+	ActionNone = 0,
+	ActionJoin = 1,
+	ActionLeave = 2,
+	ActionPresence = 3,
+	ActionNickChange = 4,
 
-#endif
+	ActionVisitor = 5,
+	ActionParticipant = 6,
+	ActionModerator = 7,
+
+	ActionNoAffiliation = 8,
+	ActionMember = 9,
+	ActionAdministrator = 10,
+	ActionOwner = 11,
+
+	ActionBan = 12,
+	ActionKick = 13,
+
+	ActionMessage = 14,
+	ActionSubject = 15,
+	ActionExpandedAlias = 16,
+
+	ActionAListCommand = 17,
+	ActionAListBan = 18,
+	ActionAListKick = 19,
+	ActionAListVisitor = 20,
+	ActionAListParticipant = 21,
+	ActionAListModerator = 22
+};
+
+#endif /* ACTIONTYPE_H_ */

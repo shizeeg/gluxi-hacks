@@ -15,7 +15,7 @@ public:
 	virtual QString prefix() const { return "ADMIN"; };
 	virtual QString help() const { return "This plugin contains bot administrator tools"; };
 	virtual QString description() const { return "Bot administrator tools";};
-	virtual bool parseMessage(gloox::Stanza* );
+	virtual bool parseMessage(gloox::Stanza*, const QStringList& flags);
 private:
 	gloox::Presence presenceFromString(const QString& pr);
 };

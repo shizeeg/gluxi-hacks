@@ -46,13 +46,15 @@ bool UserPlugin::canHandleIq(gloox::Stanza* s)
 	return false;
 }
 
-bool UserPlugin::parseMessage(gloox::Stanza* s)
+bool UserPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 {
+	Q_UNUSED(flags)
+
 	MessageParser parser(s, getMyNick(s));
 	parser.nextToken();
 	QString cmd=parser.nextToken().toUpper();
 	QString arg=parser.nextToken();
-	
+
 	if(cmd=="TIME")
 	{
 		std::string id=bot()->client()->getID();
@@ -222,7 +224,7 @@ void UserPlugin::sendTime(gloox::Stanza* s)
 
 QString UserPlugin::utcToString(const QString &cdata, const QString &format)
 {
-	QStringList l; 
+	QStringList l;
 	QDateTime date;
 	if(cdata.length() < 17)
 		return("unknown format");
@@ -289,7 +291,7 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 		QString src = bot()->JIDtoNick(QString::fromStdString(s->from().full()));
 
 		gloox::Tag *display = query->findChild("display");
-		
+
 		if(display) {
 			assert(display);
 			time = QString::fromStdString(display->cdata());
@@ -318,7 +320,7 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 			}
 		}
 		else {
-			if ( msg.isEmpty() && src.isEmpty() ) 
+			if ( msg.isEmpty() && src.isEmpty() )
 				msg=QString("It's %1 on your watch").arg(time);
 			else if( msg.isEmpty() )
 				msg=QString("It's %1 on %2's watch").arg(time).arg(src);

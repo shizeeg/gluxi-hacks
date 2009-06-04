@@ -20,33 +20,14 @@
 #ifndef JIDSTAT_H_
 #define JIDSTAT_H_
 
+#include "actiontype.h"
+
 #include <QString>
 #include <QDateTime>
 
 class JidStat
 {
 public:
-	enum ActionType
-	{
-		ActionNone = 0,
-		ActionJoin = 1,
-		ActionLeave = 2,
-		ActionPresence = 3,
-		ActionNickChange = 4,
-
-		ActionVisitor = 5,
-		ActionParticipant = 6,
-		ActionModerator = 7,
-
-		ActionNoAffiliation = 8,
-		ActionMember = 9,
-		ActionAdministrator = 10,
-		ActionOwner = 11,
-
-		ActionBan = 12,
-		ActionKick = 13,
-	};
-
 	struct StatAction
 	{
 		ActionType type;

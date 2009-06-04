@@ -18,7 +18,7 @@ public:
 	~WebstatusPlugin();
 	virtual QString name() const { return "WebStatus"; };
 	virtual QString prefix() const { return "WEBSTATUS"; };
-	virtual bool parseMessage(gloox::Stanza* );
+	virtual bool parseMessage(gloox::Stanza*, const QStringList& flags);
 	virtual void onPresence(gloox::Stanza* s);
 	virtual bool canHandlePresence(gloox::Stanza* s);
 private:

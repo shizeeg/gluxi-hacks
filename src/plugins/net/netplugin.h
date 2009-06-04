@@ -16,7 +16,7 @@ public:
 	~NetPlugin();
 	virtual QString name() const { return "Net"; };
 	virtual QString prefix() const { return "NET"; };
-	virtual bool parseMessage(gloox::Stanza* );
+	virtual bool parseMessage(gloox::Stanza*, const QStringList& flags );
 };
 
 #endif

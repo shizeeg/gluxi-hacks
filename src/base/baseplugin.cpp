@@ -41,13 +41,15 @@ void BasePlugin::onPresence(gloox::Stanza* /* s */)
 {
 }
 
-bool BasePlugin::onMessage(gloox::Stanza* s )
+bool BasePlugin::onMessage(gloox::Stanza* s, const QStringList& flags)
 {
+	Q_UNUSED(flags);
+
 	MessageParser parser(s, getMyNick(s));
 	parser.nextToken();
 	QString cmd=parser.nextToken().toUpper();
 
-	if (BasePlugin::canHandleMessage(s))
+	if (BasePlugin::canHandleMessage(s, flags))
 	{
 		if (cmd.isEmpty())
 		{
@@ -73,7 +75,7 @@ bool BasePlugin::onMessage(gloox::Stanza* s )
 			return true;
 		}
 	}
-	bool res=parseMessage(s);
+	bool res=parseMessage(s, flags);
 	if (!res && !shouldIgnoreError())
 	{
 		if (lprefix().isEmpty())
@@ -96,7 +98,7 @@ bool BasePlugin::shouldIgnoreError()
 	return t;
 }
 
-bool BasePlugin::parseMessage(gloox::Stanza* /* s */)
+bool BasePlugin::parseMessage(gloox::Stanza* /* s */, const QStringList& flags)
 {
 	return false;
 }
@@ -121,8 +123,10 @@ bool BasePlugin::isMyMessage(gloox::Stanza*)
 	return false;
 }
 
-bool BasePlugin::canHandleMessage(gloox::Stanza* s)
+bool BasePlugin::canHandleMessage(gloox::Stanza* s, const QStringList& flags)
 {
+	Q_UNUSED(flags);
+
 	if (isOfflineMessage(s))
 		return false;
 	if (allMessages())

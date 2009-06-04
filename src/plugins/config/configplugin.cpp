@@ -31,8 +31,10 @@ ConfigPlugin::~ConfigPlugin()
 	bot()->rootDiscoHandler()->unregisterDiscoHandler(this);
 }
 
-bool ConfigPlugin::parseMessage(gloox::Stanza* s)
+bool ConfigPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 {
+	Q_UNUSED(flags);
+
 	MessageParser parser(s, getMyNick(s));
 	parser.nextToken();
 	QString cmd=parser.nextToken().toUpper();

@@ -22,9 +22,9 @@ public:
 	virtual void onConnect();
 	virtual void onDisconnect();
 	virtual bool canHandlePresence(gloox::Stanza* s);
-	virtual bool canHandleMessage(gloox::Stanza* s);
+	virtual bool canHandleMessage(gloox::Stanza* s, const QStringList& flags);
 	virtual void onPresence(gloox::Stanza* );
-	virtual bool parseMessage(gloox::Stanza* );
+	virtual bool parseMessage(gloox::Stanza*, const QStringList& flags);
 	virtual bool canHandleIq( gloox::Stanza* );
 	virtual bool onIq(gloox::Stanza* );
 	virtual bool onVCard(const VCardWrapper& vcard);
@@ -75,6 +75,8 @@ private:
 	void requestVCard(gloox::Stanza* s, Conference* conf, Nick* nick);
 	void requestVersion(gloox::Stanza* s, Conference* conf, Nick* nick);
 	gloox::Stanza* invite(Conference *conf, const QStringList& nicks, const QString& reason = QString::null, const QString& pass = QString::null);
+
+	void logMessageStanza(gloox::Stanza *s, Conference *conf);
 
 	static bool ageLessThan(const Nick* nick1, const Nick* nick2);
 private slots:

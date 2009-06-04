@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008 by Dmitry Nezhevenko                               *
+ *   Copyright (C) 2009 by Dmitry Nezhevenko                               *
  *   dion@inhex.net                                                        *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,9 +17,47 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef DBVERSION_H
-#define DBVERSION_H
+#include "muchistory.h"
 
-#define GLUXI_DB_VERSION 387
+#include "conference.h"
+#include "nick.h"
 
-#endif
+#include "base/datastorage.h"
+
+#include <QtDebug>
+#include <QVariant>
+#include <QSqlError>
+
+MucHistory::MucHistory(int conferenceId)
+{
+	conferenceId_ = conferenceId;
+}
+
+MucHistory::~MucHistory()
+{
+}
+
+void MucHistory::log(Nick *nick, ActionType type, const QString& msg, bool priv,
+		const QString& params, const QDateTime& dateTime)
+{
+	QDateTime date;
+	if (dateTime.isValid())
+		date=dateTime;
+	else
+		date = QDateTime::currentDateTime();
+	QSqlQuery q = DataStorage::instance()->prepareQuery(
+			"INSERT INTO conference_log(conference_id, datetime, private, nick_id,"
+			" action_type, message, params)"
+			" VALUES(?, ?, ?, ?, ?, ?, ?)");
+	q.addBindValue(nick->conference()->id());
+	q.addBindValue(date);
+	q.addBindValue(priv);
+	q.addBindValue(nick->id());
+	q.addBindValue(type);
+	q.addBindValue(msg);
+	q.addBindValue(params);
+	if (!q.exec())
+	{
+		qDebug() << "SQL: Unable to log event: " << q.lastError().text();
+	}
+}

@@ -114,13 +114,12 @@ void GluxiBot::onDisconnect()
 	}
 	std::cout << "onDisconnect() sent" << std::endl;
 }
-void GluxiBot::handleMessage(const MyStanza& st)
-{
-	gloox::Stanza *s=st.stanza();
 
+void GluxiBot::processMessage(gloox::Stanza *s, const QStringList& flags)
+{
 	qDebug() << "[IN ] " << s->xml().data();
 
-// TODO: Implement Async message handler by ID if required
+	// TODO: Implement Async message handler by ID if required
 	QListIterator<PluginRef> it(myPlugins);
 	BasePlugin *plugin;
 	bool parsed=false;
@@ -128,12 +127,20 @@ void GluxiBot::handleMessage(const MyStanza& st)
 	{
 		plugin=it.next();
 		assert(plugin);
-		if (plugin->canHandleMessage(s))
+		if (plugin->canHandleMessage(s, flags))
 		{
-			parsed=plugin->onMessage(s);
+			parsed=plugin->onMessage(s, flags);
 			if (parsed) break;
 		}
 	}
+}
+
+void GluxiBot::handleMessage(const MyStanza& st)
+{
+	static const QStringList emptyList;
+
+	gloox::Stanza *s=st.stanza();
+	processMessage(s, emptyList);
 }
 
 bool GluxiBot::isMyMessage(gloox::Stanza *s)
