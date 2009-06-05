@@ -213,7 +213,7 @@ QStringList Nick::nickToJids(Conference* conf, const QString& n, bool last)
 		"SELECT conference_jids.jid FROM conference_nicks LEFT JOIN "
 		"conference_jids ON conference_jids.id = conference_nicks.jid "
 		"WHERE conference_nicks.conference_id=? AND conference_nicks.nick=? "
-		"AND c0onference_jids.temporary = false ORDER BY conference_nicks.joined DESC LIMIT ?");
+		"AND conference_jids.temporary = false ORDER BY conference_nicks.joined DESC LIMIT ?");
 		query.addBindValue(conf->id());
 		query.addBindValue(n);
 		query.addBindValue((last) ? 1:3);
