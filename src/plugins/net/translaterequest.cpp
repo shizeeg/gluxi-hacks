@@ -20,6 +20,7 @@
 #include "translaterequest.h"
 #include "base/baseplugin.h"
 #include "base/common.h"
+#include "base/messageparser.h"
 
 #include <QHttp>
 #include <QUrl>
@@ -33,10 +34,22 @@
 
 #define TRANSLATE_RU "http://m.translate.ru/translator/result/?dirCode=%1&text=%2"
 
-TranslateRequest::TranslateRequest(BasePlugin *plugin, gloox::Stanza *from, const QString& dest)
+TranslateRequest::TranslateRequest(BasePlugin *plugin, gloox::Stanza *from, MessageParser& parser)
 	:AsyncRequest(-1, plugin, from, 300)
 {
-	myDest=dest;
+	myType = parser.nextToken().toLower();
+	if (myType == "gtr")
+	{
+		myFrom	= parser.nextToken();
+		myTo = parser.nextToken();
+		myText = parser.joinBody();
+
+	}
+	else if (myType == "ya")
+	{
+		myFrom	= parser.nextToken();
+		myText = parser.joinBody();
+	}
 	http=0;
 }
 
@@ -49,14 +62,9 @@ TranslateRequest::~TranslateRequest()
 
 void TranslateRequest::exec()
 {
-	QString from	= myDest.section(' ', 1, 1);
-	QString to	= myDest.section(' ', 2, 2);
-	QString text	= myDest.section(' ', 3);
-
-	if ( myDest.startsWith("gtr") )
+	if ( myType == "gtr" )
 	{
-
-		if( from.startsWith("list") ) /// FIXIT: Implement parsing list form html.
+		if( myFrom.toLower().startsWith("list") ) /// FIXIT: Implement parsing list form html.
 		{
 			QString url = QString("http://translate.google.com/translate_t");
 
@@ -68,13 +76,14 @@ void TranslateRequest::exec()
 			http->get(qurl.toEncoded());
 			return;
 		}
-		if( from.isEmpty() || to.isEmpty() || text.isEmpty() ) 
+		if( myFrom.isEmpty() || myTo.isEmpty() || myText.isEmpty() )
 		{
 			plugin()->reply(stanza(),"Usage: net transtlate gtr <from> <to> <text>");
 			deleteLater();
 			return;
-		} 
-		QString url = QString("http://translate.google.com/translate_t?langpair=%1|%2&ie=UTF8&oe=UTF8&text=%3").arg(from).arg(to).arg(text);
+		}
+		QString url = QString("http://translate.google.com/translate_t?langpair=%1|%2&ie=UTF8&oe=UTF8&text=%3")
+			.arg(myFrom).arg(myTo).arg(myText);
 
 		QUrl qurl(url);
 		qDebug() << qurl.toEncoded();
@@ -83,11 +92,9 @@ void TranslateRequest::exec()
 		connect(http,SIGNAL(requestFinished(int, bool)), this, SLOT(httpRequestFinished(int, bool)));
 		http->get(qurl.toEncoded());
 	}
-	else if ( myDest.startsWith("ya") )
+	else if ( myType == "ya" )
 	{
-		text	= myDest.section(' ', 2);
-
-		if( from.startsWith("list") ) /// FIXIT: Implement parsing list form html.
+		if( myFrom.toLower().startsWith("list") ) /// FIXIT: Implement parsing list form html.
 		{
 			QString url = QString("http://translate.google.com/translate_t");
 
@@ -99,13 +106,14 @@ void TranslateRequest::exec()
 			http->get(qurl.toEncoded());
 			return;
 		}
-		if( from.isEmpty() || to.isEmpty() || text.isEmpty() ) 
+		if( myFrom.isEmpty() || myText.isEmpty() )
 		{
 			plugin()->reply(stanza(),"Usage: net transtlate ya <from> <text>");
 			deleteLater();
 			return;
-		} 
-		QString url = QString("http://lingvo.yandex.ru/%1?text=%3&lang=%1&search_type=%2&st_translate=on").arg(from).arg("lingvo").arg(text);
+		}
+		QString url = QString("http://lingvo.yandex.ru/%1?text=%3&lang=%1&search_type=%2&st_translate=on")
+			.arg(myFrom).arg("lingvo").arg(myText);
 
 		QUrl qurl(url);
 		qDebug() << qurl.toEncoded();
@@ -113,7 +121,7 @@ void TranslateRequest::exec()
 		http=new QHttp(qurl.host());
 		connect(http,SIGNAL(requestFinished(int, bool)), this, SLOT(httpRequestYandexFinished(int, bool)));
 		http->get(qurl.toEncoded());
-		
+
 	}
 	else
 	{
@@ -148,12 +156,12 @@ void TranslateRequest::httpRequestListFinished(int, bool err)
 		return;
 	}
 	QString buf = http->readAll();
-	
+
 	QRegExp exp("<select name=sl id=old_sl tabindex=0>(.*)</select>");
 	exp.setMinimal(TRUE);
 
 	QStringList dlist;
-	dlist		  << "auto	Detect language" 
+	dlist		  << "auto	Detect language"
 			  << "ar	Arabic"
 			  << "bg	Bulgarian"
 			  << "ca	Catalan"

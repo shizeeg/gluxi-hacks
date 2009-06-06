@@ -120,7 +120,7 @@ bool NetPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 	}
 	if (cmd=="TRANSLATE")
 	{
-		TranslateRequest *req = new TranslateRequest(this, new gloox::Stanza(s), arg);
+		TranslateRequest *req = new TranslateRequest(this, new gloox::Stanza(s), parser);
 		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
 		req->exec();
 		return true;
