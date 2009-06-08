@@ -145,12 +145,20 @@ void Nick::setNick(const QString& nick)
 	myNick=nick;
 }
 
-void Nick::updateLastActivity()
+void Nick::updateLastActivity(bool message)
 {
 	if (myValidateRequired)
 		myValidateRequired=false;
 	else
+	{
 		myLastActivity=QDateTime::currentDateTime();
+		if (message)
+		{
+			myLastMessages << myLastActivity;
+			while (myLastMessages.count() > 2)
+				myLastMessages.takeFirst();
+		}
+	}
 // 	commit();
 };
 
@@ -259,3 +267,9 @@ Nick::Role Nick::roleValue() const
 	return Nick::RoleUnknown;
 }
 
+QDateTime Nick::lastMessage() const
+{
+	if (myLastMessages.isEmpty())
+		return QDateTime();
+	return myLastMessages.first();
+}

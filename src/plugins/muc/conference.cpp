@@ -348,3 +348,8 @@ void Conference::disableAutoJoin(const QString& conference)
 	query.addBindValue(conference);
 	query.exec();
 }
+
+Nick *Conference::botNick() const
+{
+	return myNicks.byName(myNick);
+}

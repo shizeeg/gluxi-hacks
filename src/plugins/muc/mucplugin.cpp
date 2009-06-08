@@ -38,7 +38,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 			<< "ATRACE"  << "SEEN" << "SEENEX" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
 	commands << "HERE" << "STATUS" << "AGE" << "AGESTAT";
 
-	commands << "REPORT";
+	commands << "REPORT" << "MISSING";
 
 	commands << "POKE" << "REALJID" << "INVITE";
 	pluginId=1;
@@ -472,6 +472,7 @@ void MucPlugin::logMessageStanza(gloox::Stanza *s, Conference *conf)
 				}
 
 				conf->history()->log(n, dstNick, actType, msgBody, isPrivate);
+				n->updateLastActivity(true);
 			}
 
 			QString subject = QString::fromStdString(s->subject());
@@ -849,6 +850,33 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		{
 			reply(s, JidStat::availableReports());
 		}
+		return true;
+	}
+
+	if (cmd == "MISSING")
+	{
+		Nick *n=getNick(s);
+		MucHistory *h = conf->history();
+		if (!h)
+		{
+			reply(s, "No history available for this room");
+			return true;
+		}
+		QDateTime dateTime = n->lastMessage();
+		QList<MucHistory::HistoryItem> resList = h->missingHighlights(n, dateTime);
+		if (resList.isEmpty())
+		{
+			reply(s, QString("No missing highlights for you since %1").arg(dateTime.toString()));
+			return true;
+		}
+		QStringList resStr;
+		foreach(MucHistory::HistoryItem item, resList)
+		{
+			QString msg = QString("[%1] <%2> %3").arg(
+					item.dateTime.time().toString(), item.nick, item.message);
+			resStr.append(msg);
+		}
+		reply(s, QString("Missing highlights since %1:\n%2").arg(dateTime.toString(), resStr.join("\n")));
 		return true;
 	}
 

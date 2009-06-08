@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QDateTime>
+#include <QList>
 
 class Conference;
 class Jid;
@@ -41,6 +42,7 @@ public:
 
 	QDateTime joined() const { return myJoined; };
 	QDateTime lastActivity() const { return myLastActivity; };
+	QDateTime lastMessage() const;
 	QString show() const { return myShow; };
 	QString status() const { return myStatus; };
 	Conference* conference() const { return myParent; };
@@ -62,7 +64,7 @@ public:
 	void setAffiliation(const QString& affiliation) { myAffiliation=affiliation; };
 	void setRole(const QString& role) { myRole=role; };
 	void setLazyLeave(const bool lazyLeave) { myLazyLeave=lazyLeave; }
-	void updateLastActivity();
+	void updateLastActivity(bool message = false);
 	void setShow(const QString& show) { myShow=show; };
 	void setStatus(const QString& status) { myStatus=status; };
 	void setValidateRequired(const bool value) { myValidateRequired=value; };
@@ -88,6 +90,7 @@ private:
 	QString myRole;
 	QDateTime myJoined;
 	QDateTime myLastActivity;
+	QDateTime myLastMessage;
 	QString myShow;
 	QString myStatus;
 	bool devoicedNoVCard_;
@@ -96,6 +99,8 @@ private:
 	QString versionOs_;
 	QString versionClient_;
 	int vcardPhotoSize_;
+	QList<QDateTime> myLastMessages;
 };
 
 #endif
+

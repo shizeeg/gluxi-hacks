@@ -62,3 +62,40 @@ void MucHistory::log(Nick *nick, Nick *dstNick, ActionType type, const QString& 
 		qDebug() << "SQL: Unable to log event: " << q.lastError().text();
 	}
 }
+
+QList<MucHistory::HistoryItem> MucHistory::missingHighlights(Nick *nick, QDateTime startDateTime) const
+{
+	QList<MucHistory::HistoryItem> res;
+	if (!startDateTime.isValid())
+		return res;
+
+	Nick *botNick = nick->conference()->botNick();
+	int botNickId = 0;
+	if (botNick)
+		botNickId = botNick->id();
+
+	QSqlQuery q = DataStorage::instance()->prepareQuery(
+			"SELECT conference_log.datetime, conference_nicks.nick,"
+			" conference_log.message FROM conference_log "
+			" LEFT JOIN conference_nicks ON conference_nicks.id=conference_log.nick_id"
+			" WHERE conference_log.private=false AND conference_log.conference_id=?"
+			" AND conference_log.action_type=?"
+			" AND conference_log.dst_nick_id=? AND conference_log.datetime>=?"
+			" AND conference_log.nick_id!=?");
+	q.addBindValue(nick->conference()->id());
+	q.addBindValue(ActionMessage);
+	q.addBindValue(nick->id());
+	q.addBindValue(startDateTime);
+	q.addBindValue(botNickId);
+	if (!q.exec())
+		return res;
+	while (q.next())
+	{
+		MucHistory::HistoryItem item;
+		item.dateTime = q.value(0).toDateTime();
+		item.nick = q.value(1).toString();
+		item.message = q.value(2).toString();
+		res << item;
+	}
+	return res;
+}

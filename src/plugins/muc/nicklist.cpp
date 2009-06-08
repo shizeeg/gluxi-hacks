@@ -44,7 +44,7 @@ void NickList::lazyClear()
 	}
 }
 
-Nick* NickList::byName(const QString& name)
+Nick* NickList::byName(const QString& name) const
 {
 	int cnt=count();
 	Nick *nick;

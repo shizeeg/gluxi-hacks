@@ -18,6 +18,9 @@ public:
 	~Conference();
 	int id() const { return myId;};
 	QString nick() const { return myNick;};
+
+	Nick *botNick() const;
+
 	QString name() const { return myName; };
 	NickList* nicks() { return &myNicks; };
 	bool lazyLeave() const { return myLazyLeave; }

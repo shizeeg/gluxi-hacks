@@ -17,7 +17,7 @@ public:
 	void justClear();
 	void lazyClear();
 	void remove(Nick* nick);
-	Nick *byName(const QString&);
+	Nick *byName(const QString&) const;
 };
 
 #endif

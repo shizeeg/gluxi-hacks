@@ -30,11 +30,21 @@ class QString;
 class MucHistory
 {
 public:
+	struct HistoryItem
+	{
+		///todo This should be temporary Nick *
+		QDateTime dateTime;
+		QString nick;
+		QString message;
+	};
+public:
 	MucHistory(int conferenceId);
 	virtual ~MucHistory();
 
 	void log(Nick *nick, Nick *dstNick, ActionType type, const QString& msg, bool priv,
 			const QString& params = QString::null, const QDateTime& dateTime = QDateTime());
+
+	QList<HistoryItem> missingHighlights(Nick *nick, QDateTime startDateTime) const;
 private:
 	int conferenceId_;
 };
