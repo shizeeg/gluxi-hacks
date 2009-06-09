@@ -172,7 +172,7 @@ bool MucPlugin::canHandleMessage(gloox::Stanza* s, const QStringList& flags)
 	}
 	if (n->nick()==conf->nick() && !(s->from()==s->to()))
 	{
-		logMessageStanza(s, conf);
+		logMessageStanza(s, conf, flags);
 		qDebug() << "MUC: Self message ignored";
 		// Avoid processing of such message by other plugins.
 		// Currently just add invalid "to" and clear body :)
@@ -444,7 +444,7 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 	}
 }
 
-void MucPlugin::logMessageStanza(gloox::Stanza *s, Conference *conf)
+void MucPlugin::logMessageStanza(gloox::Stanza *s, Conference *conf, const QStringList& flags)
 {
 	if (!conf)
 		conf = getConf(s);
@@ -460,7 +460,8 @@ void MucPlugin::logMessageStanza(gloox::Stanza *s, Conference *conf)
 			{
 				ActionType actType = ActionMessage;
 
-				if (s->findAttribute("glooxbot_alias") == "true")
+				if (flags.contains("glooxbot_alias")
+						|| s->findAttribute("glooxbot_alias") == "true")
 					actType = ActionExpandedAlias;
 
 				Nick *dstNick = NULL;
@@ -497,7 +498,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 	Conference* conf=getConf(s);
 
 	if (!flags.contains("acmd"))
-		logMessageStanza(s, conf);
+		logMessageStanza(s, conf, flags);
 
 	if (parser.isForMe())
 	{
@@ -599,14 +600,18 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 	nick->commit();
 
 	QString msgBody = QString::fromStdString(s->body());
-	JidStat *stat = nick->jidStat();
-	if (stat)
+
+	if (!flags.contains("glooxbot_alias"))
 	{
-		if (!msgBody.isEmpty())
-			stat->statMessage(msgBody);
-		QString subject = QString::fromStdString(s->subject());
-		if (!subject.isEmpty())
-			stat->statSubject(subject);
+		JidStat *stat = nick->jidStat();
+		if (stat)
+		{
+			if (!msgBody.isEmpty())
+				stat->statMessage(msgBody);
+			QString subject = QString::fromStdString(s->subject());
+			if (!subject.isEmpty())
+				stat->statSubject(subject);
+		}
 	}
 
 	if (msgBody.contains(':'))

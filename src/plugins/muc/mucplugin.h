@@ -76,7 +76,7 @@ private:
 	void requestVersion(gloox::Stanza* s, Conference* conf, Nick* nick);
 	gloox::Stanza* invite(Conference *conf, const QStringList& nicks, const QString& reason = QString::null, const QString& pass = QString::null);
 
-	void logMessageStanza(gloox::Stanza *s, Conference *conf);
+	void logMessageStanza(gloox::Stanza *s, Conference *conf, const QStringList& flags);
 
 	static bool ageLessThan(const Nick* nick1, const Nick* nick2);
 private slots:
