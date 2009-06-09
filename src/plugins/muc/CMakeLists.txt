@@ -12,6 +12,7 @@ set (plugin_HDR
 	conferencelist.h
 	jid.h
 	jidstat.h
+	jidtimestat.h
 	muchistory.h
 	nick.h
 	nicklist.h
@@ -25,6 +26,7 @@ set (plugin_SRC
 	conferencelist.cpp
 	jid.cpp
 	jidstat.cpp
+	jidtimestat.cpp
 	muchistory.cpp
 	mucplugin.cpp
 	nick.cpp

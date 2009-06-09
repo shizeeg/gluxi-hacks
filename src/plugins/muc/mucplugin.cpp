@@ -38,7 +38,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 			<< "ATRACE"  << "SEEN" << "SEENEX" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
 	commands << "HERE" << "STATUS" << "AGE" << "AGESTAT";
 
-	commands << "REPORT" << "MISSING";
+	commands << "REPORT" << "MISSING" << "STAT";
 
 	commands << "POKE" << "REALJID" << "INVITE";
 	pluginId=1;
@@ -850,6 +850,36 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		{
 			reply(s, JidStat::availableReports());
 		}
+		return true;
+	}
+
+	if (cmd == "STAT")
+	{
+		if (arg.toLower() == "list" || arg.isEmpty())
+		{
+			reply(s, QString("Usage: !muc stat REPORT NICK\nAvailable reports: %1")
+					.arg(JidStat::availableTimeReports()));
+			return true;
+		}
+		QString nickStr = parser.nextToken();
+		Nick *n = getNickVerbose(s, nickStr);
+		if (!n)
+			return true;
+		nickStr = n->nick();
+		JidStat *stat = n->jidStat();
+		if (!stat)
+		{
+			reply(s, QString("Statistic is not collected for \"%1\"").arg(nickStr));
+			return true;
+		}
+		QString report = stat->queryTimeReport(arg);
+		if (report.isEmpty())
+		{
+			reply(s, QString("Unable to prepare report %1.\nAvailable reports: %2")
+							.arg(arg, JidStat::availableTimeReports()));
+			return true;
+		}
+		reply(s, QString("Message statistic for \"%1\":%2").arg(nickStr, report));
 		return true;
 	}
 

@@ -19,6 +19,8 @@
  ***************************************************************************/
 #include "jidstat.h"
 
+#include "jidtimestat.h"
+
 #include "base/datastorage.h"
 #include "base/common.h"
 
@@ -28,6 +30,7 @@
 #include <QSqlRecord>
 #include <QVariant>
 #include <QRegExp>
+#include <QStringList>
 
 struct RateReport
 {
@@ -145,6 +148,7 @@ JidStat::JidStat(int jidId)
 	{
 		if (!load())
 			create();
+		timeStat_ = new JidTimeStat(jidId_);
 	}
 	else
 	{
@@ -328,6 +332,10 @@ void JidStat::statMessage(const QString& message)
 {
 	if (id_ <= 0)
 		return;
+
+	if (timeStat_)
+		timeStat_->logMessage(QDateTime::currentDateTime());
+
 	QString msg = message.trimmed();
 	int msgChars = msg.length();
 	int msgWords = 0;
@@ -511,4 +519,16 @@ QString JidStat::queryReport(int conferenceId, const QString& type, int numRes)
 			jidIdList = id;
 	}
 	return formatTable(tbl);
+}
+
+QString JidStat::availableTimeReports()
+{
+	return JidTimeStat::reportList().join(", ");
+}
+
+QString JidStat::queryTimeReport(const QString& reportName)
+{
+	if (!timeStat_)
+		return QString::null;
+	return timeStat_->reportGraph(reportName);
 }

@@ -25,6 +25,8 @@
 #include <QString>
 #include <QDateTime>
 
+class JidTimeStat;
+
 class JidStat
 {
 public:
@@ -45,6 +47,9 @@ public:
 	static QString queryReport(int conferenceId, const QString& type, int numRes = 10);
 	static QString availableReports();
 
+	static QString availableTimeReports();
+	QString queryTimeReport(const QString& reportName);
+
 	void commit();
 	void setLastAction(ActionType type, const QString& reason);
 	void setVersion(const QString& name, const QString& version, const QString& os);
@@ -60,6 +65,7 @@ private:
 	int jidId_;
 	bool readOnly_;
 	QDateTime dateTime_;
+	JidTimeStat *timeStat_;
 
 	bool load();
 	void create();

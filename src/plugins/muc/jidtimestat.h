@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008 by Dmitry Nezhevenko                               *
+ *   Copyright (C) 2009 by Dmitry Nezhevenko                               *
  *   dion@inhex.net                                                        *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,9 +17,27 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef DBVERSION_H
-#define DBVERSION_H
+#ifndef JIDTIMESTAT_H_
+#define JIDTIMESTAT_H_
 
-#define GLUXI_DB_VERSION 401
+#include <QString>
 
-#endif
+class QDateTime;
+
+class JidTimeStat
+{
+public:
+	JidTimeStat(int jidId);
+	virtual ~JidTimeStat();
+	void logMessage(const QDateTime& dateTime);
+	QString reportGraph(const QString& reportName);
+	static QStringList reportList();
+private:
+	int jidId_;
+	void clearRecords();
+	void createRecords();
+	bool hasRecords();
+	void importLog();
+};
+
+#endif /* JIDTIMESTAT_H_ */
