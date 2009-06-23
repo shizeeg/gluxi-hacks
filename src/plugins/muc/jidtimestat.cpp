@@ -89,7 +89,8 @@ JidTimeStat::JidTimeStat(int jidId)
 	if (!hasRecords())
 	{
 		createRecords();
-		importLog();
+		// Don't import LOG. Now it takes too much time
+		// importLog();
 	}
 }
 
