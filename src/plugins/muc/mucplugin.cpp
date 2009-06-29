@@ -1012,6 +1012,11 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 	{
 		if (!isFromConfAdmin(s))
 			return true;
+		if (flags.contains("acmd"))
+		{
+			reply(s, "Warn: Modifying alists from acmd is not supported. Ignored", false, false);
+			return true;
+		}
 		parser.back(2);
 		return autoLists(s, parser);
 	}
