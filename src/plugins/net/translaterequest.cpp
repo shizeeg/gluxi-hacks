@@ -142,23 +142,14 @@ void TranslateRequest::httpRequestFinished(int, bool err)
 	}
 	QString buf = http->readAll();
 
-	plugin()->reply(stanza(), getValue(buf, "<div id=result_box dir=\"ltr\">(.*)</div>").trimmed() );
-
+	plugin()->reply(stanza(), getValue(buf,
+            "onmouseout=\"this.style.backgroundColor='#fff'\">(.*)</span>").trimmed() );
 	deleteLater();
 }
 
 void TranslateRequest::httpRequestListFinished(int, bool err)
 {
-	if (err || http->lastResponse().statusCode()!=200)
-	{
-		plugin()->reply(stanza(),"Failed to translate: "+http->lastResponse().reasonPhrase());
-		deleteLater();
-		return;
-	}
-	QString buf = http->readAll();
-
-	QRegExp exp("<select name=sl id=old_sl tabindex=0>(.*)</select>");
-	exp.setMinimal(TRUE);
+  ///FIXIT: implement fetch list from the web.
 
 	QStringList dlist;
 	dlist		  << "auto	Detect language"
