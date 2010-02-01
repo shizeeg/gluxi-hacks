@@ -42,7 +42,6 @@ CurrencyRequest::~CurrencyRequest()
 
 void CurrencyRequest::exec()
 {
-
 	if ( myDest.endsWith("list") )
 	{
 		QString url=QString("http://www.xe.com/ucc/full/");
@@ -57,15 +56,18 @@ void CurrencyRequest::exec()
 	QString from 	 = myDest.section(' ', 1, 1);
 	QString to	 = myDest.section(' ', 2, 2);
 
-	if (myDest.isEmpty() && amount.isEmpty() && from.isEmpty() && to.isEmpty())
+	if( from.toUpper() == "RUB" && to.isEmpty() ) {
+		to = "USD";
+	} else if( to.isEmpty() ) {
+		to = "RUB";
+	} 
+	
+	if (myDest.isEmpty() || amount.isEmpty() || from.isEmpty())
 	{
 		plugin()->reply(stanza(),"Usage: net currency <amount> <from> <to>");
 		deleteLater();
 		return;
 	}
-
-	int pn=(nres-1)/10;
-	nres=(nres-1)%10+1;
 
 	QString url=QString("http://www.xe.com/ucc/convert.cgi?Amount=%1&From=%2&To=%3").arg(amount).arg(from.toUpper()).arg(to.toUpper());
 	QUrl qurl(url);
@@ -78,34 +80,35 @@ void CurrencyRequest::httpRequestFinished(int, bool err)
 {
 	if (err || http->lastResponse().statusCode()!=200)
 	{
-		plugin()->reply(stanza(),"Failed to fetch XE.com: "+http->lastResponse().reasonPhrase());
+		plugin()->reply(stanza(),"Failed to fetch from XE.com: "+http->lastResponse().reasonPhrase());
 		deleteLater();
 		return;
 	}
 	QString buf=http->readAll();
-	QRegExp exp("<h2 class=\"XE\">(.*)<!--");
-	exp.setMinimal(TRUE);
-	QString str;
-	int ps=0;
 
-	QString from = removeHtml(getValue(buf,"align=\"right\" class=\"XEenlarge\"><h2 class=\"XE\">(.*)<!--")).trimmed();
-	QString to   = removeHtml(getValue(buf,"align=\"left\" class=\"XEenlarge\"><h2 class=\"XE\">(.*)<!--")).trimmed();
+	QString from = removeHtml(getValue(buf,"align=\"right\" class=\"XEenlarge\"><h2 class=\"XE\" style=\"color:#333\">(.*)<!--")).trimmed();
+	QString to   = removeHtml(getValue(buf,"align=\"left\" class=\"XEenlarge\"><h2 class=\"XE\" style=\"color:#333\">(.*)<!--")).trimmed();
+	
+	QString curr1 = myDest.section(' ', 1, 1);
+	QString curr2 = myDest.section(' ', 2, 2);
+	QString msg   = "unknown currency: %1";
 
-	if( to.isEmpty() || from.isEmpty() ) {
-		plugin()->reply( stanza(),
-					QString("no such currency: %1 or %2")
-					.arg( myDest.section(' ', 1, 1).toUpper())
-					.arg( myDest.section(' ', 2, 2).toUpper()) );
+	if( from.isEmpty() || to.isEmpty() ) {
+		if( !curr2.isEmpty() && from == to) {
+			 msg.append(" or ").append(curr2);
+		}
+		plugin()->reply( stanza(), msg.arg(curr1));
 	} else {
-		plugin()->reply(stanza(), QString("%1 = %2").arg(from).arg(to).simplified().replace(",", " "));
+		plugin()->reply( stanza(), QString("%1 = %2").arg(from).arg(to).simplified().replace(",", " "));
 	}
+
 	deleteLater();
 }
 
 void CurrencyRequest::httpListRequestFinished(int, bool err)
 {
 	if (err || http->lastResponse().statusCode()!=200) {
-		plugin()->reply(stanza(),"Failed to fetch list XE.com: "+http->lastResponse().reasonPhrase());
+		plugin()->reply(stanza(),"Failed to fetch list from XE.com: "+http->lastResponse().reasonPhrase());
 		deleteLater();
 		return;
 	}
