@@ -840,6 +840,12 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 
 	if (cmd=="SEEN" || cmd=="SEENEX")
 	{
+	  if( arg.isEmpty() ) {
+	    Nick *n = getNick(s);
+	    if(!n) return true;
+	    reply(s, conf->seen(n->nick(), "SEENEX" == cmd));
+	    return true;
+	  }
 		reply(s, conf->seen(arg, "SEENEX" == cmd));
 		return true;
 	}
