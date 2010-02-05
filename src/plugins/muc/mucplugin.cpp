@@ -8,6 +8,7 @@
 #include "config/mucconfigurator.h"
 #include "nickasyncrequest.h"
 #include "muchistory.h"
+#include "cleanasyncrequest.h"
 
 #include "base/common.h"
 #include "base/gluxibot.h"
@@ -40,7 +41,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 
 	commands << "REPORT" << "MISSING" << "STAT";
 
-	commands << "POKE" << "REALJID" << "INVITE";
+	commands << "POKE" << "REALJID" << "INVITE" << "CLEAN";
 	pluginId=1;
 
 	// Plugin should be able to modify self-messages so they will be
@@ -630,7 +631,15 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		myShouldIgnoreError=1;
 		return false;
 	}
-
+	
+	if (cmd=="CLEAN")
+	{
+  		CleanAsyncRequest *req = new CleanAsyncRequest(this, new gloox::Stanza(s), arg);
+		bot()->asyncRequests()->append(req);
+		req->exec();
+		return true;
+	}
+	
 	if (cmd=="INVITE")
 	{
 		if( arg.isEmpty() )
