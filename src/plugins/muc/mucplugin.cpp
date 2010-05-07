@@ -1100,7 +1100,10 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		Nick *n=getNickVerbose(s, arg);
 		if (!n)
 			return true;
-		reply(s,QString::number(n->jid() ? n->jid()->created().secsTo(QDateTime::currentDateTime()) : 0));
+
+		reply(s, QString("%1: %2 (%3)").arg(n->nick())
+		      .arg(n->jid() ? n->jid()->created().secsTo(QDateTime::currentDateTime()) : 0)
+		      .arg(n->jid() ? n->jid()->created().toString() : QDateTime::currentDateTime().toString()));
 		return true;
 	}
 
