@@ -41,7 +41,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 
 	commands << "REPORT" << "MISSING" << "STAT";
 
-	commands << "POKE" << "REALJID" << "INVITE" << "CLEAN";
+	commands << "POKE" << "REALJID" << "INVITE" << "CLEAN" << "TOPIC";
 	pluginId=1;
 
 	// Plugin should be able to modify self-messages so they will be
@@ -630,6 +630,27 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 	{
 		myShouldIgnoreError=1;
 		return false;
+	}
+
+	if (cmd=="TOPIC")
+	{
+		Conference* conf = getConf(s);
+		if (!conf) {
+			reply(s, "You are not in conference!");
+			return true;
+		}
+		if (arg.isEmpty()) {
+			reply(s, "!muc topic <subject>");
+			return true;
+		}
+		parser.back(1);
+		arg = parser.joinBody();
+		gloox::Stanza *m = new gloox::Stanza( "message" );
+		m->addAttribute( "to", conf->name().toStdString() );
+		m->addAttribute( "type", "groupchat" );
+		m->addChild(new gloox::Tag("subject", arg.toStdString()));
+		bot()->client()->send(m);
+		return true;
 	}
 	
 	if (cmd=="CLEAN")
