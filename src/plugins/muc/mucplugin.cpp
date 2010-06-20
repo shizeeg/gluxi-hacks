@@ -643,6 +643,10 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 			reply(s, "!muc topic <subject>");
 			return true;
 		}
+		if (!isFromConfModerator(s)) {
+			reply(s,"You should be moderator to do this");
+			return true;
+		}
 		parser.back(1);
 		arg = parser.joinBody();
 		gloox::Stanza *m = new gloox::Stanza( "message" );
@@ -650,9 +654,10 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		m->addAttribute( "type", "groupchat" );
 		m->addChild(new gloox::Tag("subject", arg.toStdString()));
 		bot()->client()->send(m);
+		reply(s, "OK");
 		return true;
 	}
-	
+
 	if (cmd=="CLEAN")
 	{
   		CleanAsyncRequest *req = new CleanAsyncRequest(this, new gloox::Stanza(s), arg);
@@ -660,7 +665,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		req->exec();
 		return true;
 	}
-	
+
 	if (cmd=="INVITE")
 	{
 		if( arg.isEmpty() )
