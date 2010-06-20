@@ -2564,67 +2564,63 @@ bool MucPlugin::ageLessThan(const Nick* nick1, const Nick* nick2)
 QString MucPlugin::invite(gloox::Stanza* s, const QString& n, const QString& reason)
 {
 	Conference* conf = getConf(s);
-	if(!conf) {
+	if(!conf)
 		return "You are not in conference!";
-	}
-	QStringList nicks = n.split(' ');
+
 	QStringList jids;
 	Nick *nick = 0;
-	for( int ndx = 0; ndx < nicks.size(); ndx++ ) {
-		if(isBareJidValid(nicks.at(ndx))) {
-			jids.append(nicks.at(ndx));
+
+	if (isBareJidValid(n))
+	{
+		jids.append(n);
+	}
+	else
+	{
+		nick = conf->nicks()->byName(n);
+		if (nick) {
+			jids.append(nick->jid()->jid());
 		} else {
-			nick = conf->nicks()->byName(nicks.at(ndx));
-			if(nick) {
-				jids.append(nick->jid()->jid());
-			}
-			else
-			{
-				jids = Nick::nickToJids(conf, nicks.at(ndx), true);
-			}
+			jids = Nick::nickToJids(conf, n, true);
 		}
 	}
-	if( reason.length() > 255 )
-			reason.left(252).append("...");
-	gloox::Stanza* st = invite(conf, jids, reason);
+	if (reason.length() > 255)
+		reason.left(252).append("...");
 
-	if( !st ) { /// TODO: Multi-invites.
-		QString str = "Can't resolve: \"%1\"'s JID";
-		str = (nicks.count() > 1) ? str + "s.": str + ".";
-		return str.arg(nicks.join("\n"));
-	}
+	gloox::Stanza* st = invite(conf, jids, reason);
+	if (!st)
+		return QString("Can't resolve: \"%1\"'s JID").arg(n);
 
 	bot()->client()->send(st);
-
 	return "Invitation sent.";
 }
 
 gloox::Stanza*
 MucPlugin::invite(Conference *conf, const QStringList& jids, const QString& reason, const QString& pass)
 {
-	if(!conf) return 0;
+	if (!conf) return 0;
+
 	bool validJID = false;
 	gloox::Tag *m = new gloox::Tag( "message" );
 	m->addAttribute( "to", conf->name().toStdString() );
 	gloox::Tag *x = new gloox::Tag( m, "x" );
 	x->addAttribute( "xmlns", "http://jabber.org/protocol/muc#user" );
 
-	for( int ndx = 0; ndx < jids.size(); ndx++ ) {
-		if(isBareJidValid(jids.at(ndx))) {
+	for (int ndx = 0; ndx < jids.size(); ndx++)
+	{
+		if (isBareJidValid(jids.at(ndx)))
+		{
 			validJID = true;
 			gloox::Tag *i = new gloox::Tag( x, "invite" );
 			i->addAttribute( "to", jids.at(ndx).toStdString() );
 			qDebug() << "JID: " << jids.at(ndx);
-			if(!reason.isEmpty())
-				new gloox::Tag( i, "reason",
-					reason.toStdString() );
+			if (!reason.isEmpty())
+				new gloox::Tag( i, "reason", reason.toStdString() );
 		}
 	}
-	if( !validJID ) {
-		return 0;
-	}
-	if(!pass.isEmpty()) {
+	if (!validJID)	return 0;
+
+	if (!pass.isEmpty())
 		new gloox::Tag( x, "password", pass.toStdString() );
-	}
+
 	return (new gloox::Stanza(m));
 }
