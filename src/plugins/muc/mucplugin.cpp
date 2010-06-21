@@ -41,7 +41,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 
 	commands << "REPORT" << "MISSING" << "STAT";
 
-	commands << "POKE" << "REALJID" << "INVITE" << "CLEAN" << "TOPIC";
+	commands << "POKE" << "REALJID" << "INVITE" << "CLEAN" << "TOPIC" << "VISITS";
 	pluginId=1;
 
 	// Plugin should be able to modify self-messages so they will be
@@ -630,6 +630,37 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 	{
 		myShouldIgnoreError=1;
 		return false;
+	}
+
+	if (cmd=="VISITS" || cmd=="VISITSEX")
+	{
+		Conference* conf = getConf(s);
+		if (!conf) {
+			reply(s, "You are not in conference!");
+			return true;
+		}
+		QString arg2 = parser.nextToken();
+		QStringList list;
+		QDateTime from = QDateTime::fromString(arg, Qt::ISODate);
+		QDateTime to   = QDateTime::fromString(arg2, Qt::ISODate);
+		if (!to.isValid())
+			to = QDateTime::currentDateTime();
+		if (!from.isValid())
+			from = QDateTime(to.date());
+
+		if (from > to)
+		{
+			QDateTime tmp = from;
+			from = to;
+			to   = tmp;
+		}
+		list = conf->visits(from, to, cmd.endsWith("EX"));
+		reply(s, QString("over the past %1 there was %2 user%3: %4")
+		      .arg(secsToString(from.secsTo(to)))
+		      .arg( list.count() )
+		      .arg( list.count() > 1 ?"s":"" )
+		      .arg( list.join(", ")) );
+		return true;
 	}
 
 	if (cmd=="TOPIC")

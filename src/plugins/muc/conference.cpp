@@ -157,6 +157,30 @@ void Conference::removeExpired()
 	myModerator->removeExpired();
 }
 
+QStringList 
+Conference::visits(const QDateTime& from, const QDateTime& to, bool ext, int limit)
+{
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery("SELECT nick, lastaction FROM conference_nicks WHERE conference_id=? "
+				"AND lastaction BETWEEN ? AND ? ORDER BY lastaction LIMIT ?");
+	query.addBindValue(id());
+	query.addBindValue(from);
+	query.addBindValue(to);
+	query.addBindValue(limit);
+
+	QStringList list;
+	if (!query.exec())
+		return list;
+
+	while (query.next())
+	{
+		list.append((ext) ? query.value(0).toString()+" ("
+			    + query.value(1).toDateTime().toString("dd.MM.yyyy HH:mm")
+			    + ")" : query.value(0).toString());
+	}
+	return list;
+}
+
 QString Conference::seen(const QString& n, bool ext, bool byjid)
 {
   	Nick *nick = (byjid) ? myNicks.byJid(n): myNicks.byName(n);
