@@ -10,13 +10,11 @@
 //
 //
 #include "nicklist.h"
-
 #include <QtDebug>
 
 NickList::NickList()
 {
 }
-
 
 NickList::~NickList()
 {
@@ -53,6 +51,19 @@ Nick* NickList::byName(const QString& name) const
 		nick=value(i);
 		if (nick->nick().toUpper()==name.toUpper())
 			return nick;
+	}
+	return 0;
+}
+
+Nick* NickList::byJid(const QString& j) const
+{
+	int cnt=count();
+	Jid* jid;
+	for (int i = 0; i < cnt; i++)
+	{
+	  jid = value(i)->jid();
+	  if (j.toLower() == jid->jid().toLower())
+		return value(i);
 	}
 	return 0;
 }

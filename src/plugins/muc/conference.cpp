@@ -157,19 +157,31 @@ void Conference::removeExpired()
 	myModerator->removeExpired();
 }
 
-QString Conference::seen(const QString&n, bool ext)
+QString Conference::seen(const QString& n, bool ext, bool byjid)
 {
-	Nick* nick=myNicks.byName(n);
-//	int cnt=0;
+  	Nick *nick = (byjid) ? myNicks.byJid(n): myNicks.byName(n);
 	if (nick)
 	{
-		return QString("\"%1\" is already in room (Joined %2 ago)").arg(n)
+		return QString("\"%1\" is already in room (Joined %2 ago)").arg(nick->nick())
 			.arg(secsToString(nick->joined().secsTo(QDateTime::currentDateTime())));
 	}
-	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("SELECT jid FROM conference_nicks WHERE conference_id=? AND nick=? ORDER BY lastaction DESC LIMIT 1");
-	query.addBindValue(myId);
-	query.addBindValue(n);
+
+	QSqlQuery query;
+	if (byjid)
+	{
+		query=DataStorage::instance()
+			->prepareQuery("SELECT id from conference_jids WHERE conference_id=? AND jid=?");
+		query.addBindValue(myId);
+		query.addBindValue(n);
+	}
+	else
+	{
+		query=DataStorage::instance()
+			->prepareQuery("SELECT jid FROM conference_nicks WHERE conference_id=? AND nick=? ORDER BY lastaction DESC LIMIT 1");
+		query.addBindValue(myId);
+		query.addBindValue(n);
+	}
+
 	if (query.exec() && query.next())
 	{
 		int jid=query.value(0).toInt();
@@ -223,13 +235,13 @@ QString Conference::seen(const QString&n, bool ext)
 				}
 			}
 			QString reply;
-			if (newNick == n)
+			if (!byjid && newNick == n)
 				reply = QString("%1 %2 %3 ago").arg(n, token, secs);
 			else
 				reply = QString("%1 %2 %3 ago with nick \"%4\"").arg(n, token, secs, newNick);
 			if (!reason.isEmpty())
 				reply += QString(" (%1)").arg(reason);
-			if (!version.isEmpty())
+			if (!version.isEmpty() && ext)
 				reply += QString(", Client: %1").arg(version);
 			return reply;
 		}

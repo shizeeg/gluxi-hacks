@@ -40,8 +40,8 @@ public:
 	AList* aparticipant() { return myParticipant; }
 	AList* acommand() { return myCommand; };
 	QStringList* alistTraceList() { return alistTraceList_; }
-
-	QString seen(const QString& nick, bool ext = false);
+	
+	QString seen(const QString& nick, bool ext = false, bool byjid = false);
 	QString clientStat();
 	void setNick(const QString& name);
 	void setLazyLeave(bool value);

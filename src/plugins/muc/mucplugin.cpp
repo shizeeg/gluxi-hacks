@@ -33,10 +33,10 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
 	commands << "WHEREAMI" << "NICK" << "IDLE" << "KNOWN" << "JOIN" << "LEAVE"
-			<< "KICK" << "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN"
-			<< "BANJID" << "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
+		 << "KICK" << "VISITOR" << "PARTICIPANT" << "MODERATOR" << "BAN"
+		 << "BANJID" << "UNBAN" << "NONE" << "MEMBER" << "ADMIN" << "OWNER";
 	commands << "ABAN" << "AKICK" << "AVISITOR" << "ACMD" << "AMODERATOR" << "APARTICIPANT" << "AFIND"
-			<< "ATRACE"  << "SEEN" << "SEENEX" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
+		 << "ATRACE"  << "SEEN" << "SEENEX" << "SEENJID" << "CLIENTS" << "SETNICK" << "CHECKVCARD" << "ROLE" << "VERSION";
 	commands << "HERE" << "STATUS" << "AGE" << "AGESTAT";
 
 	commands << "REPORT" << "MISSING" << "STAT";
@@ -873,15 +873,22 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		return true;
 	}
 
-	if (cmd=="SEEN" || cmd=="SEENEX")
+	if (cmd=="SEEN" || cmd=="SEENEX" || cmd=="SEENJID" || cmd=="SEENJIDEX")
 	{
-	  if( arg.isEmpty() ) {
-	    Nick *n = getNick(s);
-	    if(!n) return true;
-	    reply(s, conf->seen(n->nick(), "SEENEX" == cmd));
-	    return true;
-	  }
-		reply(s, conf->seen(arg, "SEENEX" == cmd));
+		if (arg.isEmpty())
+		{
+			if (cmd.startsWith("SEENJID"))
+			{
+				reply(s, "!muc seenjid[ex] <jid>");
+				return true;
+			}
+			Nick *n = getNick(s);
+			if (!n)
+				return true;
+			reply(s, conf->seen(n->nick(), cmd.endsWith("EX"), false));
+			return true;
+		}
+		reply(s, conf->seen(arg, cmd.endsWith("EX"), cmd.startsWith("SEENJID")));
 		return true;
 	}
 
