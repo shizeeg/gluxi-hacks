@@ -11,7 +11,7 @@
 MiscPlugin::MiscPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "TEST" << "DATE" << "TIME" << "SAY";
+	commands << "TEST" << "DATE" << "TIME" << "SAY" << "DECIDE";
 
 	sayJidDisabled_=DataStorage::instance()->getInt("cmd/disable_misc_sayjid");
 	if (!sayJidDisabled_)
@@ -75,6 +75,19 @@ bool MiscPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		}
 		QString body=parser.joinBody();
 		reply(s,body,false, false);
+		return true;
+	}
+	if (cmd=="DECIDE")
+	{
+		QStringList choices = parser.getTokens();
+		if (choices.count() <= 3)
+		{
+			reply(s, "You have no choice.");
+			return true;
+		}
+		srand( time(NULL) );
+		int r = random() % (choices.count()-2); // strip misc and decide tokens
+		reply(s, choices[r+2]);
 		return true;
 	}
 	return false;
