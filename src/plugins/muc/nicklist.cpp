@@ -10,6 +10,8 @@
 //
 //
 #include "nicklist.h"
+#include "jid.h"
+
 #include <QtDebug>
 
 NickList::NickList()

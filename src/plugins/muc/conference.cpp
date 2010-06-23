@@ -170,7 +170,7 @@ QString Conference::seen(const QString& n, bool ext, bool byjid)
 	if (byjid)
 	{
 		query=DataStorage::instance()
-			->prepareQuery("SELECT id from conference_jids WHERE conference_id=? AND jid=?");
+			->prepareQuery("SELECT id from conference_jids WHERE conference_id=? AND jid=? LIMIT 1");
 		query.addBindValue(myId);
 		query.addBindValue(n);
 	}
