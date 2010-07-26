@@ -37,7 +37,7 @@ public:
 	virtual QString resolveMyNick(gloox::Stanza* s);
 	virtual void onQuit(const QString& reason);
 	virtual AbstractConfigurator* getConfigurator(gloox::Stanza* s);
-	virtual QString invite(gloox::Stanza* s, const QString& n, const QString& reason = QString::null);
+	virtual QString invite(gloox::Stanza* s, const QString& n, const QString& reason, const QString& pass = QString::null);
 private:
 	bool lazyOffline;
 	ConferenceList conferences;
@@ -74,7 +74,6 @@ private:
 	QString expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QString& str, const AListItem* item=0);
 	void requestVCard(gloox::Stanza* s, Conference* conf, Nick* nick);
 	void requestVersion(gloox::Stanza* s, Conference* conf, Nick* nick);
-	gloox::Stanza* invite(Conference *conf, const QStringList& nicks, const QString& reason = QString::null, const QString& pass = QString::null);
 
 	void logMessageStanza(gloox::Stanza *s, Conference *conf, const QStringList& flags);
 
