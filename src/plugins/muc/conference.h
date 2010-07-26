@@ -43,6 +43,7 @@ public:
 	
 	QString seen(const QString& nick, bool ext = false, bool byjid = false);
 	QString clientStat();
+	QStringList visits(const QDateTime& from, const QDateTime& to, bool ext = false, int limit = 100);
 	void setNick(const QString& name);
 	void setLazyLeave(bool value);
 	void setValidated(bool value) { myValidated=value; }
