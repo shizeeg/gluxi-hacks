@@ -342,6 +342,22 @@ QString AliasPlugin::transform(const QString& str, const QString& flagsTmp)
 			QString repl=flag.section(':', 2, 2);
 			res.replace(orig, repl);
 		}
+		else if (flag.startsWith("rand:"))
+		{
+			srand(time(NULL));
+			int a = flag.section(':', 1, 1).left(5).toInt();
+			int b = flag.section(':', 2, 2).left(5).toInt();
+			if (a==0 || b==0 || a >= RAND_MAX || b >= RAND_MAX)
+				return "0";
+			if (b < a)
+			{
+				int tmp = a;
+				a = b;
+				b = tmp;
+			}
+			int num = rand() % b + a;
+			return QString::number(num).append(res);
+		}
 	}
 	return res;
 }
