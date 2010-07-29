@@ -48,9 +48,9 @@ SET (HG_VERSION_FILE
     ${CMAKE_CURRENT_BINARY_DIR}/gluxi_version.c
 )
 
-SET (HG_VERSION_DEPENDS
-	${CMAKE_SOURCE_DIR}/.hg/dirstate
-)
+#SET (HG_VERSION_DEPENDS
+#	${CMAKE_SOURCE_DIR}/.hg/dirstate
+#)
 
 SET (HG_VERSION_GENERATOR
 	${CMAKE_SOURCE_DIR}/cmake/hgversion.sh

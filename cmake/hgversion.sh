@@ -7,13 +7,15 @@ if [ -z "$VERSION_FILE" ]; then
 	exit 1
 fi
 
-HG_VERSION=`hg tip --template "r{rev}:{node|short} ({date|isodate})\n"`
-echo "Repository version: ${HG_VERSION}"
+GIT_VERSION=`git log -1 --date=iso --abbrev-commit | sed -e "s/commit //g" | head -n 1`
+GIT_DATE=`git log -1 --date=iso | grep Date: | sed -e "s/Date:   //g"`
 
+echo "Repository version: ${GIT_VERSION}"
+ 
 cat > $VERSION_FILE <<EOF
 // File is generated automatically on `date`. Don't edit.
 
-#define GLUXI_VERSION "HG $HG_VERSION"
+#define GLUXI_VERSION "GIT $GIT_VERSION ($GIT_DATE)"
 
 char* getGluxiVersion()
 {
