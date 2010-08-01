@@ -4,6 +4,9 @@
 #include "base/glooxwrapper.h"
 #include "base/rolelist.h"
 #include "base/datastorage.h"
+#include "base/asyncrequestlist.h"
+
+#include "bcrequest.h"
 
 #include <QtDebug>
 #include <QTime>
@@ -11,7 +14,7 @@
 MiscPlugin::MiscPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "TEST" << "DATE" << "TIME" << "SAY" << "DECIDE";
+	commands << "TEST" << "DATE" << "TIME" << "SAY" << "BC" << "DECIDE";
 
 	sayJidDisabled_=DataStorage::instance()->getInt("cmd/disable_misc_sayjid");
 	if (!sayJidDisabled_)
@@ -75,6 +78,13 @@ bool MiscPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		}
 		QString body=parser.joinBody();
 		reply(s,body,false, false);
+		return true;
+	}
+	if (cmd=="BC")
+	{
+		BcRequest *req = new BcRequest(this, new gloox::Stanza(s), parser);
+		bot()->asyncRequests()->append(req);
+		req->exec();
 		return true;
 	}
 	if (cmd=="DECIDE")
