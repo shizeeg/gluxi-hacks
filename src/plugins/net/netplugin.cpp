@@ -12,6 +12,7 @@
 
 #include "currencyrequest.h"
 #include "translaterequest.h"
+#include "rp5request.h"
 
 #include <QtDebug>
 #include <QRegExp>
@@ -20,7 +21,7 @@ NetPlugin::NetPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
 	commands << "PING" << "TRACEROUTE" << "WWW" << "POST" << "XEP" << "GOOGLE" << "SVN" << "HEADERS"
-		 << "CURRENCY" << "TRANSLATE";
+		 << "CURRENCY" << "TRANSLATE" << "RP5[WEATHER[EX]]";
 }
 
 
@@ -125,6 +126,15 @@ bool NetPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		req->exec();
 		return true;
 	}
+	if (cmd=="RP5WEATHER"   || cmd=="RP5" ||
+	    cmd=="RP5WEATHEREX" || cmd=="RP5EX")
+	{
+		Rp5Request *req = new Rp5Request(this, new gloox::Stanza(s), parser);
+		bot()->asyncRequests()->append(req);
+		req->exec();
+		return true;
+	}
+
 	return false;
 }
 
