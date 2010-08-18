@@ -22,8 +22,10 @@
 UserPlugin::UserPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "VERSION" << "PING" << "DISCO" << "VCARD" << "PHOTO" << "STATLIST" << "STAT" << "UPTIME"
-		 << "TIME";
+	commands << "VERSION" << "PING" << "DISCO" << "VCARD" << "PHOTO"
+		 << "STATLIST" << "STAT" << "UPTIME" << "TIME"
+		 << "BANLIST" << "VOICELIST" << "MEMBERLIST" << "MODERATORLIST"
+		 << "ADMINLIST" << "OWNERLIST";
 
 	bot()->registerIqHandler("jabber:iq:version");
 	bot()->registerIqHandler("jabber:iq:last");
@@ -106,6 +108,48 @@ bool UserPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		gloox::Stanza *sf=new gloox::Stanza(s);
 		sf->addAttribute("id", id);
 		AsyncRequest *req=new AsyncRequest(-1, this, sf, 3600);
+		req->setName(jid);
+		bot()->asyncRequests()->append(req);
+		bot()->client()->send(st);
+		return true;
+	}
+	if (cmd=="BANLIST" || cmd=="VOICELIST" || cmd=="MEMBERLIST" ||
+	    cmd=="MODERATORLIST" || cmd=="ADMINLIST" || cmd=="OWNERLIST")
+	{
+		std::string id = bot()->client()->getID();
+		QString jid = QString::fromStdString(s->from().bare());
+
+		gloox::Stanza *st = gloox::Stanza::createIqStanza(
+				gloox::JID(jid.toStdString()), id,
+				gloox::StanzaIqGet,
+				"http://jabber.org/protocol/muc#admin");
+		
+		gloox::Tag* q = st->findChild("query", "xmlns",
+				      "http://jabber.org/protocol/muc#admin");
+		if (q)
+		{
+			gloox::Tag *i = new gloox::Tag(q, "item");
+			std::string affil;
+			if (cmd=="MODERATORLIST" || cmd=="MODERLIST")
+				i->addAttribute("role", "moderator");
+			else if(cmd=="BANLIST" || cmd=="OUTCAST")
+				affil = "outcast";
+			else if(cmd=="VOICELIST" || cmd=="PARTICIPANTLIST")
+				i->addAttribute("role", "participant");
+			else if(cmd=="MEMBERLIST")
+				affil = "member";
+			else if(cmd=="ADMINLIST")
+				affil = "admin";
+			else if(cmd=="OWNERLIST")
+				affil = "owner";
+		
+			i->addAttribute("affiliation", affil);
+      		}
+		st->finalize();
+
+		gloox::Stanza *sf = new gloox::Stanza(s);
+		sf->addAttribute("id", id);
+		AsyncRequest *req = new AsyncRequest(-1, this, sf, 3600);
 		req->setName(jid);
 		bot()->asyncRequests()->append(req);
 		bot()->client()->send(st);
@@ -529,6 +573,69 @@ bool UserPlugin::onIq(gloox::Stanza* s)
 			reply(req->stanza(),"Unable to query");
 		else
 			reply(req->stanza(), secsToString(res));
+	}
+
+	if (xmlns=="http://jabber.org/protocol/muc#admin")
+	{
+		if (s->subtype()==gloox::StanzaIqError)
+			reply(req->stanza(), "Unable to query");
+	    	else
+		{
+			QList<gloox::Tag*> lst =
+				QList<gloox::Tag*>::fromStdList(query->children());
+
+			QStringList strings;
+			QString affil, str, reason;
+			
+			for (int i = 0; i < lst.count(); i++)
+			{
+				QString jid = QString::fromStdString(
+					lst[i]->findAttribute("jid"));
+				gloox::Tag *tag = lst[i]->findChild("reason");
+				if (tag)
+				{
+					tag->cdata();
+					reason = QString::fromStdString(
+						tag->cdata()).trimmed();
+				}
+			
+				QString nick = QString::fromStdString(
+					lst[i]->findAttribute("nick"));
+
+				if (nick.isEmpty())
+					str = jid;
+				else
+					str = QString("%1 (%2)").arg(nick).arg(jid);
+
+				if (!reason.isEmpty())
+					str.append(" // ").append(reason.trimmed());
+				
+				strings.append(str);
+			}
+			if (strings.count() <= 0)
+			{
+				reply(req->stanza(), affil += "list empty!");
+			}
+			else 
+			{
+				affil = QString::fromStdString(lst[0]->findAttribute("role"));
+				if (affil.isEmpty())
+					affil = QString::fromStdString(lst[0]->findAttribute("affiliation"));
+				strings.sort();
+				QStringList list;
+				for (int i = 0; i < strings.count(); i++)
+				{
+					list.append(QString("%1) %2")
+						    .arg(i+1).arg(strings[i]));
+				}
+				int cnt = list.count();
+				reply(req->stanza(),
+				      QString("%1 %2%3 here:\n%4")
+				      .arg(cnt).arg(affil)
+				      .arg((cnt > 1) ? "s":"")
+				      .arg(list.join("\n").trimmed()));
+			}
+		}
 	}
 
 	bot()->asyncRequests()->removeAll(req);
