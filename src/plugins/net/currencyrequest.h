@@ -25,18 +25,23 @@
 #include <QString>
 
 class QHttp;
+class MessageParser;
 
 class CurrencyRequest: public AsyncRequest
 {
 	Q_OBJECT
 public:
-	CurrencyRequest(BasePlugin *plugin, gloox::Stanza *from, const QString& dest);
+	CurrencyRequest(BasePlugin *plugin, gloox::Stanza *from, MessageParser& parser);
 	~CurrencyRequest();
 	void exec();
+	void help(bool usage = true);
 private:
+	QString myAmount;
+	QString myCmd;
 	QString myDest;
+	QString myFrom;
+	QString myTo;
 	QHttp *http;
-	int nres;
 private slots:
 	void httpRequestFinished(int, bool err);
 	void httpListRequestFinished(int, bool err);

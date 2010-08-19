@@ -114,8 +114,8 @@ bool NetPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 	}
 	if (cmd=="CURRENCY")
 	{
-		CurrencyRequest *req = new CurrencyRequest(this, new gloox::Stanza(s), arg);
-		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
+		CurrencyRequest *req = new CurrencyRequest(this, new gloox::Stanza(s), parser);
+		bot()->asyncRequests()->append(req);
 		req->exec();
 		return true;
 	}

@@ -20,17 +20,28 @@
 #include "currencyrequest.h"
 #include "base/baseplugin.h"
 #include "base/common.h"
+#include "base/messageparser.h"
 
 #include <QHttp>
 #include <QUrl>
 #include <QRegExp>
 #include <QtDebug>
 
-CurrencyRequest::CurrencyRequest(BasePlugin *plugin, gloox::Stanza *from, const QString& dest)
+CurrencyRequest::CurrencyRequest(BasePlugin *plugin, gloox::Stanza *from, MessageParser& parser)
 	:AsyncRequest(-1, plugin, from, 300)
 {
-	myDest=dest;
-	http=0;
+	http   = 0;
+	myCmd  = parser.nextToken().toUpper();
+	myFrom = parser.nextToken();
+	myTo   = parser.nextToken();
+
+	parser.back(2);
+	myDest = parser.joinBody();
+	bool ok;
+
+	myCmd.toFloat(&ok);
+	if (ok)
+		myAmount = myCmd;
 }
 
 CurrencyRequest::~CurrencyRequest()
@@ -42,7 +53,7 @@ CurrencyRequest::~CurrencyRequest()
 
 void CurrencyRequest::exec()
 {
-	if ( myDest.endsWith("list") )
+	if (myCmd=="LIST" || myCmd=="SEARCH")
 	{
 		QString url=QString("http://www.xe.com/ucc/full/");
 		QUrl qurl(url);
@@ -51,25 +62,29 @@ void CurrencyRequest::exec()
 		http->get(qurl.toEncoded());
 		return;
 	}
-
-	QString amount   = myDest.section(' ', 0, 0);
-	QString from 	 = myDest.section(' ', 1, 1);
-	QString to	 = myDest.section(' ', 2, 2);
-
-	if( from.toUpper() == "RUB" && to.isEmpty() ) {
-		to = "USD";
-	} else if( to.isEmpty() ) {
-		to = "RUB";
-	} 
-	
-	if (myDest.isEmpty() || amount.isEmpty() || from.isEmpty())
+	else if (myCmd.isEmpty() || myCmd=="HELP")
 	{
-		plugin()->reply(stanza(),"Usage: net currency <amount> <from> <to>");
-		deleteLater();
+		// show full help if requested
+		help(myCmd.isEmpty());
 		return;
 	}
 
-	QString url=QString("http://www.xe.com/ucc/convert.cgi?Amount=%1&From=%2&To=%3").arg(amount).arg(from.toUpper()).arg(to.toUpper());
+	if (myFrom.toUpper() == "RUB" && myTo.isEmpty())
+		myTo = "USD";
+	else if (myTo.isEmpty() && myFrom.length() == 3)
+		myTo = "RUB";
+	else if(myFrom.length() != 3 || myTo.length() != 3)
+	{
+		help(true);
+		return;
+	}
+
+	QString url = QString(
+		"http://www.xe.com/ucc/convert.cgi?Amount=%1&From=%2&To=%3")
+		.arg(myAmount)
+		.arg(myFrom.toUpper())
+		.arg(myTo.toUpper());
+
 	QUrl qurl(url);
 	http=new QHttp(qurl.host());
 	connect(http,SIGNAL(requestFinished(int, bool)), this, SLOT(httpRequestFinished(int, bool)));
@@ -85,21 +100,24 @@ void CurrencyRequest::httpRequestFinished(int, bool err)
 		return;
 	}
 	QString buf=http->readAll();
+	QString from = getValue(buf, "align=\"right\" class=\"rate\" >(.*)<!--").trimmed();
+	QString to   = getValue(buf, "align=\"left\" class=\"rate\" >(.*)<!--").trimmed();
+	QString msg;
 
-	QString from = removeHtml(getValue(buf,"align=\"right\" class=\"XEenlarge\"><h2 class=\"XE\" style=\"color:#333\">(.*)<!--")).trimmed();
-	QString to   = removeHtml(getValue(buf,"align=\"left\" class=\"XEenlarge\"><h2 class=\"XE\" style=\"color:#333\">(.*)<!--")).trimmed();
+	if (from.isEmpty())
+		msg += myFrom;
+	if (to.isEmpty())
+		msg += (msg.isEmpty()) ? myTo : " and/or " + myTo;
 	
-	QString curr1 = myDest.section(' ', 1, 1);
-	QString curr2 = myDest.section(' ', 2, 2);
-	QString msg   = "unknown currency: %1";
-
-	if( from.isEmpty() || to.isEmpty() ) {
-		if( !curr2.isEmpty() && from == to) {
-			 msg.append(" or ").append(curr2);
-		}
-		plugin()->reply( stanza(), msg.arg(curr1));
-	} else {
-		plugin()->reply( stanza(), QString("%1 = %2").arg(from).arg(to).simplified().replace(",", " "));
+	if (msg.isEmpty())
+	{
+		plugin()->reply(stanza(), QString("%1 = %2")
+				.arg(from)
+				.arg(to).simplified().replace(',', ' '));
+	}
+	else
+	{
+		plugin()->reply(stanza(), msg.append(" is unknown currency!"));
 	}
 
 	deleteLater();
@@ -107,31 +125,58 @@ void CurrencyRequest::httpRequestFinished(int, bool err)
 
 void CurrencyRequest::httpListRequestFinished(int, bool err)
 {
-	if (err || http->lastResponse().statusCode()!=200) {
-		plugin()->reply(stanza(),"Failed to fetch list from XE.com: "+http->lastResponse().reasonPhrase());
+	if (err || http->lastResponse().statusCode()!=200) 
+	{
+		plugin()->reply(stanza(), "Failed to fetch list from XE.com: " +
+				http->lastResponse().reasonPhrase());
 		deleteLater();
 		return;
 	}
 
 	QString buf=http->readAll();
-	QRegExp exp("<select(.*)/select>");
-	exp.setMinimal(TRUE);
-	QString currencies, data;
-	int ps=0;
-
-	while (nres>0 && ((ps=exp.indexIn(buf,ps))>=0))	{
-		QStringList lst=exp.capturedTexts();
-		ps+=exp.matchedLength();
-		currencies=lst[0];
+	QStringList clist = getValue(buf, "<select(.*)/select>")
+		.trimmed().split("\n");
+	QString res, tmp;
+	
+	for (int i = 0; i < clist.size(); i++)
+	{
+		tmp = (removeHtml(getValue(clist[i], ">(.*)</option>")).trimmed() + "\n");
+		if (myCmd != "SEARCH")
+		{
+			res += tmp;
+		}
+		else
+		{
+			if (tmp.contains(myDest, Qt::CaseInsensitive))
+				res += tmp;
+		}
 	}
-
-	QStringList clist = currencies.split("\n");
-
-	for (int i = 0; i < clist.size(); ++i) {
-		data += (removeHtml(getValue(clist[i], ">(.*)</option>")).trimmed() + "\n");
-	}
-
-	plugin()->reply(stanza(), "Available currencies:\n" + data.trimmed());
+	res = res.trimmed();
+	if (res.isEmpty())
+		plugin()->reply(stanza(), "Nothing found");
+	else
+		plugin()->reply(stanza(), "Available currencies:\n" + res);
 	deleteLater();
 }
-
+/*
+ * help(true)  - show oneline legacy help
+ * help(false) - show full manual
+ */
+void CurrencyRequest::help(bool usage)
+{
+	QStringList help; help
+	<< "!net currency <amount> <from> [to]"
+	<< "amount         amount of money"
+	<< "from           currency to convert from ('USD' for ex.)"
+	<< "to             currency convert to (optional. 'RUB' by default)"
+	<< "Options:"
+	<< "!net currency <OPTION>"
+	<< "help           this help screen"
+	<< "list           list all available currencies"
+	<< "search <text>  search for specified currency";
+	if (usage)
+		plugin()->reply(stanza(), help[0]);
+	else 
+		plugin()->reply(stanza(), "\nusage: " + help.join("\n"));
+	deleteLater();
+}
