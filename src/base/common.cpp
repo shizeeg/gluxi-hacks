@@ -60,8 +60,14 @@ QString version()
 	if (uname(&ver)!=0)
 		return "Unknown";
 	QString release=QString(ver.release).section('-', 0, 0);
-	QString res=QString("%1 %2 %3 %4").arg(ver.sysname).arg(release)
-	.arg(ver.version).arg(ver.machine);
+	QString res;
+#ifdef __FreeBSD__
+	res = QString("%1 %2 %3")
+		.arg(ver.sysname).arg(ver.release).arg(ver.machine);
+#else
+	res = QString("%1 %2 %3 %4")
+		.arg(ver.sysname).arg(release).arg(ver.version).arg(ver.machine);
+#endif
 	return res;
 }
 
