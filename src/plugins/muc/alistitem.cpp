@@ -84,6 +84,9 @@ QString AListItem::toString() const
 	case AListItem::MatcherBody:
 		flags+="B ";
 		break;
+	case AListItem::MatcherBodySize:
+		flags+="Bs ";
+		break;
 	case AListItem::MatcherResource:
 		flags+="R ";
 		break;
@@ -180,7 +183,8 @@ bool AListItem::isSubPresenceDepends() const
 
 bool AListItem::isSubBodyDepends() const
 {
-	return (matcherType_ == AListItem::MatcherBody);
+	return (matcherType_ == AListItem::MatcherBody
+	     || matcherType_ == AListItem::MatcherBodySize);
 }
 
 bool AListItem::isBodyDepends() const

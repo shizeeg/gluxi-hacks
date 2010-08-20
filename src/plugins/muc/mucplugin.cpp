@@ -1850,7 +1850,7 @@ int MucPlugin::parseAListItem(gloox::Stanza* s, MessageParser& parser, AListItem
 		arg2=parser.nextToken().toUpper();
 	}
 
-	if (arg2=="NICK" || arg2=="BODY" || arg2=="RES"
+	if (arg2=="NICK" || arg2=="BODY" || arg2=="BODY.SIZE" || arg2=="RES"
 		|| arg2=="VERSION" || arg2=="VERSION.NAME"
 		|| arg2=="VERSION.CLIENT" || arg2=="VERSION.OS"
 		|| arg2=="VCARD.PHOTOSIZE" || arg2=="AGE" || arg2=="ROLE")
@@ -1859,6 +1859,8 @@ int MucPlugin::parseAListItem(gloox::Stanza* s, MessageParser& parser, AListItem
 			item.setMatcherType(AListItem::MatcherNick);
 		else if (arg2=="BODY")
 			item.setMatcherType(AListItem::MatcherBody);
+		else if (arg2=="BODY.SIZE")
+			item.setMatcherType(AListItem::MatcherBodySize);
 		else if (arg2=="RES")
 			item.setMatcherType(AListItem::MatcherResource);
 		else if (arg2=="VERSION")
@@ -1955,9 +1957,14 @@ const QList<AListItem*> MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza*
 	QString lJid=nick->jidStr().toLower().section('/', 0, 0);
 	QString lResource=nick->jidStr().toLower().section('/', 1);
 	QString lNick=nick->nick().toLower();
-	QString lBody;
-	if (s)
-		lBody=QString::fromStdString(s->body()).toLower();
+	QString lBody, bodySize;
+
+ 	if (s)
+	{
+ 		lBody=QString::fromStdString(s->body()).toLower();
+		bodySize=QString::number(lBody.length());
+	}
+
 	QString version;
 	if (nick->isVersionStored())
 	{
@@ -2030,6 +2037,7 @@ const QList<AListItem*> MucPlugin::aFind(AList* list, Nick* nick, gloox::Stanza*
 				case AListItem::MatcherJid: testValue=lJid; break;
 				case AListItem::MatcherResource: testValue=lResource; break;
 				case AListItem::MatcherBody: testValue=lBody; break;
+				case AListItem::MatcherBodySize: testValue=bodySize; break;
 				case AListItem::MatcherVersion: testValue=version; break;
 				case AListItem::MatcherVersionName: testValue=nick->versionName().toLower(); break;
 				case AListItem::MatcherVersionClient: testValue=nick->versionClient().toLower(); break;

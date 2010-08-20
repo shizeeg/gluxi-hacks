@@ -41,7 +41,8 @@ public:
 		MatcherVersionOs=8,
 		MatcherVCardPhotoSize=9,
 		MatcherAge=10,
-		MatcherRole=11
+		MatcherRole=11,
+		MatcherBodySize=12
 	};
 
 	enum TestType
