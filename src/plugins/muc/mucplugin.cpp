@@ -41,7 +41,7 @@ MucPlugin::MucPlugin(GluxiBot *parent) :
 
 	commands << "REPORT" << "MISSING" << "STAT";
 
-	commands << "POKE" << "REALJID" << "INVITE" << "CLEAN" << "TOPIC" << "VISITS";
+	commands << "POKE" << "REALJID" << "INVITE" << "CLEAN" << "TOPIC" << "OFFSEND";
 	pluginId=1;
 
 	// Plugin should be able to modify self-messages so they will be
@@ -438,9 +438,12 @@ void MucPlugin::onPresence(gloox::Stanza* s)
 			if (conf->configurator()->isDevoiceNoVCard())
 				requestVCard(s, conf, n);
 			if (conf->configurator()->isQueryVersionOnJoin())
-			{
 				requestVersion(s, conf, n);
-			}
+			
+			offsendList.getJids(bot()->getStorage(s));
+
+			if (offsendList.hasMessage(n->jid()->jid()))
+				reply(s, "\n" + offsendList.get(bot()->getStorage(s), n, 30), true);
 		}
 	}
 }
@@ -537,9 +540,21 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 				reply(s, "Conference should be like \"room@server\"");
 				return true;
 			}
-			reply(s, "Ok");
+			QString confName = arg;
+			if (arg.endsWith("@"))
+			{
+				if (!conf)
+				{
+					confName = arg.append("conference.").append(bot()->getBotJID(s).section('@', 1));
+				}
+				else
+				{
+					confName = arg.append(conf->name().section('@', 1));
+				}
+			}
+			reply(s, "I am trying to join \"" + confName + "\"");
 			//!!!!!!!!!!!!!!!!!!!!
-			join(arg);
+			join(confName);
 			return true;
 		}
 		if (cmd=="LEAVE")
@@ -566,8 +581,32 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 				reply(s, "Conference should be like \"room@server\"");
 				return true;
 			}
-			reply(s, "Ok");
-			leave(arg);
+
+			QString confName, c = arg.toLower();
+			QStringList list;
+
+			for (int i = 0; i < conferences.count(); i++)
+			{
+				confName = conferences[i]->name();
+				if (confName.toLower().startsWith(c))
+				{
+					qDebug() << "[ADD:]" << confName;
+					list << confName; // gluxi jid handling is case-sensitive, add as-is.
+				}
+			}
+
+			if (list.count() > 1)
+			{
+				reply(s, "conf jid is ambiguous, enter full jid:\n" + list.join("\n"));
+				return true;
+			}
+			else if (list.count() == 1)
+			{
+				reply(s, "I am leaving \"" + list.at(0) + "\"");
+				leave(list.at(0));
+				return true;
+			}
+			reply(s, "I am not in " + arg + "!");
 			return true;
 		}
 
@@ -575,7 +614,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		{
 			QStringList confList;
 			for (int i=0; i<conferences.count(); i++)
-				confList << (conferences[i]->name().section('@', 0, 0)+"@");
+				confList << conferences[i]->name();//.section('@', 0, 0)+"@");
 			reply(
 					s,
 					QString("Currently I'm spending time at %1").arg(confList.join(", ")));
@@ -640,9 +679,16 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 			return true;
 		}
 		QString arg2 = parser.nextToken();
+		/*		if (arg.isEmpty())
+		{
+			reply(s, "!muc visits <from> [to]");
+			return true;
+		}
+		*/
 		QStringList list;
 		QDateTime from = QDateTime::fromString(arg, Qt::ISODate);
 		QDateTime to   = QDateTime::fromString(arg2, Qt::ISODate);
+
 		if (!to.isValid())
 			to = QDateTime::currentDateTime();
 		if (!from.isValid())
@@ -654,12 +700,75 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 			from = to;
 			to   = tmp;
 		}
+
 		list = conf->visits(from, to, cmd.endsWith("EX"));
 		reply(s, QString("over the past %1 there was %2 user%3: %4")
 		      .arg(secsToString(from.secsTo(to)))
-		      .arg( list.count() )
-		      .arg( list.count() > 1 ?"s":"" )
-		      .arg( list.join(", ")) );
+		      .arg(list.count())
+		      .arg(list.count()>1 ?"s":"")
+		      .arg(list.join(", ")));
+		return true;
+	}
+
+	if (cmd=="OFFSEND")
+	{
+		Conference* conf = getConf(s);
+		if (!conf) {
+			reply(s, "You are not in conference!");
+			return true;
+		}
+		Nick* n=getNick(s);
+		if (!n)
+			reply(s, "I don't know you.");
+		QString par = arg.toUpper();
+		if (par == "SHOW")
+		{
+			int ndx = parser.nextToken().toInt();
+			if (ndx > 0) 
+			{
+				reply(s, offsendList.at(bot()->getStorage(s), n, ndx-1));
+				return true;
+			}
+
+			reply(s, offsendList.list(bot()->getStorage(s), n));
+			return true;
+		}
+		else if (par == "DEL")
+		{
+			int ndx = parser.nextToken().toInt()-1;
+			if (ndx < 0)
+			{
+				reply(s, "Invalid msg index!");
+				return true;
+			}
+			if (offsendList.remove(bot()->getStorage(s), n, ndx))
+				reply(s, "Message #"+QString::number(ndx+1)+" deleted!");
+			else 
+				reply(s, "eh?");
+			return true;
+		}
+		else if (par == "CLEAR")
+		{
+			offsendList.clear(bot()->getStorage(s), n);
+			reply(s, "Messages cleared.");
+			return true;
+		}
+
+		QString text = parser.joinBody();
+		if (arg.isEmpty() || text.isEmpty())
+		{
+			reply(s, "!muc offsend <nick> <text> or !muc offsend show [msg #] | clear | del #");
+			return true;
+		}
+		int res=offsendList.append(bot()->getStorage(s), n->nick(), arg, text);
+		if (res == 1)
+			reply(s, "Message pending.");
+		else if (res == 2)
+			reply(s, "Updated");
+		else if (res == -3)
+			reply(s, QString("Can't resolve %1 JID.").arg(arg));
+		else
+			reply(s, "Can't save.");
 		return true;
 	}
 
@@ -670,12 +779,12 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 			reply(s, "You are not in conference!");
 			return true;
 		}
-		if (arg.isEmpty()) {
-			reply(s, "!muc topic <subject>");
-			return true;
-		}
 		if (!isFromConfModerator(s)) {
 			reply(s,"You should be moderator to do this");
+			return true;
+		}
+		if (arg.isEmpty()) {
+			reply(s, "!muc topic <subject>");
 			return true;
 		}
 		parser.back(1);
@@ -688,7 +797,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		reply(s, "OK");
 		return true;
 	}
-
+	
 	if (cmd=="CLEAN")
 	{
   		CleanAsyncRequest *req = new CleanAsyncRequest(this, new gloox::Stanza(s), arg);
@@ -696,7 +805,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		req->exec();
 		return true;
 	}
-
+	
 	if (cmd=="INVITE")
 	{
 		if (arg.isEmpty())
@@ -724,7 +833,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		if (!nick)
 		{
 			jids = Nick::nickToJids(getConf(s), arg);
-			if(!jids.isEmpty())
+			if (!jids.isEmpty())
 			{
 				reply(s, QString("\nNick:\t%1\nJID(s):\t%2")
 					.arg(arg).arg(jids.join("\n")), true);
@@ -773,29 +882,28 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		int r = rand() % replys.count();
 		QString msg = replys[r];
 
-		if (arg.isEmpty())
+		if( arg.isEmpty() )
 		{
 			reply(s, "!muc poke <nick>");
 			return true;
 		}
-		if (arg.length() > 35)
+		if ( arg.length() > 35 )
 		{
 			reply(s, "шибко умный, да? ]:->");
 			return true;
 		}
-		if (s->subtype() == gloox::StanzaMessageChat)
-		{
+		if ( s->subtype() == gloox::StanzaMessageChat ) {
 			reply(s, ":-P");
 			return true;
 		}
 		QString nickName = QString::fromStdString(s->from().resource());
 
-		if (arg.compare( getMyNick(s), Qt::CaseInsensitive ) == 0)
+		if ( arg.compare( getMyNick(s), Qt::CaseInsensitive ) == 0 )
 		{
 			reply(s, "Ы?");
 			return true;
 		}
-		if (arg.compare(nickName, Qt::CaseInsensitive) == 0)
+		if ( arg.compare(nickName, Qt::CaseInsensitive) == 0 )
 		{
 			reply(s, "мазохист? :D");
 			return true;
@@ -803,7 +911,7 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 
 		for (int i=0; i<cnt; i++)
 		{
-			if( arg.compare( conf->nicks()->at(i)->nick(), Qt::CaseInsensitive ) == 0 )
+			if (arg.compare( conf->nicks()->at(i)->nick(), Qt::CaseInsensitive ) == 0)
 			{
 				reply(s, QString("/me " + msg)
 					.arg(conf->nicks()->at(i)->nick()), false, false);
@@ -826,9 +934,9 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		return true;
 	}
 
-	if (cmd=="NICK")
+	if (cmd=="NICK" || cmd=="NICKEX")
 	{
-		Nick *n=getNickVerbose(s, arg);
+		Nick *n=getNickVerbose(s, arg, cmd != "NICKEX");
 		if (!n)
 			return true;
 		Jid* jid=n->jid();
@@ -878,9 +986,9 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		return true;
 	}
 
-	if (cmd=="VERSION")
+	if (cmd=="VERSION" || cmd=="VERSIONEX")
 	{
-		Nick *n=getNickVerbose(s, arg);
+		Nick *n=getNickVerbose(s, arg, cmd != "VERSIONEX");
 		if (!n)
 			return true;
 		QString res=n->versionName();
@@ -909,15 +1017,10 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 	{
 		if (arg.isEmpty())
 		{
-			if (cmd.startsWith("SEENJID"))
-			{
-				reply(s, "!muc seenjid[ex] <jid>");
-				return true;
-			}
 			Nick *n = getNick(s);
 			if (!n)
 				return true;
-			reply(s, conf->seen(n->nick(), cmd.endsWith("EX"), false));
+			reply(s, conf->seen(n->nick(), cmd.endsWith("EX"), cmd.startsWith("SEENJID")));
 			return true;
 		}
 		reply(s, conf->seen(arg, cmd.endsWith("EX"), cmd.startsWith("SEENJID")));
@@ -995,13 +1098,16 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		return true;
 	}
 
-	if (cmd=="KNOWN")
+	if (cmd=="KNOWN" || cmd=="KNOWNEX")
 	{
-		Nick *n=getNickVerbose(s, arg);
+		Nick *n=getNickVerbose(s, arg, cmd != "KNOWNEX");
 		if (!n)
 			return true;
 		QStringList knownList=n->similarNicks();
-		reply(s, QString("\"%1\" is known here as: %2").arg(n->nick()).arg(knownList.join(", ")));
+		reply(s, QString("\"%1\" has %2 names here: %3")
+		      .arg(n->nick())
+		      .arg(knownList.count())
+		      .arg(knownList.join(", ")));
 		return true;
 	}
 
@@ -1045,15 +1151,20 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 			return true;
 		}
 		Nick *nick=conf->nicks()->byName(arg);
+		QString jid=arg;
 		if (!nick)
 		{
-			reply(s, "No nick found: "+arg);
-			return true;
+			if (!isBareJidValid(jid) && !isServerValid(jid))
+			{
+				reply(s, "JID or nick is not valid");
+				return true;
+			}
 		}
 		QString reason=parser.nextToken();
 		QString affiliation=affiliationByCommand(cmd);
 
-		setAffiliation(conf, nick->jidStr(), affiliation, reason);
+		setAffiliation(conf, (!nick) ? jid : nick->jidStr(), affiliation, reason);
+		//		reply(s, "done");
 		return true;
 	}
 
@@ -1160,12 +1271,11 @@ bool MucPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		return true;
 	}
 
-	if (cmd=="AGE")
+	if (cmd=="AGE" || cmd=="AGEEX")
 	{
-		Nick *n=getNickVerbose(s, arg);
+	  Nick *n=getNickVerbose(s, arg, cmd != "AGEEX");
 		if (!n)
 			return true;
-
 		reply(s, QString("%1: %2 (%3)").arg(n->nick())
 		      .arg(n->jid() ? n->jid()->created().secsTo(QDateTime::currentDateTime()) : 0)
 		      .arg(n->jid() ? n->jid()->created().toString() : QDateTime::currentDateTime().toString()));
@@ -1216,7 +1326,7 @@ Conference* MucPlugin::getConf(gloox::Stanza* s)
 	return conf;
 }
 
-Nick* MucPlugin::getNick(gloox::Stanza* s, const QString& nn)
+Nick* MucPlugin::getNick(gloox::Stanza* s, const QString& nn, bool onlineOnly)
 {
 	Conference *conf=getConf(s);
 	if (!conf)
@@ -1227,11 +1337,17 @@ Nick* MucPlugin::getNick(gloox::Stanza* s, const QString& nn)
 
 	QString nickName;
 	if (nn.isEmpty())
+	{
 		nickName=QString::fromStdString(s->from().resource());
+	}
 	else
+	{
 		nickName=nn;
-
-	Nick *nick=conf->nicks()->byName(nickName);
+	}
+	//Nick *nick=conf->nicks()->byName(nickName);
+	Nick *nick=conf->getNick(nickName, onlineOnly);
+	if (nick)
+		qDebug() << "MucPlugin::getNick(): " << nick->nick();
 	return nick;
 }
 
@@ -1312,9 +1428,9 @@ void MucPlugin::setAffiliation(Conference* conf, const QString& jid,
 	bot()->client()->send(st);
 }
 
-Nick* MucPlugin::getNickVerbose(gloox::Stanza* s, const QString& nn)
+Nick* MucPlugin::getNickVerbose(gloox::Stanza* s, const QString& nn, bool onlineOnly)
 {
-	Nick *nick=getNick(s, nn);
+	Nick *nick=getNick(s, nn, onlineOnly);
 	if (!nick)
 	{
 		reply(s, QString("Nick \"%1\" not found").arg(nn));
@@ -2495,7 +2611,7 @@ bool MucPlugin::onVCard(const VCardWrapper& vcardWrapper)
 			if (conf->configurator()->isDevoiceNoVCard())
 			{
 				// Devoice only if user was not already devoiced (for example by alists)
-				if (nick->role()!="visitor")
+				if (nick->role()!="visitor" && nick->affiliation() == "none")
 				{
 					reply(src, conf->configurator()->devoiceNoVCardReason(),true, true);
 					setRole(conf, nick, "visitor", conf->configurator()->devoiceNoVCardReason());
@@ -2609,7 +2725,7 @@ bool MucPlugin::ageLessThan(const Nick* nick1, const Nick* nick2)
 	if (nick1->jid())
 		date1=nick1->jid()->created();
 	if (nick2->jid())
-	       	date2=nick2->jid()->created();
+		date2=nick2->jid()->created();
 	return date1 < date2;
 }
 
@@ -2640,20 +2756,20 @@ QString MucPlugin::invite(gloox::Stanza* s, const QString& n, const QString& rea
 	gloox::Tag *x = new gloox::Tag(st, "x");
 	x->addAttribute("xmlns", "http://jabber.org/protocol/muc#user");
 
-	bool isJidValid = false;
+	bool validJID = false;
 	for (int ndx = 0; ndx < jids.size(); ndx++)
 	{
 		if (isBareJidValid(jids.at(ndx)))
 		{
-			isJidValid = true;
-			gloox::Tag *i = new gloox::Tag(x, "invite");
+			validJID = true;
+			gloox::Tag *i = new gloox::Tag( x, "invite" );
 			i->addAttribute( "to", jids.at(ndx).toStdString() );
 			qDebug() << "JID: " << jids.at(ndx);
 			if (!reason.isEmpty())
 				i->addChild(new gloox::Tag("reason", reason.toStdString()));
 		}
 	}
-	if (!isJidValid)
+	if (!validJID)
 	{
 		delete st;
 		return QString("Can't resolve: \"%1\"'s JID").arg(n);

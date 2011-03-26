@@ -12,6 +12,9 @@
 
 #include "currencyrequest.h"
 #include "translaterequest.h"
+#include "nslookuprequest.h"
+#include "rssrequest.h"
+#include "weatherrequest.h"
 #include "rp5request.h"
 
 #include <QtDebug>
@@ -21,7 +24,8 @@ NetPlugin::NetPlugin(GluxiBot *parent)
 		: BasePlugin(parent)
 {
 	commands << "PING" << "TRACEROUTE" << "WWW" << "POST" << "XEP" << "GOOGLE" << "SVN" << "HEADERS"
-		 << "CURRENCY" << "TRANSLATE" << "RP5[WEATHER[EX]]";
+		 << "CURRENCY" << "TRANSLATE"
+		 << "NSLOOKUP" << "RSS" << "WEATHER" << "RP5WEATHER[EX]";
 }
 
 
@@ -122,6 +126,37 @@ bool NetPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 	if (cmd=="TRANSLATE")
 	{
 		TranslateRequest *req = new TranslateRequest(this, new gloox::Stanza(s), parser);
+		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
+		req->exec();
+		return true;
+	}
+        if (cmd=="NSLOOKUP")
+        {
+                if (arg.isEmpty())
+                {
+                        reply(s,"Usage: net nslookup <host> [server]");
+                        return true;
+                }
+                /*if (!isSafeArg(arg))
+                {
+                        reply(s,"Incorrect character in domain name");
+                        return true;
+		}*/
+                NslookupRequest *req=new NslookupRequest(this, new gloox::Stanza(s), arg);
+                bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
+                req->exec();
+                return true;
+        }
+	if (cmd=="RSS")
+	{
+		RssRequest *req = new RssRequest(this, new gloox::Stanza(s), parser);
+		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
+		req->exec();
+		return true;
+	}
+	if (cmd=="WEATHER")
+	{
+		WeatherRequest *req = new WeatherRequest(this, new gloox::Stanza(s), parser);
 		bot()->asyncRequests()->append(qobject_cast<AsyncRequest*>(req));
 		req->exec();
 		return true;

@@ -87,6 +87,12 @@ QString AListItem::toString() const
 	case AListItem::MatcherBodySize:
 		flags+="Bs ";
 		break;
+	case AListItem::MatcherBodySize:
+		flags+="Bs ";
+		break;
+	case AListItem::MatcherBodySize:
+		flags+="Bs ";
+		break;
 	case AListItem::MatcherResource:
 		flags+="R ";
 		break;

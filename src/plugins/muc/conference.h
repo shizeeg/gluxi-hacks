@@ -20,6 +20,7 @@ public:
 	QString nick() const { return myNick;};
 
 	Nick *botNick() const;
+	Nick *getNick(QString& nick, bool onlineOnly = true);
 
 	QString name() const { return myName; };
 	NickList* nicks() { return &myNicks; };
@@ -40,10 +41,10 @@ public:
 	AList* aparticipant() { return myParticipant; }
 	AList* acommand() { return myCommand; };
 	QStringList* alistTraceList() { return alistTraceList_; }
-	
+
 	QString seen(const QString& nick, bool ext = false, bool byjid = false);
-	QString clientStat();
 	QStringList visits(const QDateTime& from, const QDateTime& to, bool ext = false, int limit = 100);
+	QString clientStat();
 	void setNick(const QString& name);
 	void setLazyLeave(bool value);
 	void setValidated(bool value) { myValidated=value; }

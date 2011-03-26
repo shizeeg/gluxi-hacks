@@ -11,7 +11,6 @@
 //
 #include "nicklist.h"
 #include "jid.h"
-
 #include <QtDebug>
 
 NickList::NickList()
@@ -63,9 +62,9 @@ Nick* NickList::byJid(const QString& j) const
 	Jid* jid;
 	for (int i = 0; i < cnt; i++)
 	{
-	  jid = value(i)->jid();
-	  if (j.toLower() == jid->jid().toLower())
-		return value(i);
+		jid = value(i)->jid();
+		if (j.toUpper() == jid->jid().toUpper())
+			return value(i);
 	}
 	return 0;
 }

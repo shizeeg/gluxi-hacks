@@ -13,7 +13,7 @@ class TranslateRequest: public AsyncRequest
 	Q_OBJECT
 public:
 	TranslateRequest(BasePlugin *plugin, gloox::Stanza *from, MessageParser& parser);
-	~TranslateRequest();
+	virtual ~TranslateRequest();
 	void exec();
 private:
 	QString myType;

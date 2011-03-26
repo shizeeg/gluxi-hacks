@@ -473,8 +473,8 @@ QString JidStat::queryReport(int conferenceId, const QString& type, int numRes)
 	QString qStr(
 			"SELECT conference_nicks.nick, %1 from conference_jids"
 			" JOIN conference_jidstat ON conference_jidstat.jid_id = conference_jids.id"
-			" JOIN conference_nicks ON conference_nicks.jid = conference_jids.id AND"
-				" conference_nicks.online = true"
+			" JOIN conference_nicks ON conference_nicks.jid = conference_jids.id"
+			" AND conference_nicks.online = true"
 			" WHERE conference_jids.conference_id = ? ORDER BY sort_field DESC limit ?");
 	qStr = qStr.arg(fields);
 

@@ -83,10 +83,22 @@ void WWWRequest::run()
 	if (proxy.headersOnly)
 	{
 		if (proxy.headers.isEmpty())
+		{
 			plugin()->reply(stanza(),"Error: Can't fetch HTTP headers");
+		}
 		else
+		{
+			QTextCodec *codec = QTextCodec::codecForName("koi8-r");
+			QString tmp;
+
+			if (codec)
+				tmp = codec->toUnicode(proxy.headers.join("\n").toLatin1()).toUtf8();
+			else
+				tmp = proxy.headers.join("\n");
+
 			plugin()->reply(stanza(),QString("Headers for: %1:\n%2")
-				.arg(myDest).arg(proxy.headers.join("\n")));
+				.arg(myDest).arg(tmp));
+		}
 		return;
 	}
 

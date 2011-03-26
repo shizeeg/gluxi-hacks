@@ -10,7 +10,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 
-Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
+Nick::Nick(Conference* parent, const QString& nick, const QString& jid, bool onlineOnly)
 {
 	devoicedNoVCard_=false;
 	myValidateRequired=false;
@@ -42,10 +42,11 @@ Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 	{
 		myId=query.value(0).toInt();
 		query.clear();
-		query.prepare("UPDATE conference_nicks SET jid=?, joined = ?, lastaction = ?, online = true WHERE id = ?");
+		query.prepare("UPDATE conference_nicks SET jid=?, joined = ?, lastaction = ?, online = ? WHERE id = ?");
 		query.addBindValue(myJid->id());
 		query.addBindValue(QDateTime::currentDateTime());
 		query.addBindValue(QDateTime::currentDateTime());
+		query.addBindValue(onlineOnly);
 		query.addBindValue(myId);
 		query.exec();
 	}
@@ -58,7 +59,7 @@ Nick::Nick(Conference* parent, const QString& nick, const QString& jid)
 		query.addBindValue(myNick);
 		query.addBindValue(myJid->id());
 		query.addBindValue(QDateTime::currentDateTime());
-		query.addBindValue(true);
+		query.addBindValue(onlineOnly);
 		query.addBindValue(QDateTime::currentDateTime());
 		query.addBindValue(QDateTime::currentDateTime());
 		query.exec();

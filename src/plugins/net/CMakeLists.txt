@@ -10,6 +10,9 @@ set (plugin_HDR_MOC
 	svnrequest.h
 	currencyrequest.h
 	translaterequest.h
+	nslookuprequest.h
+	rssrequest.h
+	weatherrequest.h
 	rp5request.h
 )
 
@@ -26,6 +29,9 @@ set (plugin_SRC
 	svnrequest.cpp
 	currencyrequest.cpp
 	translaterequest.cpp
+	nslookuprequest.cpp
+	rssrequest.cpp
+	weatherrequest.cpp
 	rp5request.cpp
 )
 

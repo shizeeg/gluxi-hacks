@@ -17,6 +17,7 @@ set (plugin_HDR
 	muchistory.h
 	nick.h
 	nicklist.h
+	offsendlist.h
 	config/mucconfigurator.h
 )
 
@@ -35,7 +36,9 @@ set (plugin_SRC
 	config/mucconfigurator.cpp
 	nickasyncrequest.cpp
 	cleanasyncrequest.cpp
+	offsendlist.cpp
 )
 
 GLUXI_PLUGIN()
+
 

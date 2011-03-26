@@ -26,6 +26,8 @@
 #include <QDomElement>
 #include <QDomNodeList>
 
+#include <QtXmlPatterns>
+
 #include <QHttp>
 #include <QUrl>
 #include <QRegExp>
@@ -68,15 +70,15 @@ void Rp5Request::exec()
 	}
 	else 
 	{
-		url = QString("http://rp5.ru/search.php?lang=ru&txt=%1")
-			.arg(urlEncode(myDest, "cp1251").toUpper());
+		url = QString("http://rp5.ru/vsearch.php?lang=ru&txt=%1")
+			.arg(myDest);
 		qDebug() << "[WEATHER]: url(" << url << ");\n";
 	}
 
 	QUrl qurl(url);
 	http=new QHttp(qurl.host());
 	connect(http,SIGNAL(requestFinished(int, bool)), this, SLOT(httpRequestFinished(int, bool)));
-	http->get(url);
+	http->get(qurl.toEncoded());
 }
 
 void Rp5Request::httpRequestFinished(int, bool err)
@@ -95,26 +97,21 @@ void Rp5Request::httpRequestFinished(int, bool err)
 		{
 			plugin()->reply(stanza(), QString("Failed to fetch from %1: ")
 				.arg(myDest) +http->lastResponse().reasonPhrase());
-			deleteLater();
 		}
-		return;
 	}
 
-
-	QTextCodec *codec = QTextCodec::codecForName("cp1251");
-	QByteArray pageData = http->readAll();
-	QByteArray data = codec->toUnicode(pageData).toUtf8();
+	QByteArray data = http->readAll();
 	if (data.startsWith("<?xml"))
 	{
 		if (myCmd.endsWith("EX"))
-			showForecastEx(pageData);
+			showForecastEx(data);
 		else
-			showForecast(pageData);
+			showForecast(data);
 		return;
 	}
 
-	int cnt = getValue(data, "<p class=\"stinfo\">(.*)</p>")
-		.section(':', 1).trimmed().toInt();
+	int cnt = getValue(data, "<p class=\"stinfo\">(.*)</p>").section(':', 1).toInt();
+
 	if (cnt <= 0 && !http->hasPendingRequests())
 	{
 		plugin()->reply(stanza(), "No locations found");
@@ -122,7 +119,7 @@ void Rp5Request::httpRequestFinished(int, bool err)
 		return;
 	}
 
-	QRegExp exp("<tr height=\"25\"><td><a href=\"/(.*)</td></tr>");
+	QRegExp exp("<tr class=rp5tr height=\"25\"><td><a href=\"/(.*)</td></tr>");
 	exp.setMinimal(true);
 	QStringList list;
 	int pos = 0;

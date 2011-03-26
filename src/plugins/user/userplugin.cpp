@@ -22,16 +22,16 @@
 UserPlugin::UserPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "VERSION" << "PING" << "DISCO" << "VCARD" << "PHOTO"
-		 << "STATLIST" << "STAT" << "UPTIME" << "TIME"
-		 << "BANLIST" << "VOICELIST" << "MEMBERLIST" << "MODERATORLIST"
-		 << "ADMINLIST" << "OWNERLIST";
+	commands << "VERSION" << "PING" << "DISCO" << "VCARD" << "PHOTO" << "STATLIST" << "STAT" << "UPTIME" << "TIME"
+		 << "BANLIST" << "VOICELIST" << "MEMBERLIST" << "MODERATORLIST" << "ADMINLIST" << "OWNERLIST";
 
 	bot()->registerIqHandler("jabber:iq:version");
 	bot()->registerIqHandler("jabber:iq:last");
 	bot()->registerIqHandler("jabber:iq:time");
 	bot()->registerIqHandler("http://jabber.org/protocol/disco#items");
 	bot()->registerIqHandler("http://jabber.org/protocol/stats");
+
+	bot()->registerIqHandler("http://jabber.org/protocol/muc#iadmin");
 }
 
 UserPlugin::~UserPlugin()
@@ -119,13 +119,14 @@ bool UserPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		std::string id = bot()->client()->getID();
 		QString jid = QString::fromStdString(s->from().bare());
 
-		gloox::Stanza *st = gloox::Stanza::createIqStanza(
+		gloox::Stanza *st=gloox::Stanza::createIqStanza(
 				gloox::JID(jid.toStdString()), id,
 				gloox::StanzaIqGet,
 				"http://jabber.org/protocol/muc#admin");
 		
+		
 		gloox::Tag* q = st->findChild("query", "xmlns",
-				      "http://jabber.org/protocol/muc#admin");
+					"http://jabber.org/protocol/muc#admin");
 		if (q)
 		{
 			gloox::Tag *i = new gloox::Tag(q, "item");

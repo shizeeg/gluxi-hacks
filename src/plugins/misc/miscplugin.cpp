@@ -5,6 +5,7 @@
 #include "base/rolelist.h"
 #include "base/datastorage.h"
 #include "base/asyncrequestlist.h"
+#include "base/common.h"
 
 #include "bcrequest.h"
 
@@ -14,7 +15,7 @@
 MiscPlugin::MiscPlugin(GluxiBot *parent) :
 	BasePlugin(parent)
 {
-	commands << "TEST" << "DATE" << "TIME" << "SAY" << "BC" << "DECIDE";
+	commands << "TEST" << "DATE" << "TIME" << "SAY" << "BC" << "DECIDE" << "FLIP";
 
 	sayJidDisabled_=DataStorage::instance()->getInt("cmd/disable_misc_sayjid");
 	if (!sayJidDisabled_)
@@ -98,6 +99,35 @@ bool MiscPlugin::parseMessage(gloox::Stanza* s, const QStringList& flags)
 		srand( time(NULL) );
 		int r = random() % (choices.count()-2); // strip misc and decide tokens
 		reply(s, choices[r+2]);
+		return true;
+	}
+	if (cmd=="TURN")
+	{
+		QString body = parser.joinBody();
+		if (body.isEmpty())
+		{
+			reply(s, "!misc turn <text>");
+			return true;
+		}
+		reply(s, turn(body));
+		return true;
+	}
+	if (cmd == "FLIP")
+	{
+		QString body = parser.joinBody().toLower();
+		if (body.isEmpty())
+		{
+			reply(s, "!misc flip <text>");
+			return true;
+		}
+
+		QString msg;
+		for (int i = body.count() - 1; i > -1; --i)
+		{
+			msg += flipChar(body[i]);
+		}
+
+		reply(s, msg);
 		return true;
 	}
 	return false;

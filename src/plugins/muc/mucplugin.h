@@ -4,10 +4,12 @@
 #include "base/baseplugin.h"
 #include "conferencelist.h"
 #include "alistitem.h"
+#include "offsendlist.h"
 
 class MessageParser;
 class AListItem;
 class AsyncRequest;
+class OffsendList;
 
 class MucPlugin : public BasePlugin
 {
@@ -37,17 +39,18 @@ public:
 	virtual QString resolveMyNick(gloox::Stanza* s);
 	virtual void onQuit(const QString& reason);
 	virtual AbstractConfigurator* getConfigurator(gloox::Stanza* s);
-	virtual QString invite(gloox::Stanza* s, const QString& n, const QString& reason, const QString& pass = QString::null);
+	virtual QString invite(gloox::Stanza* s, const QString& n, const QString& reason = QString::null, const QString& pass = QString::null);
 private:
 	bool lazyOffline;
+	OffsendList offsendList;
 	ConferenceList conferences;
 	QStringList confInProgress;
 	QString getItem(gloox::Stanza*, const QString& name);
 	void join(const QString& name, const QString& joinerBareJid=QString::null);
 	void leave(const QString& name);
 	Conference* getConf(gloox::Stanza* s);
-	Nick* getNick(gloox::Stanza* s, const QString& nick=QString::null);
-	Nick* getNickVerbose(gloox::Stanza* s, const QString& nick=QString::null);
+	Nick* getNick(gloox::Stanza* s, const QString& nick=QString::null, bool onlineOnly = true);
+	Nick* getNickVerbose(gloox::Stanza* s, const QString& nick=QString::null, bool onlineOnly = true);
 	bool isFromConfModerator(gloox::Stanza* s);
 	bool isFromConfAdmin(gloox::Stanza* s);
 	bool isFromConfOwner(gloox::Stanza* s);
@@ -74,6 +77,7 @@ private:
 	QString expandMacro(gloox::Stanza* s, Conference*c, Nick* n, const QString& str, const AListItem* item=0);
 	void requestVCard(gloox::Stanza* s, Conference* conf, Nick* nick);
 	void requestVersion(gloox::Stanza* s, Conference* conf, Nick* nick);
+	//	gloox::Stanza* invite(Conference *conf, const QStringList& nicks, const QString& reason = QString::null, const QString& pass = QString::null);
 
 	void logMessageStanza(gloox::Stanza *s, Conference *conf, const QStringList& flags);
 

@@ -117,16 +117,16 @@ Conference::~Conference()
 
 void Conference::markOffline()
 {
-	QSqlQuery query=DataStorage::instance()
-				->prepareQuery("UPDATE conferences SET online = false WHERE id = ?");
+	QSqlQuery query=DataStorage::instance()->prepareQuery(
+		"UPDATE conferences SET online = false WHERE id = ?");
 	query.addBindValue(myId);
 	query.exec();
 }
 
 QStringList Conference::autoJoinList()
 {
-	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("SELECT name, nick FROM conferences WHERE autojoin=true");
+	QSqlQuery query=DataStorage::instance()->prepareQuery(
+		"SELECT name, nick FROM conferences WHERE autojoin=true");
 	query.exec();
 	QStringList result;
 	while (query.next())
@@ -160,9 +160,10 @@ void Conference::removeExpired()
 QStringList 
 Conference::visits(const QDateTime& from, const QDateTime& to, bool ext, int limit)
 {
-	QSqlQuery query=DataStorage::instance()
-		->prepareQuery("SELECT nick, lastaction FROM conference_nicks WHERE conference_id=? "
-				"AND lastaction BETWEEN ? AND ? ORDER BY lastaction LIMIT ?");
+	QSqlQuery query=DataStorage::instance()->prepareQuery(
+		"SELECT nick, lastaction FROM conference_nicks WHERE "
+		"conference_id=? AND lastaction BETWEEN ? AND ? "
+		"ORDER BY lastaction LIMIT ?");
 	query.addBindValue(id());
 	query.addBindValue(from);
 	query.addBindValue(to);
@@ -174,9 +175,17 @@ Conference::visits(const QDateTime& from, const QDateTime& to, bool ext, int lim
 
 	while (query.next())
 	{
-		list.append((ext) ? query.value(0).toString()+" ("
-			    + query.value(1).toDateTime().toString("dd.MM.yyyy HH:mm")
-			    + ")" : query.value(0).toString());
+		if (ext)
+		{
+			list << QString("%1 (%2)")
+				.arg(query.value(0).toString())
+				.arg(query.value(1).toDateTime()
+				     .toString("dd.MM.yyyy HH:mm"));
+		}
+		else
+		{
+			list << query.value(0).toString();
+		}
 	}
 	return list;
 }
@@ -186,22 +195,27 @@ QString Conference::seen(const QString& n, bool ext, bool byjid)
   	Nick *nick = (byjid) ? myNicks.byJid(n): myNicks.byName(n);
 	if (nick)
 	{
-		return QString("\"%1\" is already in room (Joined %2 ago)").arg(nick->nick())
-			.arg(secsToString(nick->joined().secsTo(QDateTime::currentDateTime())));
+		return QString("\"%1\" is already in room (Joined %2 ago)")
+			.arg(nick->nick())
+			.arg(secsToString(nick->joined()
+				 .secsTo(QDateTime::currentDateTime())));
 	}
 
 	QSqlQuery query;
 	if (byjid)
 	{
-		query=DataStorage::instance()
-			->prepareQuery("SELECT id from conference_jids WHERE conference_id=? AND jid=? LIMIT 1");
+		query=DataStorage::instance()->prepareQuery(
+			"SELECT id from conference_jids WHERE "
+			"conference_id=? AND jid=? LIMIT 1");
 		query.addBindValue(myId);
 		query.addBindValue(n);
 	}
 	else
 	{
-		query=DataStorage::instance()
-			->prepareQuery("SELECT jid FROM conference_nicks WHERE conference_id=? AND nick=? ORDER BY lastaction DESC LIMIT 1");
+		query=DataStorage::instance()->prepareQuery(
+			"SELECT jid FROM conference_nicks WHERE "
+			"conference_id=? AND nick=? "
+			"ORDER BY lastaction DESC LIMIT 1");
 		query.addBindValue(myId);
 		query.addBindValue(n);
 	}
@@ -209,8 +223,10 @@ QString Conference::seen(const QString& n, bool ext, bool byjid)
 	if (query.exec() && query.next())
 	{
 		int jid=query.value(0).toInt();
-		query.prepare("SELECT online, nick, lastaction, joined, jid FROM conference_nicks WHERE "
-			"conference_id=? AND jid=? ORDER BY lastaction DESC LIMIT 1");
+		query.prepare("SELECT online, nick, lastaction, joined, jid "
+			      "FROM conference_nicks WHERE "
+			      "conference_id=? AND jid=? "
+			      "ORDER BY lastaction DESC LIMIT 1");
 		query.addBindValue(myId);
 		query.addBindValue(jid);
 		if (query.exec() && query.next())
@@ -314,7 +330,7 @@ void Conference::setLazyLeave(bool value)
 void Conference::loadOnlineNicks()
 {
 	QSqlQuery query=DataStorage::instance()
-			->prepareQuery("SELECT id FROM conference_nicks where conference_id=? AND online=? ORDER by joined");
+	  ->prepareQuery("SELECT id FROM conference_nicks where conference_id=? AND online=? ORDER BY joined");
 	query.addBindValue(myId);
 	query.addBindValue(true);
 	if (!query.exec())
@@ -388,4 +404,41 @@ void Conference::disableAutoJoin(const QString& conference)
 Nick *Conference::botNick() const
 {
 	return myNicks.byName(myNick);
+}
+
+/* 
+ * Sometimes we need to get info about person who are currently offline.
+ * when onlineOnly == false this function is sloow!
+ */
+Nick *Conference::getNick(QString& nick, bool onlineOnly)
+{
+	Nick* n = myNicks.byName(nick);
+	if (n) 
+		return n;
+
+	qDebug() << "Conference::getNick(" << nick << ", " << onlineOnly << ");";
+	QString strQuery = "SELECT id FROM conference_nicks WHERE conference_id=? AND LOWER(nick)=?";
+	if (onlineOnly)
+		strQuery.append(" AND online=true ");
+
+	strQuery.append(" ORDER BY joined LIMIT 1");
+	QSqlQuery query=DataStorage::instance()
+		->prepareQuery(strQuery);
+	query.addBindValue(myId);
+	query.addBindValue(nick.toLower());
+
+	if (!query.exec())
+		qDebug() << "Conference: Unable to select nick " << nick << "!";
+
+	while (query.next())
+	{
+		n = new Nick(this, query.value(0).toInt());
+		n->setValidateRequired(true);
+		qDebug() << "Conference::getNick() found nick with id=";
+		qDebug() << n->id();
+		break;
+	}
+	if (n)
+		qDebug() << "Conference::getNick(): " << n->nick();
+	return n;
 }

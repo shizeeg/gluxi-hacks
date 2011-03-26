@@ -78,23 +78,27 @@ void GoogleRequest::httpRequestFinished(int, bool err)
 		res=lst[1];
 		--nres;
 	}
+	
 	if (nres || res.isEmpty())
 	{
 		QString value=removeHtml(getValue(buf,"<div class=med style=margin-top:2em><p>(.*)<p style=margin-top:1em>")).trimmed();
+		//QString value=removeHtml(getValue(buf,"<h3 class=\"r\">(.*)</cite>")).trimmed();
 		if (!value.isEmpty())
-			plugin()->reply(stanza(),value);
+			plugin()->reply(stanza(), value);
 		else
 			plugin()->reply(stanza(), "Can't parse google");
 		deleteLater();
 		return;
 	}
 
-        QString url=removeHtml(getValue(res,"<a href=\"(.*)\" class=l")).trimmed();
-        QString subj=removeHtml(getValue(res,"'\\)\">(.*)</a></h3>")).trimmed();
-        QString body=removeHtml(getValue(res,"<div class=\"s\">(.*)<br>")).trimmed();
+	QString url=removeHtml(getValue(res,"<a href=\"(.*)\" class=l")).trimmed();
+	QString subj=removeHtml(getValue(res,"'\\)\">(.*)</a></h3>")).trimmed();
+	QString body=removeHtml(getValue(res,"<div class=\"s\">(.*)<br>")).trimmed();
+
 	if (body.endsWith('\n'))
 		body=body.section('\n',0,-2);
-	plugin()->reply(stanza(),QString("%1\n%2\n%3").arg(subj).arg(body).arg(url));
+			plugin()->reply(stanza(),QString("%1\n%2\n%3").arg(subj).arg(body).arg(url));
+
 	deleteLater();
 }
 

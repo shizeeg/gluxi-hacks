@@ -7,6 +7,7 @@
 /**
 	@author Dmitry Nezhevenko <dion@inhex.net>
 */
+
 class NickList: public QList<Nick*>
 {
 public:

@@ -28,7 +28,7 @@ public:
 		RoleModerator = 2
 	};
 public:
-    Nick(Conference* parent, const QString& nick, const QString& jid=QString::null);
+    Nick(Conference* parent, const QString& nick, const QString& jid=QString::null, bool onlineOnly = true);
     Nick(Conference* parent, int id);
     ~Nick();
 
