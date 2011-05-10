@@ -52,7 +52,7 @@ public:
 	AbstractConfigurator* getConfigurator(gloox::Stanza* s);
 	bool isMyMessage(gloox::Stanza *);
 	QString getJID(gloox::Stanza*s, const QString&, bool realJid=false);
-	QString getBotJID(gloox::Stanza*s);
+	QString getBotJID(gloox::Stanza*s) { return myJid; }
 	QString JIDtoNick(const QString& jid);
 	void onQuit(const QString& reason);
 	int getPriority();
@@ -67,6 +67,7 @@ private:
 	RoleList *myRoles;
 	PluginList myPlugins;
 	AsyncRequestList *myAsyncRequests;
+	QString myJid;
 	BasePlugin* pluginByStanzaId(gloox::Stanza*);
 protected:
         void customEvent(QEvent *event);

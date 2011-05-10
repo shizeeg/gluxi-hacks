@@ -69,6 +69,10 @@ GluxiBot::GluxiBot()
 	PluginLoader::loadPlugins(&myPlugins,this);
 	qSort(myPlugins.begin(),myPlugins.end());
 
+	myJid = QString("%1@%2")
+		.arg(storage->getString("account/user"))
+		.arg(storage->getString("account/server"));
+
 	// Launch Gloox thread
 	myGloox->start();
 }
@@ -270,21 +274,6 @@ QString GluxiBot::getJID(gloox::Stanza* s, const QString& nick, bool realJid)
 		{
 			return jid;
 		}
-	}
-	return QString::null;
-}
-
-QString GluxiBot::getBotJID(gloox::Stanza* s)
-{
-	QListIterator<PluginRef> it(myPlugins);
-	BasePlugin *plugin;
-	while (it.hasNext())
-	{
-		plugin=it.next();
-		assert(plugin);
-		QString jid=plugin->getBotJID(s);
-		if (!jid.isEmpty())
-			return jid;
 	}
 	return QString::null;
 }
